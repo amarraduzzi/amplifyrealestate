@@ -16,6 +16,7 @@ import { Tasks } from './pages/Tasks';
 import { Today } from './pages/Today';
 import { Overview } from './pages/Overview';
 import { Plan } from './pages/Plan';
+import { Deals } from './pages/Deals';
 import { PlanBanner } from './components/PlanBanner';
 import { loadPlan, type PlanInfo } from './lib/plan';
 
@@ -83,6 +84,7 @@ function Workspace({ session }: { session: Session }) {
         : shown === 'overview' ? <Overview key={office.id} office={office} onGo={setView} />
         : shown === 'leads' ? <Leads key={office.id} office={work} userId={session.user.id} />
         : shown === 'tasks' ? <Tasks key={office.id} office={work} userId={session.user.id} />
+        : shown === 'deals' ? <Deals key={office.id} office={work} />
         : shown === 'viewings' ? <Viewings key={office.id} office={work} />
         : shown === 'plan' ? <Plan key={office.id} office={office} />
         : shown === 'team' ? <Team key={office.id} office={office} userId={session.user.id} onSelfChanged={load} />

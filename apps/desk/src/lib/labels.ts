@@ -1,4 +1,4 @@
-import type { DealPurpose, LeadStatus, MandateBasis, MandateStatus, OrgRole, PartyRole, PropertyStatus, PropertyType, TaskStatus, ViewingOutcome, ViewingStatus } from '@vastgoed/shared';
+import type { DealPurpose, DealStage, LeadStatus, MandateBasis, MandateStatus, OrgRole, PartyRole, PropertyStatus, PropertyType, TaskStatus, ViewingOutcome, ViewingStatus } from '@vastgoed/shared';
 import { t } from './i18n';
 
 export const PURPOSES: DealPurpose[] = ['sale', 'rent_long', 'rent_short'];
@@ -112,3 +112,16 @@ export const TASK_STATUSES: TaskStatus[] = ['open', 'done', 'cancelled'];
 
 export const taskStatusLabel = (s: TaskStatus) =>
   t(({ open: 'Open', done: 'Done', cancelled: 'Cancelled' } as const)[s]);
+
+export const DEAL_STAGES: DealStage[] = ['offer', 'accepted', 'signed', 'paid', 'lost'];
+
+export const dealStageLabel = (s: DealStage) =>
+  t(({ offer: 'Offer', accepted: 'Accepted', signed: 'Signed', paid: 'Paid', lost: 'Lost' } as const)[s]);
+
+export const dealStageCls: Record<DealStage, string> = {
+  offer: 'bg-qr/10 text-qr',
+  accepted: 'bg-warn/10 text-warn',
+  signed: 'bg-ok/10 text-ok',
+  paid: 'bg-ink text-bg',
+  lost: 'bg-surface-3 text-muted',
+};

@@ -10,6 +10,7 @@ import { whenText } from '../lib/dates';
 import { Btn, Modal } from '../components/ui';
 import { ContactLinks } from '../components/ContactLinks';
 import { ViewingForm } from './ViewingForm';
+import { DealForm } from './DealForm';
 
 /** One viewing: when, who, which property, and how it went. */
 export function ViewingDetail({ office, item, onChanged, onClose }: {
@@ -20,6 +21,7 @@ export function ViewingDetail({ office, item, onChanged, onClose }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [dealing, setDealing] = useState(false);
 
   const changeStatus = async (s: ViewingStatus) => {
     if (s === v.status || busy) return;
@@ -47,6 +49,10 @@ export function ViewingDetail({ office, item, onChanged, onClose }: {
 
   if (editing) {
     return <ViewingForm orgId={office.id} viewing={v} onClose={() => setEditing(false)} onSaved={() => { setEditing(false); onChanged(); }} />;
+  }
+
+  if (dealing) {
+    return <DealForm orgId={office.id} leadId={v.lead_id} propertyId={v.property_id} onClose={() => setDealing(false)} onSaved={() => { setDealing(false); onChanged(); onClose(); }} />;
   }
 
   const overdue = v.status === 'scheduled' && new Date(v.scheduled_at).getTime() < Date.now();
@@ -101,6 +107,10 @@ export function ViewingDetail({ office, item, onChanged, onClose }: {
               ))}
             </div>
           </div>
+        )}
+
+        {canWrite && v.status === 'done' && v.outcome === 'offer_made' && (
+          <Btn tone="brand" onClick={() => setDealing(true)}>{t('Start a deal')}</Btn>
         )}
 
         {error && <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
