@@ -38,6 +38,8 @@ Gebouwd per onderdeel: **1a** databasekern, **1b** desk-app (panden, personen, m
 | Eigenaarsupdate via WhatsApp met één klik, vanuit het eigenaarsrapport (aantallen, link naar de pagina als die online staat; taal van de app), geen SQL nodig | klaar (2f) |
 | Desk-app: pagina aan/uit per pand, deellink, kantoorgegevens voor de publieke pagina | klaar (1c) |
 
+Gebruikershandleiding voor het team (Frans, één pagina): `docs/guide-fr.md`.
+
 ## Buiten etappe 1 (bewust nog niet gebouwd)
 
 Samenwerking tussen kantoren (Amplify Network), automatische betaling, en automatische meldingen (zelf versturen vanuit de app kan al via WhatsApp; automatisch vraagt een WhatsApp Business-koppeling).
