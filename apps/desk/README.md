@@ -2,7 +2,7 @@
 
 React + Vite + Tailwind v3, in dezelfde stijl als de andere Amplify-apps (navy en groen, Plus Jakarta Sans / Montserrat / Archivo).
 
-## Wat er in etappe 1b-1 tot en met 1b-3 in zit (Engels)
+## Wat er in etappe 1b-1 tot en met 1b-4 in zit (Engels)
 
 - Inloggen en account aanmaken
 - "Create your office": eerste kantoor aanmaken (via `create_organization`)
@@ -15,8 +15,11 @@ React + Vite + Tailwind v3, in dezelfde stijl als de andere Amplify-apps (navy e
 - Personen bij een pand: eigenaar, vertegenwoordiger, huurder, koper of contact (bestaand of nieuw), met bel-, WhatsApp- en mailknop. Loskoppelen laat de persoon in de contacten staan
 - Mandaat per pand: grondslag (schriftelijk, mondeling, eigenaar zelf, niet geverifieerd), wie het gaf, geldig van/tot, bewijsnotitie. Een mandaat voorbij de einddatum telt als verlopen; zonder actief mandaat staat er een waarschuwing. Intrekken kan met één klik
 
-Nog niet: leads en zoekopdrachten. Dat komt in 1b-4.
-Voor 1b-2 en 1b-3 is geen nieuwe SQL nodig: de database van etappe 1a is genoeg.
+- Leads (tab "Leads"): een persoon met een zoekopdracht (kopen of huren, budget, type, stad, wijken, slaapkamers, oppervlakte, gemeubileerd). Status new / active / viewing / won / lost, "Contacted today" en een oranje signaal na 14 dagen zonder contact
+- Passende panden: bij elke lead die nog zoekt staan de beschikbare panden die passen. Andersom staat bij een beschikbaar pand welke leads er een zoeken, met bel- en WhatsApp-knop. De koppeling wordt berekend (`src/lib/matching.ts`), er wordt niets dubbel opgeslagen
+
+Nog niet: bezichtigingen en afspraken, taken, teamleden uitnodigen. Dat komt in 1b-5.
+Voor 1b-2 en 1b-3 is geen nieuwe SQL nodig. Voor 1b-4 wel: `supabase/migrations/20261027000200_leads.sql` (nieuwe tabel `leads`).
 
 ## Talen
 

@@ -15,6 +15,8 @@ export type PropertyStatus =
 
 export type PartyRole = 'owner' | 'representative' | 'tenant' | 'buyer' | 'contact';
 
+export type LeadStatus = 'new' | 'active' | 'viewing' | 'won' | 'lost';
+
 export type MandateBasis = 'written' | 'verbal' | 'owner_self' | 'unverified';
 export type MandateStatus = 'active' | 'expired' | 'revoked';
 

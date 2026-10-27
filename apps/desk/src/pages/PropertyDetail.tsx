@@ -10,6 +10,7 @@ import { Confirmed } from '../components/Confirmed';
 import { PropertyForm } from './PropertyForm';
 import { PropertyParties } from './PropertyParties';
 import { PropertyMandates } from './PropertyMandates';
+import { PropertyLeads } from './PropertyLeads';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 const when = (iso: string) =>
@@ -139,6 +140,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
 
         <PropertyParties office={office} property={row} canWrite={canWrite} />
         <PropertyMandates office={office} property={row} canWrite={canWrite} />
+        <PropertyLeads office={office} property={row} />
 
         <div>
           <h3 className="mb-3 text-sm font-semibold">{t('History')}</h3>

@@ -2,7 +2,7 @@
 
 Platform voor de Marokkaanse vastgoedsector: panden, personen, mandaten en (later) leads, transacties, beheer en samenwerking tussen bemiddelaars.
 
-Stand: **etappe 1a** (databasekern) en **1b-3** (desk-app: inloggen, kantoor aanmaken, panden tonen, toevoegen, openen, wijzigen, status, geschiedenis, personen en mandaat per pand, in het Engels). Publieke pandpagina's (`apps/pages`) komen in 1c.
+Stand: **etappe 1a** (databasekern) en **1b-4** (desk-app: inloggen, kantoor aanmaken, panden, personen en mandaat per pand, leads met zoekopdracht en passende panden, in het Engels). Publieke pandpagina's (`apps/pages`) komen in 1c.
 
 ## Wat er staat
 
@@ -29,6 +29,9 @@ Stand: **etappe 1a** (databasekern) en **1b-3** (desk-app: inloggen, kantoor aan
 1. Maak een nieuw Supabase-project (regio Frankfurt, eu-central-1). Gebruik een apart project, niet dat van posamplify.
 2. Supabase > SQL Editor: plak de inhoud van `supabase/migrations/20261027000100_core.sql` en klik Run.
 3. Test: plak `supabase/tests/01_core.test.sql` en klik Run. Je krijgt altijd een rode melding; die bevat het resultaat (`TESTRESULTAAT: 31 geslaagd, 0 mislukt` is goed). Alle testgegevens worden automatisch teruggedraaid.
+
+4. Etappe 1b-4: plak `supabase/migrations/20261027000200_leads.sql` en klik Run. Test daarna met `supabase/tests/02_leads.test.sql`
+   (`TESTRESULTAAT: 13 geslaagd, 0 mislukt` is goed).
 
 ## De app publiceren
 

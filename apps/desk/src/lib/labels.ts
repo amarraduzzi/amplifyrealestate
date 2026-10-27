@@ -1,4 +1,4 @@
-import type { DealPurpose, MandateBasis, MandateStatus, PartyRole, PropertyStatus, PropertyType } from '@vastgoed/shared';
+import type { DealPurpose, LeadStatus, MandateBasis, MandateStatus, PartyRole, PropertyStatus, PropertyType } from '@vastgoed/shared';
 import { t } from './i18n';
 
 export const PURPOSES: DealPurpose[] = ['sale', 'rent_long', 'rent_short'];
@@ -55,4 +55,19 @@ export const mandateCls: Record<MandateStatus, string> = {
   active: 'bg-ok/10 text-ok',
   expired: 'bg-warn/10 text-warn',
   revoked: 'bg-danger/10 text-danger',
+};
+
+export const LEAD_STATUSES: LeadStatus[] = ['new', 'active', 'viewing', 'won', 'lost'];
+/** Leads that are still looking: only these are matched with properties. */
+export const OPEN_LEAD_STATUSES: LeadStatus[] = ['new', 'active', 'viewing'];
+
+export const leadStatusLabel = (s: LeadStatus) =>
+  t(({ new: 'New', active: 'Active', viewing: 'Viewing', won: 'Won', lost: 'Lost' } as const)[s]);
+
+export const leadStatusCls: Record<LeadStatus, string> = {
+  new: 'bg-qr/10 text-qr',
+  active: 'bg-ok/10 text-ok',
+  viewing: 'bg-warn/10 text-warn',
+  won: 'bg-ink text-bg',
+  lost: 'bg-surface-3 text-muted',
 };

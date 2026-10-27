@@ -4,11 +4,12 @@ import { supabase } from './lib/supabase';
 import { t } from './lib/i18n';
 import type { Office } from './lib/types';
 import { AmplifyMark } from './components/Brand';
-import { Shell } from './components/Shell';
+import { Shell, type View } from './components/Shell';
 import { Btn } from './components/ui';
 import { Login } from './pages/Login';
 import { Onboarding } from './pages/Onboarding';
 import { Properties } from './pages/Properties';
+import { Leads } from './pages/Leads';
 
 const ORG_KEY = 'desk-org';
 
@@ -19,6 +20,7 @@ function Splash() {
 function Workspace({ session }: { session: Session }) {
   const [offices, setOffices] = useState<Office[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [view, setView] = useState<View>('properties');
   const [orgId, setOrgId] = useState<string | null>(() => { try { return localStorage.getItem(ORG_KEY); } catch { return null; } });
 
   const load = useCallback(async () => {
@@ -52,8 +54,10 @@ function Workspace({ session }: { session: Session }) {
 
   const office = offices.find(o => o.id === orgId) ?? offices[0];
   return (
-    <Shell offices={offices} office={office} onPick={pick} onSignOut={signOut}>
-      <Properties key={office.id} office={office} userId={session.user.id} />
+    <Shell offices={offices} office={office} view={view} onView={setView} onPick={pick} onSignOut={signOut}>
+      {view === 'leads'
+        ? <Leads key={office.id} office={office} />
+        : <Properties key={office.id} office={office} userId={session.user.id} />}
     </Shell>
   );
 }

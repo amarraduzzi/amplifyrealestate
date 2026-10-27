@@ -1,28 +1,44 @@
 import type { ReactNode } from 'react';
-import { LogOut } from 'lucide-react';
+import { Building2, LogOut, Users } from 'lucide-react';
 import { AmplifyLogo } from './Brand';
 import { t } from '../lib/i18n';
 import type { Office } from '../lib/types';
 
-export function Shell({ offices, office, onPick, onSignOut, children }: {
-  offices: Office[]; office: Office; onPick: (id: string) => void; onSignOut: () => void; children: ReactNode;
+export type View = 'properties' | 'leads';
+
+export function Shell({ offices, office, view, onView, onPick, onSignOut, children }: {
+  offices: Office[]; office: Office; view: View; onView: (v: View) => void; onPick: (id: string) => void; onSignOut: () => void; children: ReactNode;
 }) {
+  const tabs: { id: View; label: string; icon: ReactNode }[] = [
+    { id: 'properties', label: t('Properties'), icon: <Building2 className="h-4 w-4" /> },
+    { id: 'leads', label: t('Leads'), icon: <Users className="h-4 w-4" /> },
+  ];
   return (
     <div className="flex min-h-full flex-col">
-      <header className="night sticky top-0 z-30 flex items-center justify-between gap-3 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
-        <AmplifyLogo size="sm" className="min-w-0" />
-        <div className="flex min-w-0 items-center gap-3">
-          {offices.length > 1
-            ? (
-              <select value={office.id} onChange={e => onPick(e.target.value)} aria-label={t('Office')}
-                className="max-w-[10rem] truncate rounded-lg bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white outline-none ring-1 ring-white/15">
-                {offices.map(o => <option key={o.id} value={o.id} className="text-ink">{o.name}</option>)}
-              </select>
-            )
-            : <span className="hidden max-w-[12rem] truncate text-sm font-semibold text-white/80 sm:block">{office.name}</span>}
-          <button onClick={onSignOut} aria-label={t('Sign out')} title={t('Sign out')}
-            className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/15 hover:text-white"><LogOut className="h-4 w-4" /></button>
+      <header className="night sticky top-0 z-30 px-4 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
+        <div className="flex items-center justify-between gap-3 pb-2">
+          <AmplifyLogo size="sm" className="min-w-0" />
+          <div className="flex min-w-0 items-center gap-3">
+            {offices.length > 1
+              ? (
+                <select value={office.id} onChange={e => onPick(e.target.value)} aria-label={t('Office')}
+                  className="max-w-[10rem] truncate rounded-lg bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white outline-none ring-1 ring-white/15">
+                  {offices.map(o => <option key={o.id} value={o.id} className="text-ink">{o.name}</option>)}
+                </select>
+              )
+              : <span className="hidden max-w-[12rem] truncate text-sm font-semibold text-white/80 sm:block">{office.name}</span>}
+            <button onClick={onSignOut} aria-label={t('Sign out')} title={t('Sign out')}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/15 hover:text-white"><LogOut className="h-4 w-4" /></button>
+          </div>
         </div>
+        <nav className="flex gap-1" aria-label={t('Sections')}>
+          {tabs.map(x => (
+            <button key={x.id} onClick={() => onView(x.id)} aria-current={view === x.id ? 'page' : undefined}
+              className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${view === x.id ? 'bg-white text-night' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}>
+              {x.icon}{x.label}
+            </button>
+          ))}
+        </nav>
       </header>
       <main className="flex-1">{children}</main>
     </div>
