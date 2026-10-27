@@ -36,3 +36,16 @@ export function matchesMessage(opts: { lang: ShareLang; name: string; office: { 
   });
   return [w.hello(opts.name, opts.props.length), '', lines.join('\n\n'), '', w.close, `— ${opts.office.name}`].join('\n');
 }
+
+const REMIND = {
+  fr: { locale: 'fr-FR', hello: (n: string) => `Bonjour ${n},`, body: (when: string, what: string) => `je vous rappelle notre visite ${when} : ${what}.`, close: 'Merci de me prévenir en cas d’empêchement.' },
+  ar: { locale: 'ar-MA', hello: (n: string) => `مرحبا ${n}،`, body: (when: string, what: string) => `أذكّركم بموعد المعاينة ${when}: ${what}.`, close: 'المرجو إخباري في حال حدوث أي مانع.' },
+  en: { locale: 'en-GB', hello: (n: string) => `Hello ${n},`, body: (when: string, what: string) => `a reminder of our viewing ${when}: ${what}.`, close: 'Please let me know if you cannot make it.' },
+};
+
+/** WhatsApp reminder of a viewing, in the language of the client. */
+export function viewingReminder(opts: { lang: ShareLang; name: string; whenIso: string; propertyTitle: string; office: { name: string } }): string {
+  const r = REMIND[opts.lang];
+  const when = new Intl.DateTimeFormat(r.locale, { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }).format(new Date(opts.whenIso));
+  return [r.hello(opts.name), r.body(when, opts.propertyTitle), r.close, `— ${opts.office.name}`].join('\n');
+}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, MessageCircle } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getLang, t } from '../lib/i18n';
 import type { LeadRow, Office, PersonRow } from '../lib/types';
@@ -9,6 +9,8 @@ import { OPEN_LEAD_STATUSES, daysSince, leadStatusCls, leadStatusLabel, viewingS
 import { daysUntil, toInputValue, todayStr, whenText } from '../lib/dates';
 import { Card } from '../components/ui';
 import { TaskItem } from '../components/TaskItem';
+import { briefingText } from '../lib/briefing';
+import { whatsappShareUrl } from '../lib/publicSite';
 import { GettingStarted } from '../components/GettingStarted';
 import { TaskForm } from './TaskForm';
 import { ViewingDetail } from './ViewingDetail';
@@ -104,8 +106,18 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
-      <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Today')}</h1>
-      <p className="text-sm text-muted">{dateLine}</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Today')}</h1>
+          <p className="text-sm text-muted">{dateLine}</p>
+        </div>
+        {!loading && !quiet && (
+          <button type="button" onClick={() => window.open(whatsappShareUrl(briefingText({ office: office.name, date: dateLine, due, viewings: upcoming, leadsToCall: leads?.length ?? 0 })), '_blank', 'noopener')}
+            className="inline-flex items-center gap-2 rounded-xl border border-line/[0.12] bg-surface px-3.5 py-2 text-sm font-semibold text-ink transition hover:bg-surface-2">
+            <MessageCircle className="h-4 w-4 text-ok" /> {t('Share briefing')}
+          </button>
+        )}
+      </div>
 
       <GettingStarted office={office} onGo={onGo} />
 

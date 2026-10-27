@@ -447,4 +447,7 @@ export const FR: Record<string, string> = {
   'Earned': 'Encaissée',
   'Offer and accepted': 'Offre et accepté',
   'Signed, not paid yet': 'Signé, pas encore payé',
+  'Share briefing': 'Partager le point du jour',
+  'Remind the client': 'Rappeler le rendez-vous au client',
+  'Send reminder on WhatsApp': 'Envoyer le rappel sur WhatsApp',
 };

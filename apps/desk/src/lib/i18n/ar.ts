@@ -447,4 +447,7 @@ export const AR: Record<string, string> = {
   'Earned': 'محصّلة',
   'Offer and accepted': 'عرض ومقبول',
   'Signed, not paid yet': 'موقّع، لم يُدفع بعد',
+  'Share briefing': 'مشاركة ملخص اليوم',
+  'Remind the client': 'تذكير العميل بالموعد',
+  'Send reminder on WhatsApp': 'إرسال التذكير عبر واتساب',
 };

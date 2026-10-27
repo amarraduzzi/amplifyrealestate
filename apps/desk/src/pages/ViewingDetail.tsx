@@ -11,6 +11,10 @@ import { Btn, Modal } from '../components/ui';
 import { ContactLinks } from '../components/ContactLinks';
 import { ViewingForm } from './ViewingForm';
 import { DealForm } from './DealForm';
+import { SHARE_LANGS, whatsappShareUrl, type ShareLang } from '../lib/publicSite';
+import { viewingReminder } from '../lib/leadMessage';
+import { waLink } from '../components/ContactLinks';
+import { MessageCircle } from 'lucide-react';
 
 /** One viewing: when, who, which property, and how it went. */
 export function ViewingDetail({ office, item, onChanged, onClose }: {
@@ -22,6 +26,7 @@ export function ViewingDetail({ office, item, onChanged, onClose }: {
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [dealing, setDealing] = useState(false);
+  const [lang, setLang] = useState<ShareLang>('fr');
 
   const changeStatus = async (s: ViewingStatus) => {
     if (s === v.status || busy) return;
@@ -54,6 +59,12 @@ export function ViewingDetail({ office, item, onChanged, onClose }: {
   if (dealing) {
     return <DealForm orgId={office.id} leadId={v.lead_id} propertyId={v.property_id} onClose={() => setDealing(false)} onSaved={() => { setDealing(false); onChanged(); onClose(); }} />;
   }
+
+  const remind = () => {
+    const text = viewingReminder({ lang, name: (person?.full_name ?? '').trim().split(/\s+/)[0] || '', whenIso: v.scheduled_at, propertyTitle: property?.title ?? '', office });
+    const number = person?.whatsapp || person?.phone || null;
+    window.open(number ? `${waLink(number)}?text=${encodeURIComponent(text)}` : whatsappShareUrl(text), '_blank', 'noopener');
+  };
 
   const overdue = v.status === 'scheduled' && new Date(v.scheduled_at).getTime() < Date.now();
 
@@ -105,6 +116,18 @@ export function ViewingDetail({ office, item, onChanged, onClose }: {
                   {outcomeLabel(o)}
                 </button>
               ))}
+            </div>
+          </div>
+        )}
+
+        {v.status === 'scheduled' && new Date(v.scheduled_at).getTime() > Date.now() && (
+          <div>
+            <h3 className="mb-2 text-sm font-semibold">{t('Remind the client')}</h3>
+            <div className="flex flex-wrap items-center gap-2">
+              <select aria-label={t('Language of the message')} className="rounded-xl border border-line/[0.12] bg-surface px-3 py-2 text-sm font-semibold" value={lang} onChange={e => setLang(e.target.value as ShareLang)}>
+                {SHARE_LANGS.map(l => <option key={l} value={l}>{l === 'fr' ? 'Français' : l === 'ar' ? 'العربية' : 'English'}</option>)}
+              </select>
+              <Btn onClick={remind}><MessageCircle className="h-4 w-4 text-ok" /> {t('Send reminder on WhatsApp')}</Btn>
             </div>
           </div>
         )}
