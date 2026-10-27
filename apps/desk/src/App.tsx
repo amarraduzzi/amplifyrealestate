@@ -4,7 +4,7 @@ import { supabase } from './lib/supabase';
 import { t } from './lib/i18n';
 import type { Office } from './lib/types';
 import { AmplifyMark } from './components/Brand';
-import { Shell, type View } from './components/Shell';
+import { Shell, canSeeOverview, type View } from './components/Shell';
 import { Btn } from './components/ui';
 import { Login } from './pages/Login';
 import { Onboarding } from './pages/Onboarding';
@@ -14,6 +14,7 @@ import { Viewings } from './pages/Viewings';
 import { Team } from './pages/Team';
 import { Tasks } from './pages/Tasks';
 import { Today } from './pages/Today';
+import { Overview } from './pages/Overview';
 
 const ORG_KEY = 'desk-org';
 
@@ -57,13 +58,16 @@ function Workspace({ session }: { session: Session }) {
   if (offices.length === 0) return <Onboarding onDone={load} onSignOut={signOut} />;
 
   const office = offices.find(o => o.id === orgId) ?? offices[0];
+  // Switching to an office where you may not see the overview: go back to Today.
+  const shown: View = view === 'overview' && !canSeeOverview(office.role) ? 'today' : view;
   return (
-    <Shell offices={offices} office={office} view={view} onView={setView} onPick={pick} onSignOut={signOut}>
-      {view === 'today' ? <Today key={office.id} office={office} userId={session.user.id} onGo={setView} />
-        : view === 'leads' ? <Leads key={office.id} office={office} userId={session.user.id} />
-        : view === 'tasks' ? <Tasks key={office.id} office={office} userId={session.user.id} />
-        : view === 'viewings' ? <Viewings key={office.id} office={office} />
-        : view === 'team' ? <Team key={office.id} office={office} userId={session.user.id} onSelfChanged={load} />
+    <Shell offices={offices} office={office} view={shown} onView={setView} onPick={pick} onSignOut={signOut}>
+      {shown === 'today' ? <Today key={office.id} office={office} userId={session.user.id} onGo={setView} />
+        : shown === 'overview' ? <Overview key={office.id} office={office} onGo={setView} />
+        : shown === 'leads' ? <Leads key={office.id} office={office} userId={session.user.id} />
+        : shown === 'tasks' ? <Tasks key={office.id} office={office} userId={session.user.id} />
+        : shown === 'viewings' ? <Viewings key={office.id} office={office} />
+        : shown === 'team' ? <Team key={office.id} office={office} userId={session.user.id} onSelfChanged={load} />
         : <Properties key={office.id} office={office} userId={session.user.id} />}
     </Shell>
   );
