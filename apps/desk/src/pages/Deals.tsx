@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Handshake, Plus, Search } from 'lucide-react';
+import { Download, Handshake, Plus, Search } from 'lucide-react';
 import type { DealStage } from '@vastgoed/shared';
 import { formatMad } from '@vastgoed/shared';
 import { t } from '../lib/i18n';
@@ -9,6 +9,7 @@ import { DEAL_STAGES, dealStageCls, dealStageLabel, priceSuffix } from '../lib/l
 import { Btn, Card, inputCls } from '../components/ui';
 import { DealForm } from './DealForm';
 import { DealDetail } from './DealDetail';
+import { dealsCsv, downloadCsv } from '../lib/exportCsv';
 
 type Filter = 'all' | DealStage;
 
@@ -68,7 +69,10 @@ export function Deals({ office }: { office: Office }) {
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Deals')}</h1>
           <p className="text-sm text-muted">{t('{n} in total', { n: counts.all })}</p>
         </div>
-        {canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Start a deal')}</Btn>}
+        <div className="flex flex-wrap gap-2">
+          {shown.length > 0 && <Btn onClick={() => downloadCsv(`deals-${new Date().toISOString().slice(0, 10)}.csv`, dealsCsv(shown))}><Download className="h-4 w-4" /> {t('Export to Excel')}</Btn>}
+          {canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Start a deal')}</Btn>}
+        </div>
       </div>
 
       {error && <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}

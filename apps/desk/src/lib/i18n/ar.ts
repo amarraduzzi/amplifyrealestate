@@ -460,4 +460,12 @@ export const AR: Record<string, string> = {
   'No active mandate.': 'لا توجد وكالة سارية.',
   'No offers yet.': 'لا توجد عروض بعد.',
   'Names and contacts of interested people are not shown in this report.': 'لا تظهر في هذا التقرير أسماء المهتمين ولا بياناتهم.',
+  'Export to Excel': 'تصدير إلى إكسل',
+  'Reference': 'المرجع',
+  'Client': 'العميل',
+  'Price': 'السعر',
+  'Commission %': 'العمولة %',
+  'Signed on': 'تاريخ التوقيع',
+  'Paid on': 'تاريخ الدفع',
+  'Date': 'التاريخ',
 };

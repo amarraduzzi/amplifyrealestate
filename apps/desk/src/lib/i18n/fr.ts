@@ -460,4 +460,12 @@ export const FR: Record<string, string> = {
   'No active mandate.': 'Aucun mandat actif.',
   'No offers yet.': 'Aucune offre pour le moment.',
   'Names and contacts of interested people are not shown in this report.': 'Les noms et coordonnées des personnes intéressées ne figurent pas dans ce rapport.',
+  'Export to Excel': 'Exporter vers Excel',
+  'Reference': 'Référence',
+  'Client': 'Client',
+  'Price': 'Prix',
+  'Commission %': 'Commission %',
+  'Signed on': 'Signé le',
+  'Paid on': 'Payé le',
+  'Date': 'Date',
 };
