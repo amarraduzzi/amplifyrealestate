@@ -2,7 +2,7 @@
 
 React + Vite + Tailwind v3, in dezelfde stijl als de andere Amplify-apps (navy en groen, Plus Jakarta Sans / Montserrat / Archivo).
 
-## Wat er in etappe 1b-1 en 1b-2 in zit (Engels)
+## Wat er in etappe 1b-1 tot en met 1b-3 in zit (Engels)
 
 - Inloggen en account aanmaken
 - "Create your office": eerste kantoor aanmaken (via `create_organization`)
@@ -12,8 +12,11 @@ React + Vite + Tailwind v3, in dezelfde stijl als de andere Amplify-apps (navy e
 - Pand wijzigen (knop Edit). Een nieuwe prijs of een nieuwe status telt ook als bevestiging
 - Geschiedenis per pand: aangemaakt, statuswijzigingen, prijswijzigingen en bevestigingen (komt uit de database, kan niet aangepast worden)
 
-Nog niet: personen, eigenaren en mandaten per pand, leads. Dat komt in 1b-3.
-Er is voor 1b-2 geen nieuwe SQL nodig: de database van etappe 1a is genoeg.
+- Personen bij een pand: eigenaar, vertegenwoordiger, huurder, koper of contact (bestaand of nieuw), met bel-, WhatsApp- en mailknop. Loskoppelen laat de persoon in de contacten staan
+- Mandaat per pand: grondslag (schriftelijk, mondeling, eigenaar zelf, niet geverifieerd), wie het gaf, geldig van/tot, bewijsnotitie. Een mandaat voorbij de einddatum telt als verlopen; zonder actief mandaat staat er een waarschuwing. Intrekken kan met één klik
+
+Nog niet: leads en zoekopdrachten. Dat komt in 1b-4.
+Voor 1b-2 en 1b-3 is geen nieuwe SQL nodig: de database van etappe 1a is genoeg.
 
 ## Talen
 

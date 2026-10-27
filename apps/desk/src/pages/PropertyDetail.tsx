@@ -8,6 +8,8 @@ import { STATUSES, daysSince, priceSuffix, purposeLabel, statusCls, statusLabel,
 import { Btn, Modal } from '../components/ui';
 import { Confirmed } from '../components/Confirmed';
 import { PropertyForm } from './PropertyForm';
+import { PropertyParties } from './PropertyParties';
+import { PropertyMandates } from './PropertyMandates';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 const when = (iso: string) =>
@@ -134,6 +136,9 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
         )}
 
         {error && <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
+
+        <PropertyParties office={office} property={row} canWrite={canWrite} />
+        <PropertyMandates office={office} property={row} canWrite={canWrite} />
 
         <div>
           <h3 className="mb-3 text-sm font-semibold">{t('History')}</h3>

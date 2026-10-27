@@ -2,7 +2,7 @@
 
 Platform voor de Marokkaanse vastgoedsector: panden, personen, mandaten en (later) leads, transacties, beheer en samenwerking tussen bemiddelaars.
 
-Stand: **etappe 1a** (databasekern) en **1b-2** (desk-app: inloggen, kantoor aanmaken, panden tonen, toevoegen, openen, wijzigen, status wijzigen en geschiedenis, in het Engels). Publieke pandpagina's (`apps/pages`) komen in 1c.
+Stand: **etappe 1a** (databasekern) en **1b-3** (desk-app: inloggen, kantoor aanmaken, panden tonen, toevoegen, openen, wijzigen, status, geschiedenis, personen en mandaat per pand, in het Engels). Publieke pandpagina's (`apps/pages`) komen in 1c.
 
 ## Wat er staat
 

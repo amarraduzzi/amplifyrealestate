@@ -1,4 +1,4 @@
-import type { DealPurpose, PropertyStatus, PropertyType } from '@vastgoed/shared';
+import type { DealPurpose, MandateBasis, MandateStatus, PartyRole, PropertyStatus, PropertyType } from '@vastgoed/shared';
 import { t } from './i18n';
 
 export const PURPOSES: DealPurpose[] = ['sale', 'rent_long', 'rent_short'];
@@ -38,3 +38,21 @@ export function daysSince(iso: string | null): number | null {
   const d = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
   return d < 0 ? 0 : d;
 }
+
+export const PARTY_ROLES: PartyRole[] = ['owner', 'representative', 'tenant', 'buyer', 'contact'];
+export const BASES: MandateBasis[] = ['written', 'verbal', 'owner_self', 'unverified'];
+
+export const partyRoleLabel = (r: PartyRole) =>
+  t(({ owner: 'Owner', representative: 'Representative', tenant: 'Tenant', buyer: 'Buyer', contact: 'Contact' } as const)[r]);
+
+export const basisLabel = (b: MandateBasis) =>
+  t(({ written: 'Written mandate', verbal: 'Verbal agreement', owner_self: 'Owner lists it themselves', unverified: 'Not verified' } as const)[b]);
+
+export const mandateStatusLabel = (s: MandateStatus) =>
+  t(({ active: 'Active', expired: 'Expired', revoked: 'Revoked' } as const)[s]);
+
+export const mandateCls: Record<MandateStatus, string> = {
+  active: 'bg-ok/10 text-ok',
+  expired: 'bg-warn/10 text-warn',
+  revoked: 'bg-danger/10 text-danger',
+};
