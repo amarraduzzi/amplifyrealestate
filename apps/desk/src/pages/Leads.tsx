@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Upload, Users } from 'lucide-react';
+import { Download, Plus, Search, Upload, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import type { LeadRow, Office, PersonRow } from '../lib/types';
@@ -11,6 +11,7 @@ import { budgetText, criteriaText } from '../components/leadText';
 import { ImportContacts } from './ImportContacts';
 import { LeadForm } from './LeadForm';
 import { LeadDetail } from './LeadDetail';
+import { downloadCsv, leadsCsv } from '../lib/exportCsv';
 
 type Filter = 'all' | LeadRow['status'];
 
@@ -72,12 +73,13 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Leads')}</h1>
           <p className="text-sm text-muted">{t('{n} in total', { n: counts.all })}</p>
         </div>
-        {canWrite && (
-          <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2">
+          {shown.length > 0 && <Btn tone="ghost" onClick={() => downloadCsv(`leads-${new Date().toISOString().slice(0, 10)}.csv`, leadsCsv(shown, people))}><Download className="h-4 w-4" /> {t('Export to Excel')}</Btn>}
+          {canWrite && (<>
             <Btn tone="ghost" onClick={() => setImporting(true)}><Upload className="h-4 w-4" /> {t('Import contacts')}</Btn>
             <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add lead')}</Btn>
-          </div>
-        )}
+          </>)}
+        </div>
       </div>
 
       {error && <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}

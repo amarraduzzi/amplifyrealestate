@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Bath, BedDouble, Building2, Plus, Ruler, Search } from 'lucide-react';
+import { Bath, BedDouble, Building2, Download, Plus, Ruler, Search } from 'lucide-react';
 import { formatMad, type PropertyStatus } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
@@ -9,6 +9,7 @@ import { Btn, Card, inputCls } from '../components/ui';
 import { Confirmed } from '../components/Confirmed';
 import { PropertyForm } from './PropertyForm';
 import { PropertyDetail } from './PropertyDetail';
+import { downloadCsv, propertiesCsv } from '../lib/exportCsv';
 
 type Filter = 'all' | PropertyStatus;
 
@@ -49,7 +50,10 @@ export function Properties({ office, userId }: { office: Office; userId: string 
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Properties')}</h1>
           <p className="text-sm text-muted">{t('{n} in total', { n: counts.all })}</p>
         </div>
-        {canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add property')}</Btn>}
+        <div className="flex flex-wrap gap-2">
+          {shown.length > 0 && <Btn tone="ghost" onClick={() => downloadCsv(`properties-${new Date().toISOString().slice(0, 10)}.csv`, propertiesCsv(shown))}><Download className="h-4 w-4" /> {t('Export to Excel')}</Btn>}
+          {canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add property')}</Btn>}
+        </div>
       </div>
 
       {error && <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}

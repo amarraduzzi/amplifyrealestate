@@ -468,4 +468,10 @@ export const AR: Record<string, string> = {
   'Signed on': 'تاريخ التوقيع',
   'Paid on': 'تاريخ الدفع',
   'Date': 'التاريخ',
+  'Purpose': 'نوع العملية',
+  'Name': 'الاسم',
+  'Confirmed on': 'تاريخ التأكيد',
+  'Budget min': 'الحد الأدنى للميزانية',
+  'Budget max': 'الحد الأقصى للميزانية',
+  'Last contact': 'آخر تواصل',
 };

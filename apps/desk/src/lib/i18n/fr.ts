@@ -468,4 +468,10 @@ export const FR: Record<string, string> = {
   'Signed on': 'Signé le',
   'Paid on': 'Payé le',
   'Date': 'Date',
+  'Purpose': 'Opération',
+  'Name': 'Nom',
+  'Confirmed on': 'Confirmé le',
+  'Budget min': 'Budget min.',
+  'Budget max': 'Budget max.',
+  'Last contact': 'Dernier contact',
 };
