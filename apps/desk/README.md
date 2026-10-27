@@ -46,6 +46,14 @@ Stel in Cloudflare (en in `.env.local`) ook `VITE_PUBLIC_SITE_URL` in: het adres
 - De chat opent met het WhatsApp-nummer van de lead (anders telefoon); heeft de persoon geen nummer, dan kies je zelf het contact in WhatsApp. Het bericht wordt niet automatisch verstuurd: je kunt het eerst nalezen
 - Geen SQL en geen nieuwe variabelen nodig (de links gebruiken `VITE_PUBLIC_SITE_URL`)
 
+## Etappe 1g: contacten importeren
+
+- In de tab Leads staat de knop **Import contacts**: kies een CSV-bestand of plak cellen uit Excel. De eerste rij bevat de kolomnamen: `name` (verplicht), `phone`, `whatsapp`, `email`. Ook Franse (`nom`, `téléphone`) en Arabische kolomnamen worden herkend. Scheidingsteken `;`, `,` of tab, en bestanden uit Franse Excel (met accenten) worden goed gelezen. Een voorbeeldbestand is te downloaden
+- Voor het toevoegen zie je een controle: hoeveel nieuw, hoeveel dubbel (zelfde nummer of e-mail als een bestaand contact of eerder in het bestand, ook als het nummer anders is geschreven: `06…`, `+212 6…` en `00212 6…` zijn hetzelfde), hoeveel rijen zonder naam
+- Dubbelen worden overgeslagen, bestaande contacten blijven onaangetast. Maximaal 1000 rijen per keer
+- Optioneel wordt elk nieuw contact ook een lead (kopen of huren), zonder zoekcriteria. Standaard staat dit uit
+- Geen SQL nodig
+
 ## Talen
 
 De desk is er in Engels, Frans en Arabisch (rechts naar links). Rechtsboven (en op het inlogscherm) staat een keuze **FR / AR / EN**; de keuze wordt op dat apparaat onthouden. Testen kan ook met `?lang=fr` of `?lang=ar`.

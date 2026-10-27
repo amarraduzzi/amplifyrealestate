@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Plus, Search, Users } from 'lucide-react';
+import { Plus, Search, Upload, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import type { LeadRow, Office, PersonRow } from '../lib/types';
@@ -8,6 +8,7 @@ import { MATCH_COLUMNS, matches, type MatchProp } from '../lib/matching';
 import { Btn, Card, inputCls } from '../components/ui';
 import { ContactAge } from '../components/ContactAge';
 import { budgetText, criteriaText } from '../components/leadText';
+import { ImportContacts } from './ImportContacts';
 import { LeadForm } from './LeadForm';
 import { LeadDetail } from './LeadDetail';
 
@@ -21,6 +22,7 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
   const [adding, setAdding] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const canWrite = office.role !== 'viewer';
 
@@ -70,7 +72,12 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Leads')}</h1>
           <p className="text-sm text-muted">{t('{n} in total', { n: counts.all })}</p>
         </div>
-        {canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add lead')}</Btn>}
+        {canWrite && (
+          <div className="flex flex-wrap gap-2">
+            <Btn tone="ghost" onClick={() => setImporting(true)}><Upload className="h-4 w-4" /> {t('Import contacts')}</Btn>
+            <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add lead')}</Btn>
+          </div>
+        )}
       </div>
 
       {error && <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
@@ -146,6 +153,7 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
           : null;
       })()}
 
+      {importing && <ImportContacts orgId={office.id} onClose={() => setImporting(false)} onDone={load} />}
       {adding && <LeadForm orgId={office.id} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); load(); }} />}
     </div>
   );
