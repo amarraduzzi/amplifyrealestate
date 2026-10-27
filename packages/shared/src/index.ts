@@ -33,3 +33,5 @@ export function formatMad(cents: number | null | undefined): string {
     }).format(cents / 100) + ' DH'
   );
 }
+
+export * from './brand';

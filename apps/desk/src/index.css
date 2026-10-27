@@ -1,0 +1,75 @@
+@import "@fontsource-variable/plus-jakarta-sans";
+@import "@fontsource-variable/montserrat";
+@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource/ibm-plex-sans-arabic/arabic-400.css";
+@import "@fontsource/ibm-plex-sans-arabic/arabic-600.css";
+@import "@fontsource/ibm-plex-sans-arabic/arabic-700.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Amplify Real Estate: the same colors and components as the other Amplify apps (navy and green on a cool white).
+   Colors are channels so Tailwind opacity (bg-ok/10) works. */
+:root {
+  --brand: 0 135 75;
+  --brand-hi: 5 185 98;
+  --brand-ink: 255 255 255;
+  --bg: 243 246 250;
+  --surface: 255 255 255;
+  --surface-2: 236 241 247;
+  --surface-3: 222 229 238;
+  --ink: 0 30 62;
+  --muted: 86 104 130;
+  --line: 0 30 62;
+  --ok: 0 135 75;
+  --warn: 190 120 10;
+  --danger: 200 45 45;
+  --qr: 40 100 220;
+  --night: 0 30 62;
+  --night-2: 0 46 95;
+}
+html, body, #root { height: 100%; }
+body { background: rgb(var(--bg)); color: rgb(var(--ink)); -webkit-font-smoothing: antialiased; }
+.tabular { font-variant-numeric: tabular-nums; }
+.font-display { font-family: "Montserrat Variable", "IBM Plex Sans Arabic", system-ui, sans-serif; letter-spacing: -0.015em; }
+.font-logo { font-family: "Montserrat Variable", system-ui, sans-serif; }
+/* Arabic: letters must stay joined, so no letter spacing; body text a bit larger */
+[dir="rtl"] body { font-size: 1.02rem; }
+[dir="rtl"] [class*="tracking-"], [dir="rtl"] .font-display { letter-spacing: 0 !important; }
+[dir="rtl"] .uppercase { text-transform: none; }
+.card { background: rgb(var(--surface)); border: 1px solid rgb(var(--line) / .07); box-shadow: 0 1px 2px rgb(15 21 36 / .04), 0 10px 30px -18px rgb(15 21 36 / .18); }
+.gold-fill {
+  background: linear-gradient(160deg, rgb(var(--brand-hi)) 0%, rgb(var(--brand)) 100%);
+  box-shadow: 0 1px 0 rgb(255 255 255 / .22) inset, 0 8px 20px -10px rgb(var(--brand) / .8);
+}
+.night {
+  --brand: 5 185 98; --brand-hi: 38 208 125; --brand-ink: 0 30 62;
+  background: radial-gradient(600px 400px at 0% 0%, rgb(var(--brand-hi) / .16), transparent 70%), linear-gradient(180deg, rgb(var(--night-2)), rgb(var(--night))); color: rgb(236 242 250); }
+@keyframes pop { from { transform: scale(.97); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.pop { animation: pop .16s ease-out both; }
+@keyframes rise { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+.rise { animation: rise .4s cubic-bezier(.16, 1, .3, 1) both; }
+@media (prefers-reduced-motion: reduce) { .pop, .rise { animation: none; } }
+
+/* Login screen, in the style of the company site */
+.lg-show { background: linear-gradient(160deg, #002E5F 0%, #001E3E 55%, #00162E 100%); }
+.lg-grid { opacity: .07; background-image: linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px); background-size: 48px 48px; mask-image: radial-gradient(ellipse at 70% 50%, black, transparent 75%); }
+.lg-h { font-family: "Archivo Variable", "IBM Plex Sans Arabic", system-ui, sans-serif; font-stretch: 62%; font-weight: 800; text-transform: uppercase; line-height: .9; letter-spacing: -.005em; }
+[dir="rtl"] .lg-h { font-family: "IBM Plex Sans Arabic", system-ui, sans-serif; font-stretch: 100%; font-weight: 700; text-transform: none; line-height: 1.2; letter-spacing: 0; }
+.lg-side { background: radial-gradient(500px 300px at 100% 0%, rgb(var(--brand-hi) / .10), transparent 70%); }
+@media (prefers-reduced-motion: no-preference) {
+  .lg-rise { animation: lg-rise .8s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes lg-rise { from { transform: translateY(105%); } }
+  .lg-in { animation: lg-in .6s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes lg-in { from { opacity: 0; transform: translateY(10px); } }
+}
+
+/* a phone never scrolls sideways */
+html, body { overflow-x: hidden; }
+@supports (overflow: clip) { html, body { overflow-x: clip; } }
+@media (max-width: 767px) {
+  [role="tablist"].flex { overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; }
+  [role="tablist"].flex::-webkit-scrollbar { display: none; }
+  [role="tablist"].flex > * { flex-shrink: 0; white-space: nowrap; }
+}
+fieldset { min-width: 0; }

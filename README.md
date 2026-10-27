@@ -2,7 +2,7 @@
 
 Platform voor de Marokkaanse vastgoedsector: panden, personen, mandaten en (later) leads, transacties, beheer en samenwerking tussen bemiddelaars.
 
-Dit is **etappe 1a: de databasekern**. De apps (`apps/desk`, `apps/pages`) komen in 1b en 1c.
+Stand: **etappe 1a** (databasekern) en **1b-1** (desk-app: inloggen, kantoor aanmaken, panden tonen en toevoegen, in het Engels). Publieke pandpagina's (`apps/pages`) komen in 1c.
 
 ## Wat er staat
 
@@ -13,7 +13,9 @@ Dit is **etappe 1a: de databasekern**. De apps (`apps/desk`, `apps/pages`) komen
 | Onveranderlijke geschiedenis (aanmaken, status, prijs, "laatst bevestigd") | klaar |
 | Beveiliging per organisatie (RLS + samengestelde foreign keys) | klaar |
 | Tests (31 controles in een SQL-bestand) | klaar |
-| Desk-app voor makelaars | etappe 1b |
+| Desk-app: inloggen, kantoor aanmaken, panden tonen en toevoegen (EN) | klaar (1b-1) |
+| Desk-app: pand openen en wijzigen, personen, leads | etappe 1b-2 |
+| Frans en Arabisch (RTL) | later |
 | Publieke pandpagina's | etappe 1c |
 
 ## Ontwerpkeuzes
@@ -27,3 +29,7 @@ Dit is **etappe 1a: de databasekern**. De apps (`apps/desk`, `apps/pages`) komen
 1. Maak een nieuw Supabase-project (regio Frankfurt, eu-central-1). Gebruik een apart project, niet dat van posamplify.
 2. Supabase > SQL Editor: plak de inhoud van `supabase/migrations/20261027000100_core.sql` en klik Run.
 3. Test: plak `supabase/tests/01_core.test.sql` en klik Run. Je krijgt altijd een rode melding; die bevat het resultaat (`TESTRESULTAAT: 31 geslaagd, 0 mislukt` is goed). Alle testgegevens worden automatisch teruggedraaid.
+
+## De app publiceren
+
+Zie `apps/desk/README.md` (Cloudflare Pages en Supabase-instellingen).
