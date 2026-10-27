@@ -317,4 +317,11 @@ export const FR: Record<string, string> = {
   '{n} open': '{n} ouvertes',
   '{n}+ bedrooms': '{n}+ chambres',
   '{n}+ m²': '{n}+ m²',
+  'No public page': 'Pas de page publique',
+  'Choose at most {n} properties per message.': 'Choisissez {n} biens au maximum par message.',
+  'Select at least one property.': 'Sélectionnez au moins un bien.',
+  'Language of the message': 'Langue du message',
+  'Send {n} on WhatsApp': 'Envoyer {n} sur WhatsApp',
+  'Properties without a public page are sent as text, without a link.': 'Les biens sans page publique sont envoyés en texte, sans lien.',
+  'This person has no number yet: you choose the contact in WhatsApp.': 'Cette personne n’a pas encore de numéro : vous choisissez le contact dans WhatsApp.',
 };

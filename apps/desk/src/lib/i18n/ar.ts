@@ -317,4 +317,11 @@ export const AR: Record<string, string> = {
   '{n} open': '{n} مفتوحة',
   '{n}+ bedrooms': '{n}+ غرف نوم',
   '{n}+ m²': '{n}+ م²',
+  'No public page': 'لا توجد صفحة عامة',
+  'Choose at most {n} properties per message.': 'اختر {n} عقارات كحد أقصى في الرسالة الواحدة.',
+  'Select at least one property.': 'اختر عقارا واحدا على الأقل.',
+  'Language of the message': 'لغة الرسالة',
+  'Send {n} on WhatsApp': 'إرسال {n} عبر واتساب',
+  'Properties without a public page are sent as text, without a link.': 'العقارات بدون صفحة عامة تُرسل كنص بدون رابط.',
+  'This person has no number yet: you choose the contact in WhatsApp.': 'ليس لهذا الشخص رقم بعد: تختار جهة الاتصال في واتساب.',
 };

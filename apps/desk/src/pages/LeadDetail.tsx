@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { PhoneCall, Pencil } from 'lucide-react';
-import { formatMad } from '@vastgoed/shared';
 import type { LeadStatus } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import type { LeadRow, Office, PersonRow } from '../lib/types';
-import { LEAD_STATUSES, leadStatusCls, leadStatusLabel, priceSuffix, purposeLabel, typeLabel } from '../lib/labels';
+import { LEAD_STATUSES, leadStatusCls, leadStatusLabel, purposeLabel } from '../lib/labels';
 import type { MatchProp } from '../lib/matching';
 import { Btn, Modal } from '../components/ui';
 import { ContactLinks } from '../components/ContactLinks';
+import { SendMatches } from '../components/SendMatches';
 import { ContactAge } from '../components/ContactAge';
 import { budgetText, criteriaText } from '../components/leadText';
 import { LeadForm } from './LeadForm';
@@ -96,19 +96,7 @@ export function LeadDetail({ office, userId, lead, person, matches, onChanged, o
           {matches.length === 0
             ? <p className="text-sm text-muted">{t('No available property fits this search yet.')}</p>
             : (
-              <ul className="space-y-2">
-                {matches.map(p => (
-                  <li key={p.id} className="rounded-2xl bg-surface-2 px-3.5 py-3">
-                    <p className="truncate text-sm font-semibold">{p.title}</p>
-                    <p className="mt-0.5 flex flex-wrap items-baseline gap-x-2 text-sm text-muted">
-                      <span className="tabular font-semibold text-ink">{formatMad(p.price_cents)}</span>
-                      <span>{priceSuffix(p.purpose)}</span>
-                      <span>· {[p.neighborhood, p.city].filter(Boolean).join(', ') || '—'} · {typeLabel(p.property_type)}</span>
-                      <span className="tabular ms-auto text-xs">{p.reference}</span>
-                    </p>
-                  </li>
-                ))}
-              </ul>
+              <SendMatches office={office} person={person} matches={matches} />
             )}
         </div>
       </div>

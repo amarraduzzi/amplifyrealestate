@@ -4,7 +4,7 @@ import { t } from '../lib/i18n';
 type Contact = { phone: string | null; whatsapp: string | null; email: string | null };
 
 /** Moroccan numbers are often written 06 12 34 56 78: make that a working WhatsApp link. */
-const waLink = (raw: string) => {
+export const waLink = (raw: string) => {
   let d = raw.replace(/\D/g, '');
   if (d.startsWith('00')) d = d.slice(2); else if (d.startsWith('0')) d = '212' + d.slice(1);
   return `https://wa.me/${d}`;

@@ -2,9 +2,9 @@ import type { LeadRow, PropertyRow } from './types';
 
 /** The few property fields needed to match a lead. */
 export type MatchProp = Pick<PropertyRow,
-  'id' | 'title' | 'reference' | 'purpose' | 'status' | 'price_cents' | 'property_type' | 'city' | 'neighborhood' | 'bedrooms' | 'area_m2' | 'furnished'>;
+  'id' | 'title' | 'reference' | 'is_published' | 'purpose' | 'status' | 'price_cents' | 'property_type' | 'city' | 'neighborhood' | 'bedrooms' | 'area_m2' | 'furnished'>;
 
-export const MATCH_COLUMNS = 'id, title, reference, purpose, status, price_cents, property_type, city, neighborhood, bedrooms, area_m2, furnished';
+export const MATCH_COLUMNS = 'id, title, reference, is_published, purpose, status, price_cents, property_type, city, neighborhood, bedrooms, area_m2, furnished';
 
 // Compare names without caring about capitals or accents ("Hay Riad" = "hay riad").
 const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();

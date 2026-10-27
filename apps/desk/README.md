@@ -39,6 +39,13 @@ Stel in Cloudflare (en in `.env.local`) ook `VITE_PUBLIC_SITE_URL` in: het adres
 - Foto's staan in Supabase Storage (bucket `property-photos`, wordt door de SQL aangemaakt). Ze verschijnen alleen op de publieke pagina als die pagina online is
 - Voor 1d is `supabase/migrations/20261027000600_photos.sql` nodig. Er zijn geen nieuwe variabelen
 
+## Etappe 1f: passende panden naar een lead sturen
+
+- In een lead staan bij **Matching properties** nu aanvinkvakjes (standaard de eerste 6 aangevinkt, maximaal 6 per bericht) en de knop **Send … on WhatsApp**
+- Het bericht wordt in de taal van de klant gemaakt (FR, AR of EN, los van de taal van de app): begroeting met de voornaam, per pand titel, prijs, wijk en stad, en de link naar de publieke pagina. Een pand zonder publieke pagina gaat als tekst mee, zonder link
+- De chat opent met het WhatsApp-nummer van de lead (anders telefoon); heeft de persoon geen nummer, dan kies je zelf het contact in WhatsApp. Het bericht wordt niet automatisch verstuurd: je kunt het eerst nalezen
+- Geen SQL en geen nieuwe variabelen nodig (de links gebruiken `VITE_PUBLIC_SITE_URL`)
+
 ## Talen
 
 De desk is er in Engels, Frans en Arabisch (rechts naar links). Rechtsboven (en op het inlogscherm) staat een keuze **FR / AR / EN**; de keuze wordt op dat apparaat onthouden. Testen kan ook met `?lang=fr` of `?lang=ar`.

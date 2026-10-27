@@ -2,7 +2,7 @@
 
 Platform voor de Marokkaanse vastgoedsector: panden, personen, mandaten en (later) leads, transacties, beheer en samenwerking tussen bemiddelaars.
 
-Stand: **etappe 1a** (databasekern), **1b-6** (desk-app: inloggen, kantoor aanmaken, panden, personen en mandaat per pand, leads met zoekopdracht en passende panden, bezichtigingen, teambeheer, taken en een Today-scherm, in het Engels) **1c** (publieke pandpagina's in Frans, Arabisch en Engels, te delen via WhatsApp) **1d** (foto's bij panden) en **1e** (desk-app in Frans en Arabisch).
+Stand: **etappe 1a** (databasekern), **1b-6** (desk-app: inloggen, kantoor aanmaken, panden, personen en mandaat per pand, leads met zoekopdracht en passende panden, bezichtigingen, teambeheer, taken en een Today-scherm, in het Engels) **1c** (publieke pandpagina's in Frans, Arabisch en Engels, te delen via WhatsApp) **1d** (foto's bij panden) **1e** (desk-app in Frans en Arabisch) en **1f** (panden naar een lead sturen via WhatsApp).
 
 ## Wat er staat
 
@@ -21,6 +21,7 @@ Stand: **etappe 1a** (databasekern), **1b-6** (desk-app: inloggen, kantoor aanma
 | Publieke pandpagina's (`apps/pages`): kantoorpagina, pandpagina, WhatsApp-knop, FR/AR/EN, voorbeeld bij delen | klaar (1c) |
 | Foto's: uploaden in de desk (verkleind in de browser), omslagfoto, galerij op de pandpagina, foto in lijst en WhatsApp-voorbeeld | klaar (1d) |
 | Desk-app in Frans en Arabisch (RTL), met taalkeuze FR / AR / EN | klaar (1e) |
+| Desk-app: passende panden met één klik naar een lead sturen via WhatsApp (taal van de klant, met links) | klaar (1f) |
 | Desk-app: pagina aan/uit per pand, deellink, kantoorgegevens voor de publieke pagina | klaar (1c) |
 
 ## Ontwerpkeuzes
