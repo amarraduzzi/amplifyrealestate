@@ -12,6 +12,7 @@ import { PropertyParties } from './PropertyParties';
 import { PropertyMandates } from './PropertyMandates';
 import { PropertyLeads } from './PropertyLeads';
 import { ViewingsSection } from './ViewingsSection';
+import { TasksSection } from './TasksSection';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 const when = (iso: string) =>
@@ -143,6 +144,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
         <PropertyMandates office={office} property={row} canWrite={canWrite} />
         <PropertyLeads office={office} property={row} />
         <ViewingsSection office={office} property={row} />
+        <TasksSection office={office} userId={userId} property={row} />
 
         <div>
           <h3 className="mb-3 text-sm font-semibold">{t('History')}</h3>

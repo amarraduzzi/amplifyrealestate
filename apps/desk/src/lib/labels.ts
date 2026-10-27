@@ -1,4 +1,4 @@
-import type { DealPurpose, LeadStatus, MandateBasis, MandateStatus, OrgRole, PartyRole, PropertyStatus, PropertyType, ViewingOutcome, ViewingStatus } from '@vastgoed/shared';
+import type { DealPurpose, LeadStatus, MandateBasis, MandateStatus, OrgRole, PartyRole, PropertyStatus, PropertyType, TaskStatus, ViewingOutcome, ViewingStatus } from '@vastgoed/shared';
 import { t } from './i18n';
 
 export const PURPOSES: DealPurpose[] = ['sale', 'rent_long', 'rent_short'];
@@ -107,3 +107,8 @@ export const roleHint = (r: OrgRole) =>
     agent: 'Add and edit properties, leads and viewings',
     viewer: 'View only',
   } as const)[r]);
+
+export const TASK_STATUSES: TaskStatus[] = ['open', 'done', 'cancelled'];
+
+export const taskStatusLabel = (s: TaskStatus) =>
+  t(({ open: 'Open', done: 'Done', cancelled: 'Cancelled' } as const)[s]);

@@ -2,7 +2,7 @@
 
 Platform voor de Marokkaanse vastgoedsector: panden, personen, mandaten en (later) leads, transacties, beheer en samenwerking tussen bemiddelaars.
 
-Stand: **etappe 1a** (databasekern) en **1b-5** (desk-app: inloggen, kantoor aanmaken, panden, personen en mandaat per pand, leads met zoekopdracht en passende panden, bezichtigingen en teambeheer, in het Engels). Publieke pandpagina's (`apps/pages`) komen in 1c.
+Stand: **etappe 1a** (databasekern) en **1b-6** (desk-app: inloggen, kantoor aanmaken, panden, personen en mandaat per pand, leads met zoekopdracht en passende panden, bezichtigingen, teambeheer, taken en een Today-scherm, in het Engels). Publieke pandpagina's (`apps/pages`) komen in 1c.
 
 ## Wat er staat
 
@@ -12,11 +12,12 @@ Stand: **etappe 1a** (databasekern) en **1b-5** (desk-app: inloggen, kantoor aan
 | Personen, panden, betrokkenen per pand, mandaten | klaar |
 | Onveranderlijke geschiedenis (aanmaken, status, prijs, "laatst bevestigd") | klaar |
 | Beveiliging per organisatie (RLS + samengestelde foreign keys) | klaar |
-| Tests (31 + 13 + 30 controles in drie SQL-bestanden) | klaar |
+| Tests (31 + 13 + 30 controles in drie SQL-bestanden; taken zijn apart getest) | klaar |
 | Desk-app: inloggen, kantoor aanmaken, panden tonen en toevoegen (EN) | klaar (1b-1) |
 | Desk-app: pand openen en wijzigen, personen, leads | klaar (1b-2 t/m 1b-4) |
 | Desk-app: bezichtigingen (afspraak tussen lead en pand, met uitkomst) | klaar (1b-5) |
 | Desk-app: team (leden toevoegen, rol wijzigen, verwijderen) | klaar (1b-5) |
+| Desk-app: taken (deadline, verantwoordelijke, koppeling aan lead of pand) en Today-scherm | klaar (1b-6) |
 | Frans en Arabisch (RTL) | later |
 | Publieke pandpagina's | etappe 1c |
 
@@ -36,6 +37,7 @@ Stand: **etappe 1a** (databasekern) en **1b-5** (desk-app: inloggen, kantoor aan
    (`TESTRESULTAAT: 13 geslaagd, 0 mislukt` is goed).
 5. Etappe 1b-5: plak `supabase/migrations/20261027000300_viewings_team.sql` en klik Run. Test daarna met `supabase/tests/03_viewings_team.test.sql`
    (`TESTRESULTAAT: 30 geslaagd, 0 mislukt` is goed).
+6. Etappe 1b-6: plak `supabase/migrations/20261027000400_tasks.sql` en klik Run.
 
 ## De app publiceren
 

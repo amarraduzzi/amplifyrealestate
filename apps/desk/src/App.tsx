@@ -12,6 +12,8 @@ import { Properties } from './pages/Properties';
 import { Leads } from './pages/Leads';
 import { Viewings } from './pages/Viewings';
 import { Team } from './pages/Team';
+import { Tasks } from './pages/Tasks';
+import { Today } from './pages/Today';
 
 const ORG_KEY = 'desk-org';
 
@@ -22,7 +24,7 @@ function Splash() {
 function Workspace({ session }: { session: Session }) {
   const [offices, setOffices] = useState<Office[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [view, setView] = useState<View>('properties');
+  const [view, setView] = useState<View>('today');
   const [orgId, setOrgId] = useState<string | null>(() => { try { return localStorage.getItem(ORG_KEY); } catch { return null; } });
 
   const load = useCallback(async () => {
@@ -57,7 +59,9 @@ function Workspace({ session }: { session: Session }) {
   const office = offices.find(o => o.id === orgId) ?? offices[0];
   return (
     <Shell offices={offices} office={office} view={view} onView={setView} onPick={pick} onSignOut={signOut}>
-      {view === 'leads' ? <Leads key={office.id} office={office} />
+      {view === 'today' ? <Today key={office.id} office={office} userId={session.user.id} onGo={setView} />
+        : view === 'leads' ? <Leads key={office.id} office={office} userId={session.user.id} />
+        : view === 'tasks' ? <Tasks key={office.id} office={office} userId={session.user.id} />
         : view === 'viewings' ? <Viewings key={office.id} office={office} />
         : view === 'team' ? <Team key={office.id} office={office} userId={session.user.id} onSelfChanged={load} />
         : <Properties key={office.id} office={office} userId={session.user.id} />}

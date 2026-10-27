@@ -13,7 +13,7 @@ import { LeadDetail } from './LeadDetail';
 
 type Filter = 'all' | LeadRow['status'];
 
-export function Leads({ office }: { office: Office }) {
+export function Leads({ office, userId }: { office: Office; userId: string }) {
   const [leads, setLeads] = useState<LeadRow[] | null>(null);
   const [people, setPeople] = useState<Record<string, PersonRow>>({});
   const [available, setAvailable] = useState<MatchProp[]>([]);
@@ -142,7 +142,7 @@ export function Leads({ office }: { office: Office }) {
       {openId && (() => {
         const lead = (leads ?? []).find(l => l.id === openId);
         return lead
-          ? <LeadDetail key={lead.id} office={office} lead={lead} person={people[lead.person_id]} matches={matchMap[lead.id] ?? []} onChanged={load} onClose={() => setOpenId(null)} />
+          ? <LeadDetail key={lead.id} office={office} userId={userId} lead={lead} person={people[lead.person_id]} matches={matchMap[lead.id] ?? []} onChanged={load} onClose={() => setOpenId(null)} />
           : null;
       })()}
 

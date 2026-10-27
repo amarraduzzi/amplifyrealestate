@@ -20,6 +20,8 @@ export type LeadStatus = 'new' | 'active' | 'viewing' | 'won' | 'lost';
 export type ViewingStatus = 'scheduled' | 'done' | 'cancelled' | 'no_show';
 export type ViewingOutcome = 'interested' | 'not_interested' | 'offer_made';
 
+export type TaskStatus = 'open' | 'done' | 'cancelled';
+
 export type MandateBasis = 'written' | 'verbal' | 'owner_self' | 'unverified';
 export type MandateStatus = 'active' | 'expired' | 'revoked';
 

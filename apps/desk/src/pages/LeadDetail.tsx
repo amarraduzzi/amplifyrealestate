@@ -13,9 +13,10 @@ import { ContactAge } from '../components/ContactAge';
 import { budgetText, criteriaText } from '../components/leadText';
 import { LeadForm } from './LeadForm';
 import { ViewingsSection } from './ViewingsSection';
+import { TasksSection } from './TasksSection';
 
-export function LeadDetail({ office, lead, person, matches, onChanged, onClose }: {
-  office: Office; lead: LeadRow; person: PersonRow | undefined; matches: MatchProp[]; onChanged: () => void; onClose: () => void;
+export function LeadDetail({ office, userId, lead, person, matches, onChanged, onClose }: {
+  office: Office; userId: string; lead: LeadRow; person: PersonRow | undefined; matches: MatchProp[]; onChanged: () => void; onClose: () => void;
 }) {
   const canWrite = office.role !== 'viewer';
   const [busy, setBusy] = useState(false);
@@ -88,6 +89,7 @@ export function LeadDetail({ office, lead, person, matches, onChanged, onClose }
         {error && <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
 
         <ViewingsSection office={office} lead={lead} onChanged={onChanged} />
+        <TasksSection office={office} userId={userId} lead={lead} />
 
         <div>
           <h3 className="mb-2 text-sm font-semibold">{t('Matching properties')} <span className="tabular opacity-60">{matches.length}</span></h3>
