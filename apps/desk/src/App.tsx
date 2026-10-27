@@ -53,7 +53,7 @@ function Workspace({ session }: { session: Session }) {
   const office = offices.find(o => o.id === orgId) ?? offices[0];
   return (
     <Shell offices={offices} office={office} onPick={pick} onSignOut={signOut}>
-      <Properties key={office.id} office={office} />
+      <Properties key={office.id} office={office} userId={session.user.id} />
     </Shell>
   );
 }

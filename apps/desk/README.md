@@ -2,14 +2,18 @@
 
 React + Vite + Tailwind v3, in dezelfde stijl als de andere Amplify-apps (navy en groen, Plus Jakarta Sans / Montserrat / Archivo).
 
-## Wat er in etappe 1b-1 in zit (Engels)
+## Wat er in etappe 1b-1 en 1b-2 in zit (Engels)
 
 - Inloggen en account aanmaken
 - "Create your office": eerste kantoor aanmaken (via `create_organization`)
 - Lijst met panden: tabs per status, zoeken, "Confirmed X days ago" (oranje na 30 dagen)
 - Pand toevoegen (formulier), alleen voor eigenaar, manager en agent; een viewer kan alleen lezen
+- Pand openen (klik op een kaart): alle gegevens, status wijzigen, prijs en beschikbaarheid bevestigen
+- Pand wijzigen (knop Edit). Een nieuwe prijs of een nieuwe status telt ook als bevestiging
+- Geschiedenis per pand: aangemaakt, statuswijzigingen, prijswijzigingen en bevestigingen (komt uit de database, kan niet aangepast worden)
 
-Nog niet: pand openen/wijzigen, status wijzigen, personen, leads. Dat komt in 1b-2.
+Nog niet: personen, eigenaren en mandaten per pand, leads. Dat komt in 1b-3.
+Er is voor 1b-2 geen nieuwe SQL nodig: de database van etappe 1a is genoeg.
 
 ## Talen
 

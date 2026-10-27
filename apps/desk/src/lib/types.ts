@@ -21,4 +21,14 @@ export type PropertyRow = {
   description: string | null;
   info_confirmed_at: string | null;
   created_at: string;
+  updated_at: string;
+};
+
+export type HistoryRow = {
+  id: number;
+  changed_by: string | null;
+  changed_at: string;
+  field: string;
+  old_value: string | null;
+  new_value: string | null;
 };

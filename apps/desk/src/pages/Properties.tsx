@@ -1,33 +1,24 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Bath, BedDouble, Building2, CheckCircle2, Plus, Ruler, Search } from 'lucide-react';
+import { Bath, BedDouble, Building2, Plus, Ruler, Search } from 'lucide-react';
 import { formatMad, type PropertyStatus } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import type { Office, PropertyRow } from '../lib/types';
-import { STATUSES, daysSince, priceSuffix, purposeLabel, statusCls, statusLabel, typeLabel } from '../lib/labels';
+import { STATUSES, priceSuffix, purposeLabel, statusCls, statusLabel, typeLabel } from '../lib/labels';
 import { Btn, Card, inputCls } from '../components/ui';
+import { Confirmed } from '../components/Confirmed';
 import { PropertyForm } from './PropertyForm';
+import { PropertyDetail } from './PropertyDetail';
 
 type Filter = 'all' | PropertyStatus;
 
-function Confirmed({ iso }: { iso: string | null }) {
-  const d = daysSince(iso);
-  if (d === null) return null;
-  const stale = d > 30;
-  return (
-    <span className={`inline-flex items-center gap-1 text-xs font-semibold ${stale ? 'text-warn' : 'text-muted'}`}>
-      <CheckCircle2 className="h-3.5 w-3.5" />
-      {d === 0 ? t('Confirmed today') : d === 1 ? t('Confirmed yesterday') : t('Confirmed {n} days ago', { n: d })}
-    </span>
-  );
-}
-
-export function Properties({ office }: { office: Office }) {
+export function Properties({ office, userId }: { office: Office; userId: string }) {
   const [rows, setRows] = useState<PropertyRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('all');
   const [q, setQ] = useState('');
   const [adding, setAdding] = useState(false);
+  const [openId, setOpenId] = useState<string | null>(null);
   const canWrite = office.role !== 'viewer';
 
   const load = useCallback(async () => {
@@ -96,7 +87,10 @@ export function Properties({ office }: { office: Office }) {
             : (
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                 {shown.map(r => (
-                  <li key={r.id} className="card rise rounded-2xl p-4 sm:p-5">
+                  <li key={r.id} role="button" tabIndex={0} aria-label={r.title}
+                    onClick={() => setOpenId(r.id)}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(r.id); } }}
+                    className="card rise cursor-pointer rounded-2xl p-4 outline-none transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
                         <h3 className="font-display truncate text-lg font-semibold">{r.title}</h3>
@@ -124,6 +118,11 @@ export function Properties({ office }: { office: Office }) {
             )}
         </>
       )}
+
+      {openId && (() => {
+        const open = (rows ?? []).find(r => r.id === openId);
+        return open ? <PropertyDetail key={open.id} office={office} userId={userId} row={open} onChanged={load} onClose={() => setOpenId(null)} /> : null;
+      })()}
 
       {adding && <PropertyForm orgId={office.id} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); load(); }} />}
     </div>
