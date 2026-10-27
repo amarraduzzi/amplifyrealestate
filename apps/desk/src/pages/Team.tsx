@@ -123,7 +123,7 @@ export function Team({ office, userId, onSelfChanged }: { office: Office; userId
         </ul>
       )}
 
-      <PublicProfile office={office} canManage={canManage} />
+      <PublicProfile office={office} canManage={canManage} onSlugChanged={onSelfChanged} />
 
       {canManage ? (
         <Card className="mt-6">

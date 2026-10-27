@@ -54,6 +54,13 @@ Stel in Cloudflare (en in `.env.local`) ook `VITE_PUBLIC_SITE_URL` in: het adres
 - Optioneel wordt elk nieuw contact ook een lead (kopen of huren), zonder zoekcriteria. Standaard staat dit uit
 - Geen SQL nodig
 
+## Etappe 1h: eigen adresnaam voor de kantoorpagina
+
+- Tab **Team** > **Public pages**: eigenaar en manager kunnen het deel in de link (bijvoorbeeld `/atlas-immobilier`) zelf kiezen. Wat je typt wordt automatisch een veilige naam (kleine letters, cijfers, streepjes; accenten verdwijnen) en je ziet vooraf hoe de link wordt
+- Links die al gedeeld zijn blijven werken: de oude naam blijft als alias naar hetzelfde kantoor wijzen, ook voor de pandlinks en het WhatsApp-voorbeeld. Niemand anders kan een oude naam overnemen
+- Een naam kan maximaal 5 keer gewijzigd worden; terugkeren naar een eerdere eigen naam kan
+- Voor 1h is `supabase/migrations/20261027000700_office_slug.sql` nodig
+
 ## Talen
 
 De desk is er in Engels, Frans en Arabisch (rechts naar links). Rechtsboven (en op het inlogscherm) staat een keuze **FR / AR / EN**; de keuze wordt op dat apparaat onthouden. Testen kan ook met `?lang=fr` of `?lang=ar`.

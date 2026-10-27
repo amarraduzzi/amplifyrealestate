@@ -7,7 +7,25 @@ import { PUBLIC_SITE, officeUrl } from '../lib/publicSite';
 import { Btn, Card, Field, inputCls } from '../components/ui';
 
 /** Contact details that appear on every public page of this office, plus the link to the office page. */
-export function PublicProfile({ office, canManage }: { office: Office; canManage: boolean }) {
+const RESERVED = ['assets', 'api', 'admin', 'app', 'desk', 'www', 'static', 'icon', 'og', 'favicon'];
+
+/** What someone types ("Atlas Immobilier Agdal") becomes a safe link name ("atlas-immobilier-agdal"). */
+const toSlug = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40).replace(/-+$/, '');
+
+function slugError(message: string): string {
+  if (message.includes('adresnaam_bezet')) return t('This name is already taken.');
+  if (message.includes('adresnaam_ongeldig')) return t('Use only letters and numbers, with single hyphens between words (3 to 40 characters).');
+  if (message.includes('adresnaam_gereserveerd')) return t('This name cannot be used.');
+  if (message.includes('adresnaam_te_vaak')) return t('The name in the link can be changed at most 5 times.');
+  if (message.includes('geen_toegang')) return t('You do not have permission to do this.');
+  return message;
+}
+
+export function PublicProfile({ office, canManage, onSlugChanged }: { office: Office; canManage: boolean; onSlugChanged: () => void }) {
+  const [slugText, setSlugText] = useState('');
+  const [slugBusy, setSlugBusy] = useState(false);
+  const [slugErr, setSlugError] = useState<string | null>(null);
+  const [slugSaved, setSlugSaved] = useState(false);
   const [wa, setWa] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -42,6 +60,18 @@ export function PublicProfile({ office, canManage }: { office: Office; canManage
     setSaved(true);
   };
 
+  const newSlug = toSlug(slugText);
+  const slugOk = newSlug.length >= 3 && newSlug !== office.slug && !RESERVED.includes(newSlug);
+  const saveSlug = async () => {
+    if (!slugOk || slugBusy) return;
+    if (!window.confirm(t('Change the name in the link to “{name}”? Links you already shared keep working.', { name: newSlug }))) return;
+    setSlugBusy(true); setSlugError(null); setSlugSaved(false);
+    const { error } = await supabase.rpc('change_office_slug', { p_org: office.id, p_slug: newSlug });
+    setSlugBusy(false);
+    if (error) { setSlugError(slugError(error.message)); return; }
+    setSlugText(''); setSlugSaved(true); onSlugChanged();
+  };
+
   const link = PUBLIC_SITE ? officeUrl(office.slug, 'fr') : '';
   const copy = async () => {
     try { await navigator.clipboard.writeText(link); setCopied(true); window.setTimeout(() => setCopied(false), 1800); }
@@ -58,6 +88,20 @@ export function PublicProfile({ office, canManage }: { office: Office; canManage
           <input className={`${inputCls} min-w-0 flex-1 text-sm`} dir="ltr" readOnly value={link} onFocus={e => e.currentTarget.select()} aria-label={t('Link to the office page')} />
           <Btn tone="ghost" onClick={copy}>{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} {copied ? t('Copied') : t('Copy link')}</Btn>
           <a href={link} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-2 rounded-xl border border-line/[0.12] bg-surface px-3.5 py-2.5 text-sm font-semibold text-ink transition hover:bg-surface-2 sm:px-4"><ExternalLink className="h-4 w-4" /> {t('Open')}</a>
+        </div>
+      )}
+      {canManage && (
+        <div className="mt-4 space-y-2 rounded-2xl bg-surface-2 p-3.5">
+          <Field label={t('Name in the link')} hint={t('Letters, numbers and hyphens, 3 to 40 characters, for example atlas-immobilier. Links you already shared keep working.')}>
+            <input className={inputCls} dir="ltr" autoComplete="off" autoCapitalize="none" spellCheck={false} value={slugText}
+              onChange={e => { setSlugText(e.target.value); setSlugSaved(false); setSlugError(null); }} placeholder={office.slug} />
+          </Field>
+          {slugText.trim() !== '' && (
+            <p className="text-sm text-muted" dir="ltr">{PUBLIC_SITE ? `${PUBLIC_SITE.replace(/^https?:\/\//, '')}/` : '/'}<span className="font-semibold text-ink">{newSlug || '…'}</span></p>
+          )}
+          {slugErr && <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{slugErr}</p>}
+          {slugSaved && <p className="rounded-xl bg-ok/10 px-3 py-2 text-sm font-semibold text-ok">{t('Saved.')}</p>}
+          <Btn tone="ghost" onClick={saveSlug} disabled={slugBusy || !slugOk}>{slugBusy ? '…' : t('Change name in the link')}</Btn>
         </div>
       )}
       {!link && <p className="mt-4 text-sm text-muted">{t('The address of the public site is not set yet (VITE_PUBLIC_SITE_URL, see the README), so there is no link to show.')}</p>}

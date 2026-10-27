@@ -345,4 +345,12 @@ export const AR: Record<string, string> = {
   '{n} new contacts will be added.': 'ستتم إضافة {n} جهة اتصال جديدة.',
   '{n} numbers were too short and left out.': '{n} أرقام كانت قصيرة جدا وتم تجاهلها.',
   '{n} rows without a name are skipped.': 'سيتم تجاوز {n} أسطر بدون اسم.',
+  'This name is already taken.': 'هذا الاسم مستعمل بالفعل.',
+  'Use only letters and numbers, with single hyphens between words (3 to 40 characters).': 'استعمل الحروف والأرقام فقط، مع شرطة واحدة بين الكلمات (من 3 إلى 40 حرفا).',
+  'This name cannot be used.': 'لا يمكن استعمال هذا الاسم.',
+  'The name in the link can be changed at most 5 times.': 'يمكن تغيير الاسم في الرابط 5 مرات كحد أقصى.',
+  'Change the name in the link to “{name}”? Links you already shared keep working.': 'تغيير الاسم في الرابط إلى «{name}»؟ الروابط التي شاركتها سابقا تظل تعمل.',
+  'Name in the link': 'الاسم في الرابط',
+  'Letters, numbers and hyphens, 3 to 40 characters, for example atlas-immobilier. Links you already shared keep working.': 'حروف وأرقام وشرطات، من 3 إلى 40 حرفا، مثلا atlas-immobilier. الروابط التي شاركتها سابقا تظل تعمل.',
+  'Change name in the link': 'تغيير الاسم في الرابط',
 };

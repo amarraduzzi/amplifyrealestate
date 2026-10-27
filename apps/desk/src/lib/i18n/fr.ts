@@ -345,4 +345,12 @@ export const FR: Record<string, string> = {
   '{n} new contacts will be added.': '{n} nouveaux contacts seront ajoutés.',
   '{n} numbers were too short and left out.': '{n} numéros étaient trop courts et ont été ignorés.',
   '{n} rows without a name are skipped.': '{n} lignes sans nom sont ignorées.',
+  'This name is already taken.': 'Ce nom est déjà pris.',
+  'Use only letters and numbers, with single hyphens between words (3 to 40 characters).': 'Utilisez uniquement des lettres et des chiffres, avec un seul tiret entre les mots (3 à 40 caractères).',
+  'This name cannot be used.': 'Ce nom ne peut pas être utilisé.',
+  'The name in the link can be changed at most 5 times.': 'Le nom dans le lien peut être modifié 5 fois au maximum.',
+  'Change the name in the link to “{name}”? Links you already shared keep working.': 'Remplacer le nom dans le lien par « {name} » ? Les liens déjà partagés continuent de fonctionner.',
+  'Name in the link': 'Nom dans le lien',
+  'Letters, numbers and hyphens, 3 to 40 characters, for example atlas-immobilier. Links you already shared keep working.': 'Lettres, chiffres et tirets, 3 à 40 caractères, par exemple atlas-immobilier. Les liens déjà partagés continuent de fonctionner.',
+  'Change name in the link': 'Modifier le nom dans le lien',
 };
