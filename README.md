@@ -2,7 +2,9 @@
 
 Platform voor de Marokkaanse vastgoedsector: panden, personen, mandaten en (later) leads, transacties, beheer en samenwerking tussen bemiddelaars.
 
-Stand: **etappe 1a** (databasekern), **1b-6** (desk-app: inloggen, kantoor aanmaken, panden, personen en mandaat per pand, leads met zoekopdracht en passende panden, bezichtigingen, teambeheer, taken en een Today-scherm, in het Engels) **1c** (publieke pandpagina's in Frans, Arabisch en Engels, te delen via WhatsApp) **1d** (foto's bij panden) **1e** (desk-app in Frans en Arabisch) **1f** (panden naar een lead sturen via WhatsApp) **1g** (contacten importeren), **1h** (eigen adresnaam voor de kantoorpagina) **1i** (overzicht met cijfers voor eigenaar en manager) **1j** (eerste stappen voor een nieuw kantoor) **1k** (automatische taak bij aflopende mandaten) en **1l** (plan per kantoor: 30 dagen proef, daarna betaald of alleen-lezen).
+Stand: **etappe 1 is afgerond** (1a t/m 1l). Een vastgoedkantoor kan nu werken met panden, personen, mandaten, leads, bezichtigingen, taken en team, in het Frans, Arabisch en Engels; panden online zetten en delen via WhatsApp; en heeft een plan (30 dagen proef, daarna betaald of alleen-lezen).
+
+Gebouwd per onderdeel: **1a** databasekern, **1b** desk-app (panden, personen, mandaten, leads, bezichtigingen, team, taken, Today), **1c** publieke pandpagina's, **1d** foto's, **1e** Frans en Arabisch, **1f** panden naar een lead sturen via WhatsApp, **1g** contacten importeren, **1h** eigen adresnaam, **1i** Overview, **1j** eerste stappen, **1k** automatische taak bij aflopende mandaten, **1l** plan per kantoor.
 
 ## Wat er staat
 
@@ -29,6 +31,10 @@ Stand: **etappe 1a** (databasekern), **1b-6** (desk-app: inloggen, kantoor aanma
 | Automatische taak “Renew mandate” (database + Today): bij een mandaat dat binnen 30 dagen afloopt of al verlopen is; komt niet terug als je hem sluit | klaar (1k) |
 | Plan per kantoor (`trial` 30 dagen of `active` betaald), alleen-lezen na de laatste dag, limieten voor leden en panden, tabblad Plan en banner (database + desk); jij activeert met `activate_plan` | klaar (1l) |
 | Desk-app: pagina aan/uit per pand, deellink, kantoorgegevens voor de publieke pagina | klaar (1c) |
+
+## Buiten etappe 1 (bewust nog niet gebouwd)
+
+Transacties en commissie, samenwerking tussen kantoren (Amplify Network), automatische betaling, en meldingen buiten de app (WhatsApp of e-mail naar het team).
 
 ## Ontwerpkeuzes
 
