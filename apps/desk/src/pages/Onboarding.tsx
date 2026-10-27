@@ -3,6 +3,7 @@ import { Building2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import { AmplifyLogo } from '../components/Brand';
+import { LangSwitch } from '../components/LangSwitch';
 import { Btn, Card, Field, inputCls } from '../components/ui';
 
 /** "bravo-immo" style slug plus a short random suffix, so two offices with the same name never collide. */
@@ -33,7 +34,8 @@ export function Onboarding({ onDone, onSignOut }: { onDone: () => void; onSignOu
     <div className="lg-show relative grid min-h-full place-items-center overflow-y-auto p-4">
       <span className="lg-grid pointer-events-none absolute inset-0" />
       <div className="rise relative w-full max-w-md">
-        <AmplifyLogo className="mb-6 justify-center" />
+        <AmplifyLogo className="mb-4 justify-center" />
+        <div className="mb-4 flex justify-center"><LangSwitch light /></div>
         <Card>
           <form onSubmit={submit} className="space-y-5">
             <div>

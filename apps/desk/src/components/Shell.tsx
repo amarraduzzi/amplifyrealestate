@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Building2, CalendarClock, ListChecks, LogOut, Sun, UserCog, Users } from 'lucide-react';
 import { AmplifyLogo } from './Brand';
+import { LangSwitch } from './LangSwitch';
 import { t } from '../lib/i18n';
 import type { Office } from '../lib/types';
 
@@ -31,6 +32,7 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, childr
                 </select>
               )
               : <span className="hidden max-w-[12rem] truncate text-sm font-semibold text-white/80 sm:block">{office.name}</span>}
+            <LangSwitch />
             <button onClick={onSignOut} aria-label={t('Sign out')} title={t('Sign out')}
               className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/15 hover:text-white"><LogOut className="h-4 w-4" /></button>
           </div>

@@ -41,9 +41,9 @@ Stel in Cloudflare (en in `.env.local`) ook `VITE_PUBLIC_SITE_URL` in: het adres
 
 ## Talen
 
-Engels is de basis: de Engelse tekst is de sleutel, zoals bij de andere apps.
-Frans en Arabisch (rechts naar links) komen later: vul `src/lib/i18n/fr.ts` en `src/lib/i18n/ar.ts`
-(`'English text': 'vertaling'`). Wat nog niet vertaald is, blijft Engels. Testen kan met `?lang=fr` of `?lang=ar`.
+De desk is er in Engels, Frans en Arabisch (rechts naar links). Rechtsboven (en op het inlogscherm) staat een keuze **FR / AR / EN**; de keuze wordt op dat apparaat onthouden. Testen kan ook met `?lang=fr` of `?lang=ar`.
+De Engelse tekst is de sleutel: de vertalingen staan in `src/lib/i18n/fr.ts` en `ar.ts` (`'English text': 'vertaling'`). Een tekst zonder vertaling blijft Engels. Voeg je later een tekst toe, zet er dan de vertaling bij in beide bestanden.
+De Franse en Arabische teksten zijn een zorgvuldige eerste versie: laat een moedertaalspreker ze één keer lezen. Meldingen die rechtstreeks uit de database komen (zeldzaam) kunnen Engels of Nederlands blijven.
 
 ## Cloudflare Pages (nieuw project, aparte repo)
 

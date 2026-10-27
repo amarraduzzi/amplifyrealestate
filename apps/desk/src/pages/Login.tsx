@@ -1,3 +1,4 @@
+import { LangSwitch } from '../components/LangSwitch';
 import { useState, type FormEvent } from 'react';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
@@ -34,6 +35,7 @@ export function Login() {
       <Showcase />
       <div className="lg-side relative z-10 -mt-8 grid min-w-0 flex-1 items-start justify-items-center rounded-t-[2rem] px-5 pb-8 pt-7 sm:place-items-center sm:p-6 lg:mt-0 lg:max-w-xl lg:overflow-y-auto lg:rounded-none">
         <form onSubmit={submit} className="rise w-full min-w-0 max-w-sm space-y-5">
+          <div className="flex justify-end"><LangSwitch light /></div>
           <div>
             <div className="mb-6 grid grid-cols-2 rounded-full bg-[rgb(var(--ink)/.06)] p-1 text-sm font-semibold" role="tablist">
               {(['login', 'signup'] as const).map(m => (
