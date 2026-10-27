@@ -7,6 +7,7 @@ import type { MemberRow, Office } from '../lib/types';
 import { ROLES, roleHint, roleLabel } from '../lib/labels';
 import { Btn, Card, Field, inputCls } from '../components/ui';
 import { PublicProfile } from './PublicProfile';
+import { planError } from '../lib/plan';
 
 /** The database answers with short codes; show a sentence the person understands. */
 function teamError(message: string): string {
@@ -15,7 +16,7 @@ function teamError(message: string): string {
   if (message.includes('alleen_eigenaar')) return t('Only an owner can do this with an owner.');
   if (message.includes('niet_toegestaan')) return t('You do not have permission to do this.');
   if (message.includes('lid_niet_gevonden')) return t('This person is no longer a member.');
-  return message;
+  return planError(message);
 }
 
 const roleCls: Record<OrgRole, string> = {

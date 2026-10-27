@@ -1,17 +1,17 @@
 import type { ReactNode } from 'react';
-import { BarChart3, Building2, CalendarClock, ListChecks, LogOut, Sun, UserCog, Users } from 'lucide-react';
+import { BarChart3, Building2, CalendarClock, CreditCard, ListChecks, LogOut, Sun, UserCog, Users } from 'lucide-react';
 import { AmplifyLogo } from './Brand';
 import { LangSwitch } from './LangSwitch';
 import { t } from '../lib/i18n';
 import type { Office } from '../lib/types';
 
-export type View = 'today' | 'overview' | 'properties' | 'leads' | 'viewings' | 'tasks' | 'team';
+export type View = 'today' | 'overview' | 'properties' | 'leads' | 'viewings' | 'tasks' | 'team' | 'plan';
 
 /** The overview with the numbers is for the owner and managers. */
 export const canSeeOverview = (role: Office['role']) => role === 'owner' || role === 'manager';
 
-export function Shell({ offices, office, view, onView, onPick, onSignOut, children }: {
-  offices: Office[]; office: Office; view: View; onView: (v: View) => void; onPick: (id: string) => void; onSignOut: () => void; children: ReactNode;
+export function Shell({ offices, office, view, onView, onPick, onSignOut, banner, children }: {
+  offices: Office[]; office: Office; view: View; onView: (v: View) => void; onPick: (id: string) => void; onSignOut: () => void; banner?: ReactNode; children: ReactNode;
 }) {
   const tabs: { id: View; label: string; icon: ReactNode }[] = [
     { id: 'today', label: t('Today'), icon: <Sun className="h-4 w-4" /> },
@@ -21,6 +21,7 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, childr
     { id: 'viewings', label: t('Viewings'), icon: <CalendarClock className="h-4 w-4" /> },
     { id: 'tasks', label: t('Tasks'), icon: <ListChecks className="h-4 w-4" /> },
     { id: 'team', label: t('Team'), icon: <UserCog className="h-4 w-4" /> },
+    ...(canSeeOverview(office.role) ? [{ id: 'plan' as View, label: t('Plan'), icon: <CreditCard className="h-4 w-4" /> }] : []),
   ];
   return (
     <div className="flex min-h-full flex-col">
@@ -50,6 +51,7 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, childr
           ))}
         </nav>
       </header>
+      {banner}
       <main className="flex-1">{children}</main>
     </div>
   );

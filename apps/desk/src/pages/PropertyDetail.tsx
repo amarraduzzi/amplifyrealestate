@@ -15,6 +15,7 @@ import { PhotosSection } from './PhotosSection';
 import { PublishSection } from './PublishSection';
 import { ViewingsSection } from './ViewingsSection';
 import { TasksSection } from './TasksSection';
+import { planError } from '../lib/plan';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 const when = (iso: string) =>
@@ -63,7 +64,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
     setBusy(true); setError(null);
     const { error } = await supabase.rpc('confirm_property_info', { p_property: row.id });
     setBusy(false);
-    if (error) setError(error.message); else { onChanged(); loadHistory(); }
+    if (error) setError(planError(error.message)); else { onChanged(); loadHistory(); }
   };
 
   const changeStatus = async (s: PropertyStatus) => {
@@ -71,7 +72,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
     if (s === 'withdrawn' && !window.confirm(t('Withdraw this property? It stays in your list and in the history.'))) return;
     setBusy(true); setError(null);
     const { data, error } = await supabase.from('properties').update({ status: s }).eq('id', row.id).select('id');
-    if (error) { setBusy(false); setError(error.message); return; }
+    if (error) { setBusy(false); setError(planError(error.message)); return; }
     if (!data?.length) { setBusy(false); setError(t('You do not have permission to change this property.')); return; }
     // A status change is also a fresh confirmation.
     const r = await supabase.rpc('confirm_property_info', { p_property: row.id });

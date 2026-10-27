@@ -15,6 +15,9 @@ import { Team } from './pages/Team';
 import { Tasks } from './pages/Tasks';
 import { Today } from './pages/Today';
 import { Overview } from './pages/Overview';
+import { Plan } from './pages/Plan';
+import { PlanBanner } from './components/PlanBanner';
+import { loadPlan, type PlanInfo } from './lib/plan';
 
 const ORG_KEY = 'desk-org';
 
@@ -26,6 +29,7 @@ function Workspace({ session }: { session: Session }) {
   const [offices, setOffices] = useState<Office[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<View>('today');
+  const [plan, setPlan] = useState<{ orgId: string; info: PlanInfo | null } | null>(null);
   const [orgId, setOrgId] = useState<string | null>(() => { try { return localStorage.getItem(ORG_KEY); } catch { return null; } });
 
   const load = useCallback(async () => {
@@ -40,6 +44,14 @@ function Workspace({ session }: { session: Session }) {
     setOffices(list);
   }, [session.user.id]);
   useEffect(() => { load(); }, [load]);
+
+  const activeId = offices ? (offices.find(o => o.id === orgId) ?? offices[0])?.id : undefined;
+  useEffect(() => {
+    if (!activeId) return;
+    let live = true;
+    loadPlan(activeId).then(info => { if (live) setPlan({ orgId: activeId, info }); });
+    return () => { live = false; };
+  }, [activeId]);
 
   const signOut = () => { supabase.auth.signOut(); };
   const pick = (id: string) => { setOrgId(id); try { localStorage.setItem(ORG_KEY, id); } catch { /* private mode */ } };
@@ -59,16 +71,22 @@ function Workspace({ session }: { session: Session }) {
 
   const office = offices.find(o => o.id === orgId) ?? offices[0];
   // Switching to an office where you may not see the overview: go back to Today.
-  const shown: View = view === 'overview' && !canSeeOverview(office.role) ? 'today' : view;
+  const shown: View = (view === 'overview' || view === 'plan') && !canSeeOverview(office.role) ? 'today' : view;
+  // After the last day of the plan the office is read only: the work screens see a viewer, so nothing offers a change.
+  // Team, Overview and Plan keep the real role (the owner can still remove members and see the plan).
+  const info = plan && plan.orgId === office.id ? plan.info : null;
+  const work: Office = info && !info.is_open ? { ...office, role: 'viewer' } : office;
   return (
-    <Shell offices={offices} office={office} view={shown} onView={setView} onPick={pick} onSignOut={signOut}>
-      {shown === 'today' ? <Today key={office.id} office={office} userId={session.user.id} onGo={setView} />
+    <Shell offices={offices} office={office} view={shown} onView={setView} onPick={pick} onSignOut={signOut}
+      banner={<PlanBanner plan={info} canSee={canSeeOverview(office.role)} onGo={setView} />}>
+      {shown === 'today' ? <Today key={office.id} office={work} userId={session.user.id} onGo={setView} />
         : shown === 'overview' ? <Overview key={office.id} office={office} onGo={setView} />
-        : shown === 'leads' ? <Leads key={office.id} office={office} userId={session.user.id} />
-        : shown === 'tasks' ? <Tasks key={office.id} office={office} userId={session.user.id} />
-        : shown === 'viewings' ? <Viewings key={office.id} office={office} />
+        : shown === 'leads' ? <Leads key={office.id} office={work} userId={session.user.id} />
+        : shown === 'tasks' ? <Tasks key={office.id} office={work} userId={session.user.id} />
+        : shown === 'viewings' ? <Viewings key={office.id} office={work} />
+        : shown === 'plan' ? <Plan key={office.id} office={office} />
         : shown === 'team' ? <Team key={office.id} office={office} userId={session.user.id} onSelfChanged={load} />
-        : <Properties key={office.id} office={office} userId={session.user.id} />}
+        : <Properties key={office.id} office={work} userId={session.user.id} />}
     </Shell>
   );
 }

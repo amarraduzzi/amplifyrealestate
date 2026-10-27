@@ -5,6 +5,7 @@ import { t } from '../lib/i18n';
 import type { PropertyRow } from '../lib/types';
 import { PURPOSES, TYPES, purposeLabel, statusLabel, typeLabel } from '../lib/labels';
 import { Btn, Field, Modal, inputCls } from '../components/ui';
+import { planError } from '../lib/plan';
 
 const num = (s: string) => (s.trim() === '' ? null : Number(s));
 const str = (x: number | null | undefined) => (x === null || x === undefined ? '' : String(x));
@@ -51,12 +52,12 @@ export function PropertyForm({ orgId, property, onClose, onSaved }: {
     if (!property) {
       const { error } = await supabase.from('properties').insert({ org_id: orgId, status, ...fields });
       setBusy(false);
-      if (error) setError(error.message); else onSaved();
+      if (error) setError(planError(error.message)); else onSaved();
       return;
     }
 
     const { data, error } = await supabase.from('properties').update(fields).eq('id', property.id).select('id');
-    if (error) { setBusy(false); setError(error.message); return; }
+    if (error) { setBusy(false); setError(planError(error.message)); return; }
     if (!data?.length) { setBusy(false); setError(t('You do not have permission to change this property.')); return; }
     // A new price counts as a fresh confirmation of price and availability.
     if (priceCents !== property.price_cents) {
