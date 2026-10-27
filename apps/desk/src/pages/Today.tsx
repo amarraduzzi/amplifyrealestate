@@ -71,7 +71,18 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
       setError(null);
     } catch (e) { setError(e instanceof Error ? e.message : t('Something went wrong.')); }
   }, [office.id]);
-  useEffect(() => { load(); }, [load]);
+  // Once per visit: make a task for every mandate that ends soon or has ended (idempotent). Never blocks the screen:
+  // when the database function is not installed yet, or fails, Today simply loads as before.
+  useEffect(() => {
+    let live = true;
+    (async () => {
+      if (canWrite) {
+        try { await supabase.rpc('sync_mandate_tasks', { p_org: office.id, p_label: t('Renew mandate') }); } catch { /* ignore */ }
+      }
+      if (live) load();
+    })();
+    return () => { live = false; };
+  }, [load, canWrite, office.id]);
 
   const toggle = async (x: TaskView) => {
     setBusyId(x.task.id); setError(null);

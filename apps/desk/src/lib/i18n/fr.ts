@@ -390,4 +390,5 @@ export const FR: Record<string, string> = {
   'Add one by hand, or import your contacts from a CSV file or from Excel.': 'Ajoutez-en un à la main, ou importez vos contacts depuis un fichier CSV ou Excel.',
   'Invite a colleague': 'Invitez un collègue',
   'Add team members and give each a role.': 'Ajoutez des membres à l’équipe et donnez un rôle à chacun.',
+  'Renew mandate': 'Renouveler le mandat',
 };

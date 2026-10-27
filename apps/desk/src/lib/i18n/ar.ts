@@ -390,4 +390,5 @@ export const AR: Record<string, string> = {
   'Add one by hand, or import your contacts from a CSV file or from Excel.': 'أضف واحدا يدويا، أو استورد جهات الاتصال من ملف CSV أو من Excel.',
   'Invite a colleague': 'ادعُ زميلا',
   'Add team members and give each a role.': 'أضف أعضاء الفريق وأعطِ كل واحد دورا.',
+  'Renew mandate': 'تجديد الوكالة',
 };
