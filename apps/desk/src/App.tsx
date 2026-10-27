@@ -28,13 +28,13 @@ function Workspace({ session }: { session: Session }) {
   const [orgId, setOrgId] = useState<string | null>(() => { try { return localStorage.getItem(ORG_KEY); } catch { return null; } });
 
   const load = useCallback(async () => {
-    const { data, error } = await supabase.from('memberships').select('role, organizations(id, name, city)').eq('user_id', session.user.id);
+    const { data, error } = await supabase.from('memberships').select('role, organizations(id, name, slug, city)').eq('user_id', session.user.id);
     if (error) { setError(error.message); return; }
     setError(null);
     const list: Office[] = [];
     for (const m of (data ?? []) as any[]) {
       const o = Array.isArray(m.organizations) ? m.organizations[0] : m.organizations;
-      if (o) list.push({ id: o.id, name: o.name, city: o.city, role: m.role });
+      if (o) list.push({ id: o.id, name: o.name, slug: o.slug, city: o.city, role: m.role });
     }
     setOffices(list);
   }, [session.user.id]);

@@ -2,7 +2,7 @@
 
 Platform voor de Marokkaanse vastgoedsector: panden, personen, mandaten en (later) leads, transacties, beheer en samenwerking tussen bemiddelaars.
 
-Stand: **etappe 1a** (databasekern) en **1b-6** (desk-app: inloggen, kantoor aanmaken, panden, personen en mandaat per pand, leads met zoekopdracht en passende panden, bezichtigingen, teambeheer, taken en een Today-scherm, in het Engels). Publieke pandpagina's (`apps/pages`) komen in 1c.
+Stand: **etappe 1a** (databasekern), **1b-6** (desk-app: inloggen, kantoor aanmaken, panden, personen en mandaat per pand, leads met zoekopdracht en passende panden, bezichtigingen, teambeheer, taken en een Today-scherm, in het Engels) en **1c** (publieke pandpagina's in Frans, Arabisch en Engels, te delen via WhatsApp).
 
 ## Wat er staat
 
@@ -18,14 +18,17 @@ Stand: **etappe 1a** (databasekern) en **1b-6** (desk-app: inloggen, kantoor aan
 | Desk-app: bezichtigingen (afspraak tussen lead en pand, met uitkomst) | klaar (1b-5) |
 | Desk-app: team (leden toevoegen, rol wijzigen, verwijderen) | klaar (1b-5) |
 | Desk-app: taken (deadline, verantwoordelijke, koppeling aan lead of pand) en Today-scherm | klaar (1b-6) |
-| Frans en Arabisch (RTL) | later |
-| Publieke pandpagina's | etappe 1c |
+| Publieke pandpagina's (`apps/pages`): kantoorpagina, pandpagina, WhatsApp-knop, FR/AR/EN, voorbeeld bij delen | klaar (1c) |
+| Desk-app: pagina aan/uit per pand, deellink, kantoorgegevens voor de publieke pagina | klaar (1c) |
+| Foto's bij panden | later (1d) |
+| Desk-app in Frans en Arabisch (RTL) | later |
 
 ## Ontwerpkeuzes
 
 - Elke rij hoort bij precies een organisatie; verwijzen over organisaties heen kan niet.
 - Bedragen in centimes. Panden worden nooit verwijderd (status `withdrawn`).
 - Delen tussen organisaties (Amplify Network) bestaat bewust nog niet.
+- Publieke pagina's: bezoekers hebben geen toegang tot tabellen, alleen tot twee databasefuncties (`public_office_page`, `public_property_page`). Een pand is alleen zichtbaar als de pagina bewust aanstaat, het pand beschikbaar/gereserveerd (of verhuurd/verkocht) is, en er een actief mandaat is. Het exacte adres, personen, mandaten en interne notities staan er nooit in.
 
 ## Opzetten (eenmalig)
 
@@ -38,7 +41,9 @@ Stand: **etappe 1a** (databasekern) en **1b-6** (desk-app: inloggen, kantoor aan
 5. Etappe 1b-5: plak `supabase/migrations/20261027000300_viewings_team.sql` en klik Run. Test daarna met `supabase/tests/03_viewings_team.test.sql`
    (`TESTRESULTAAT: 30 geslaagd, 0 mislukt` is goed).
 6. Etappe 1b-6: plak `supabase/migrations/20261027000400_tasks.sql` en klik Run.
+7. Etappe 1c: plak `supabase/migrations/20261027000500_public_pages.sql` en klik Run.
 
-## De app publiceren
+## De apps publiceren
 
-Zie `apps/desk/README.md` (Cloudflare Pages en Supabase-instellingen).
+- Desk (werkruimte voor je team): zie `apps/desk/README.md`.
+- Publieke pandpagina's (voor klanten): zie `apps/pages/README.md`. Dat is een tweede Cloudflare Pages-project vanuit dezelfde repo.

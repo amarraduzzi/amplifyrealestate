@@ -11,6 +11,7 @@ import { PropertyForm } from './PropertyForm';
 import { PropertyParties } from './PropertyParties';
 import { PropertyMandates } from './PropertyMandates';
 import { PropertyLeads } from './PropertyLeads';
+import { PublishSection } from './PublishSection';
 import { ViewingsSection } from './ViewingsSection';
 import { TasksSection } from './TasksSection';
 
@@ -32,6 +33,7 @@ function eventText(r: HistoryRow): string {
     case 'status': return t('Status changed from {from} to {to}', { from: status(r.old_value), to: status(r.new_value) });
     case 'price_cents': return t('Price changed from {from} to {to}', { from: price(r.old_value), to: price(r.new_value) });
     case 'info_confirmed_at': return t('Price and availability confirmed');
+    case 'is_published': return r.new_value === 'true' ? t('Public page switched on') : t('Public page switched off');
     default: return r.field;
   }
 }
@@ -142,6 +144,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
 
         <PropertyParties office={office} property={row} canWrite={canWrite} />
         <PropertyMandates office={office} property={row} canWrite={canWrite} />
+        <PublishSection office={office} property={row} canWrite={canWrite} onChanged={() => { onChanged(); loadHistory(); }} />
         <PropertyLeads office={office} property={row} />
         <ViewingsSection office={office} property={row} />
         <TasksSection office={office} userId={userId} property={row} />

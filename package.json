@@ -2,7 +2,7 @@
   "name": "amplify-vastgoed",
   "private": true,
   "type": "module",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "workspaces": ["apps/*", "packages/*"],
   "scripts": {
     "dev:desk": "npm run dev -w @vastgoed/desk",

@@ -1,6 +1,6 @@
 import type { DealPurpose, LeadStatus, OrgRole, PropertyStatus, PropertyType, TaskStatus, ViewingOutcome, ViewingStatus } from '@vastgoed/shared';
 
-export type Office = { id: string; name: string; city: string | null; role: OrgRole };
+export type Office = { id: string; name: string; slug: string; city: string | null; role: OrgRole };
 
 export type PropertyRow = {
   id: string;
@@ -20,6 +20,8 @@ export type PropertyRow = {
   furnished: boolean | null;
   description: string | null;
   info_confirmed_at: string | null;
+  is_published: boolean;
+  published_at: string | null;
   created_at: string;
   updated_at: string;
 };

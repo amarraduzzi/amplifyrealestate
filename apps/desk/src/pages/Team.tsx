@@ -6,6 +6,7 @@ import { t } from '../lib/i18n';
 import type { MemberRow, Office } from '../lib/types';
 import { ROLES, roleHint, roleLabel } from '../lib/labels';
 import { Btn, Card, Field, inputCls } from '../components/ui';
+import { PublicProfile } from './PublicProfile';
 
 /** The database answers with short codes; show a sentence the person understands. */
 function teamError(message: string): string {
@@ -121,6 +122,8 @@ export function Team({ office, userId, onSelfChanged }: { office: Office; userId
           })}
         </ul>
       )}
+
+      <PublicProfile office={office} canManage={canManage} />
 
       {canManage ? (
         <Card className="mt-6">

@@ -21,6 +21,16 @@ React + Vite + Tailwind v3, in dezelfde stijl als de andere Amplify-apps (navy e
 Nog niet: bezichtigingen en afspraken, taken, teamleden uitnodigen. Dat komt in 1b-5.
 Voor 1b-2 en 1b-3 is geen nieuwe SQL nodig. Voor 1b-4 wel: `supabase/migrations/20261027000200_leads.sql` (nieuwe tabel `leads`).
 
+## Etappe 1c: publieke pandpagina's
+
+- Op een pand staat een blok **Public page**: aanzetten, uitzetten, link kopiëren, openen en delen via WhatsApp. De taal van de link (FR, AR of EN) kies je zelf, zodat de klant de pagina in zijn eigen taal opent
+- Aanzetten kan alleen voor een beschikbaar of gereserveerd pand met een **actief mandaat**. Verloopt het mandaat, of wordt het pand concept of ingetrokken, dan verdwijnt de pagina vanzelf (bij concept/ingetrokken gaat hij ook echt uit en moet je hem later bewust opnieuw aanzetten)
+- Tab **Team** > **Public pages**: WhatsApp-nummer, telefoon en e-mail van je kantoor (komen op elke publieke pagina) en de link naar je kantooroverzicht. Alleen eigenaar en manager kunnen dit wijzigen
+- Aan- en uitzetten komt in de geschiedenis van het pand
+- Voor 1c is `supabase/migrations/20261027000500_public_pages.sql` nodig
+
+Stel in Cloudflare (en in `.env.local`) ook `VITE_PUBLIC_SITE_URL` in: het adres van de publieke site, zonder slash aan het eind (bijvoorbeeld `https://pandpagina.pages.dev`). Zonder die variabele werkt alles, maar de app kan geen links tonen.
+
 ## Talen
 
 Engels is de basis: de Engelse tekst is de sleutel, zoals bij de andere apps.
