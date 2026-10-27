@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Printer, X } from 'lucide-react';
+import { MessageCircle, Printer, X } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { getLang, t } from '../lib/i18n';
@@ -10,6 +10,8 @@ import { loadDeals, type DealView } from '../lib/deals';
 import { basisLabel, dealStageLabel, outcomeLabel, priceSuffix, purposeLabel, statusLabel, typeLabel, viewingStatusLabel } from '../lib/labels';
 import { whenText } from '../lib/dates';
 import { Btn } from '../components/ui';
+import { waLink } from '../components/ContactLinks';
+import { PUBLIC_SITE, propertyUrl, whatsappShareUrl } from '../lib/publicSite';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 const fmt = (d: string | Date, style: 'medium' | 'long', utc = false) =>
@@ -23,7 +25,7 @@ type Mandate = { id: string; owner_person_id: string | null; basis: any; status:
  * interested people, and the commission, are left out on purpose: the owner gets the activity, not the files.
  */
 export function OwnerReport({ office, property, onClose }: { office: Office; property: PropertyRow; onClose: () => void }) {
-  const [data, setData] = useState<{ viewings: ViewingView[]; deals: DealView[]; mandate: Mandate | null; owner: string | null } | null>(null);
+  const [data, setData] = useState<{ viewings: ViewingView[]; deals: DealView[]; mandate: Mandate | null; owner: { name: string; number: string | null } | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -39,10 +41,11 @@ export function OwnerReport({ office, property, onClose }: { office: Office; pro
         const today = new Date().toISOString().slice(0, 10);
         const active = ((m.data ?? []) as Mandate[]).filter(x => x.status === 'active' && (!x.valid_until || x.valid_until >= today))
           .sort((a, b) => (b.valid_until ?? '9999').localeCompare(a.valid_until ?? '9999'))[0] ?? null;
-        let owner: string | null = null;
+        let owner: { name: string; number: string | null } | null = null;
         if (active?.owner_person_id) {
-          const p = await supabase.from('people').select('full_name').eq('id', active.owner_person_id).maybeSingle();
-          owner = (p.data as { full_name: string } | null)?.full_name ?? null;
+          const p = await supabase.from('people').select('full_name, phone, whatsapp').eq('id', active.owner_person_id).maybeSingle();
+          const r = p.data as { full_name: string; phone: string | null; whatsapp: string | null } | null;
+          owner = r ? { name: r.full_name, number: r.whatsapp || r.phone } : null;
         }
         if (live) setData({ viewings: viewings.sort((a, b) => b.v.scheduled_at.localeCompare(a.v.scheduled_at)), deals, mandate: active, owner });
       } catch (e) { if (live) setError(e instanceof Error ? e.message : t('Something went wrong.')); }
@@ -55,6 +58,15 @@ export function OwnerReport({ office, property, onClose }: { office: Office; pro
   const held = v.filter(x => x.v.status === 'done').length;
   const planned = v.filter(x => x.v.status === 'scheduled').length;
   const interested = v.filter(x => x.v.outcome === 'interested' || x.v.outcome === 'offer_made').length;
+  const send = () => {
+    if (!data) return;
+    const vars = { name: data.owner?.name ?? '', title: property.title, reference: property.reference, held, planned, interested, offers: data.deals.length };
+    let text = t(data.owner ? 'Hello {name}, here is the update on {title} ({reference}): {held} viewings held, {planned} planned, {interested} interested, {offers} offers.' : 'Hello, here is the update on {title} ({reference}): {held} viewings held, {planned} planned, {interested} interested, {offers} offers.', vars);
+    if (property.is_published && PUBLIC_SITE) text += `\n${propertyUrl(office.slug, property.reference, getLang())}`;
+    text += `\n— ${office.name}`;
+    const n = data.owner?.number;
+    window.open(n ? `${waLink(n)}?text=${encodeURIComponent(text)}` : whatsappShareUrl(text), '_blank', 'noopener');
+  };
   const Tile = ({ n, label }: { n: number; label: string }) => (
     <div className="rounded-xl border border-black/10 px-3 py-2 text-center"><p className="tabular text-2xl font-bold">{n}</p><p className="text-xs">{label}</p></div>
   );
@@ -64,7 +76,10 @@ export function OwnerReport({ office, property, onClose }: { office: Office; pro
     <div className="report-overlay fixed inset-0 z-50 overflow-y-auto bg-night/60 p-2 sm:p-6">
       <div className="report-sheet pop mx-auto max-w-2xl rounded-2xl bg-white p-5 text-[#111] shadow-2xl sm:p-8">
         <div className="no-print mb-4 flex items-center justify-between gap-2">
-          <Btn tone="brand" onClick={() => window.print()}><Printer className="h-4 w-4" /> {t('Print or save as PDF')}</Btn>
+          <div className="flex flex-wrap gap-2">
+            <Btn tone="brand" onClick={() => window.print()}><Printer className="h-4 w-4" /> {t('Print or save as PDF')}</Btn>
+            <Btn onClick={send} disabled={!data}><MessageCircle className="h-4 w-4" /> {t('Send update on WhatsApp')}</Btn>
+          </div>
           <button onClick={onClose} aria-label={t('Close')} className="grid h-9 w-9 place-items-center rounded-full bg-black/5"><X className="h-5 w-5" /></button>
         </div>
 
@@ -86,7 +101,7 @@ export function OwnerReport({ office, property, onClose }: { office: Office; pro
           <H>{t('Mandate')}</H>
           {data.mandate ? (
             <p className="text-sm">
-              {[data.owner ? `${t('Owner')}: ${data.owner}` : null, basisLabel(data.mandate.basis),
+              {[data.owner ? `${t('Owner')}: ${data.owner.name}` : null, basisLabel(data.mandate.basis),
                 data.mandate.valid_until ? `${t('Valid until')} ${fmt(data.mandate.valid_until, 'medium', true)}` : null].filter(Boolean).join(' · ')}
             </p>
           ) : <p className="text-sm">{t('No active mandate.')}</p>}

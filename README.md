@@ -2,7 +2,7 @@
 
 Platform voor de Marokkaanse vastgoedsector: panden, personen, mandaten en (later) leads, transacties, beheer en samenwerking tussen bemiddelaars.
 
-Stand: **etappe 1 is afgerond** (1a t/m 1l); etappe 2 is begonnen met **2a** (deals met commissie) **2b** (WhatsApp-herinnering voor de klant en dagoverzicht voor het team) **2c** (rapport voor de eigenaar per pand) en **2d** (deals exporteren naar Excel) en **2e** (leads en panden exporteren). Een vastgoedkantoor kan nu werken met panden, personen, mandaten, leads, bezichtigingen, taken en team, in het Frans, Arabisch en Engels; panden online zetten en delen via WhatsApp; en heeft een plan (30 dagen proef, daarna betaald of alleen-lezen).
+Stand: **etappe 1 is afgerond** (1a t/m 1l); etappe 2 is begonnen met **2a** (deals met commissie) **2b** (WhatsApp-herinnering voor de klant en dagoverzicht voor het team) **2c** (rapport voor de eigenaar per pand) en **2d** (deals exporteren naar Excel) **2e** (leads en panden exporteren) en **2f** (eigenaarsupdate via WhatsApp). Een vastgoedkantoor kan nu werken met panden, personen, mandaten, leads, bezichtigingen, taken en team, in het Frans, Arabisch en Engels; panden online zetten en delen via WhatsApp; en heeft een plan (30 dagen proef, daarna betaald of alleen-lezen).
 
 Gebouwd per onderdeel: **1a** databasekern, **1b** desk-app (panden, personen, mandaten, leads, bezichtigingen, team, taken, Today), **1c** publieke pandpagina's, **1d** foto's, **1e** Frans en Arabisch, **1f** panden naar een lead sturen via WhatsApp, **1g** contacten importeren, **1h** eigen adresnaam, **1i** Overview, **1j** eerste stappen, **1k** automatische taak bij aflopende mandaten, **1l** plan per kantoor.
 
@@ -35,6 +35,7 @@ Gebouwd per onderdeel: **1a** databasekern, **1b** desk-app (panden, personen, m
 | Rapport voor de eigenaar per pand (knop "Owner report" in het pand): pand, mandaat, bezichtigingen en offertes op één pagina, afdrukken of opslaan als PDF; zonder namen van geïnteresseerden en zonder commissie. Geen SQL nodig | klaar (2c) |
 | Deals exporteren naar Excel (CSV met ; en accenten, volgt het gekozen filter), geen SQL nodig | klaar (2d) |
 | Leads en panden exporteren naar Excel (CSV, volgt filter en zoekopdracht; telefoonnummers behouden hun 0), geen SQL nodig | klaar (2e) |
+| Eigenaarsupdate via WhatsApp met één klik, vanuit het eigenaarsrapport (aantallen, link naar de pagina als die online staat; taal van de app), geen SQL nodig | klaar (2f) |
 | Desk-app: pagina aan/uit per pand, deellink, kantoorgegevens voor de publieke pagina | klaar (1c) |
 
 ## Buiten etappe 1 (bewust nog niet gebouwd)

@@ -474,4 +474,7 @@ export const FR: Record<string, string> = {
   'Budget min': 'Budget min.',
   'Budget max': 'Budget max.',
   'Last contact': 'Dernier contact',
+  'Send update on WhatsApp': 'Envoyer le point sur WhatsApp',
+  'Hello {name}, here is the update on {title} ({reference}): {held} viewings held, {planned} planned, {interested} interested, {offers} offers.': 'Bonjour {name}, voici le point sur {title} ({reference}) : {held} visites effectuées, {planned} prévues, {interested} personnes intéressées, {offers} offres.',
+  'Hello, here is the update on {title} ({reference}): {held} viewings held, {planned} planned, {interested} interested, {offers} offers.': 'Bonjour, voici le point sur {title} ({reference}) : {held} visites effectuées, {planned} prévues, {interested} personnes intéressées, {offers} offres.',
 };

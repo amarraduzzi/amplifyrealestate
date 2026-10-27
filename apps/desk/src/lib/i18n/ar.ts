@@ -474,4 +474,7 @@ export const AR: Record<string, string> = {
   'Budget min': 'الحد الأدنى للميزانية',
   'Budget max': 'الحد الأقصى للميزانية',
   'Last contact': 'آخر تواصل',
+  'Send update on WhatsApp': 'إرسال المستجدات عبر واتساب',
+  'Hello {name}, here is the update on {title} ({reference}): {held} viewings held, {planned} planned, {interested} interested, {offers} offers.': 'مرحباً {name}، إليك المستجدات حول {title} ({reference}): {held} زيارات تمت، {planned} مجدولة، {interested} مهتمين، {offers} عروض.',
+  'Hello, here is the update on {title} ({reference}): {held} viewings held, {planned} planned, {interested} interested, {offers} offers.': 'مرحباً، إليك المستجدات حول {title} ({reference}): {held} زيارات تمت، {planned} مجدولة، {interested} مهتمين، {offers} عروض.',
 };
