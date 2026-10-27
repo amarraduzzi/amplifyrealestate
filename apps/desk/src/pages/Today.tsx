@@ -9,6 +9,7 @@ import { OPEN_LEAD_STATUSES, daysSince, leadStatusCls, leadStatusLabel, viewingS
 import { daysUntil, toInputValue, todayStr, whenText } from '../lib/dates';
 import { Card } from '../components/ui';
 import { TaskItem } from '../components/TaskItem';
+import { GettingStarted } from '../components/GettingStarted';
 import { TaskForm } from './TaskForm';
 import { ViewingDetail } from './ViewingDetail';
 import type { View } from '../components/Shell';
@@ -94,6 +95,8 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
     <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
       <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Today')}</h1>
       <p className="text-sm text-muted">{dateLine}</p>
+
+      <GettingStarted office={office} onGo={onGo} />
 
       {error && <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
       {loading && !error && <p className="mt-10 text-center text-muted">…</p>}

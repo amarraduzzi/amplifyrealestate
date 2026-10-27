@@ -2,7 +2,7 @@
 
 Platform voor de Marokkaanse vastgoedsector: panden, personen, mandaten en (later) leads, transacties, beheer en samenwerking tussen bemiddelaars.
 
-Stand: **etappe 1a** (databasekern), **1b-6** (desk-app: inloggen, kantoor aanmaken, panden, personen en mandaat per pand, leads met zoekopdracht en passende panden, bezichtigingen, teambeheer, taken en een Today-scherm, in het Engels) **1c** (publieke pandpagina's in Frans, Arabisch en Engels, te delen via WhatsApp) **1d** (foto's bij panden) **1e** (desk-app in Frans en Arabisch) **1f** (panden naar een lead sturen via WhatsApp) **1g** (contacten importeren), **1h** (eigen adresnaam voor de kantoorpagina) en **1i** (overzicht met cijfers voor eigenaar en manager).
+Stand: **etappe 1a** (databasekern), **1b-6** (desk-app: inloggen, kantoor aanmaken, panden, personen en mandaat per pand, leads met zoekopdracht en passende panden, bezichtigingen, teambeheer, taken en een Today-scherm, in het Engels) **1c** (publieke pandpagina's in Frans, Arabisch en Engels, te delen via WhatsApp) **1d** (foto's bij panden) **1e** (desk-app in Frans en Arabisch) **1f** (panden naar een lead sturen via WhatsApp) **1g** (contacten importeren), **1h** (eigen adresnaam voor de kantoorpagina) **1i** (overzicht met cijfers voor eigenaar en manager) en **1j** (eerste stappen voor een nieuw kantoor).
 
 ## Wat er staat
 
@@ -25,6 +25,7 @@ Stand: **etappe 1a** (databasekern), **1b-6** (desk-app: inloggen, kantoor aanma
 | Desk-app: contacten importeren uit CSV of Excel, met controle op dubbelen | klaar (1g) |
 | Eigen adresnaam voor de kantoorpagina, oude links blijven werken | klaar (1h) |
 | Desk-app: tabblad Overview voor eigenaar en manager (panden per status, nieuwe leads, bezichtigingen, verlopen en bijna verlopen mandaten) | klaar (1i) |
+| Desk-app: kaart “Eerste stappen” op Today (contactgegevens, eerste pand, pand online, eerste lead, collega uitnodigen); verdwijnt vanzelf of met een kruisje | klaar (1j) |
 | Desk-app: pagina aan/uit per pand, deellink, kantoorgegevens voor de publieke pagina | klaar (1c) |
 
 ## Ontwerpkeuzes
