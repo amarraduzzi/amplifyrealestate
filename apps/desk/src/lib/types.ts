@@ -1,4 +1,4 @@
-import type { DealPurpose, LeadStatus, OrgRole, PropertyStatus, PropertyType } from '@vastgoed/shared';
+import type { DealPurpose, LeadStatus, OrgRole, PropertyStatus, PropertyType, ViewingOutcome, ViewingStatus } from '@vastgoed/shared';
 
 export type Office = { id: string; name: string; city: string | null; role: OrgRole };
 
@@ -54,3 +54,18 @@ export type LeadRow = {
   created_at: string;
   updated_at: string;
 };
+
+export type ViewingRow = {
+  id: string;
+  org_id: string;
+  lead_id: string;
+  property_id: string;
+  scheduled_at: string;
+  status: ViewingStatus;
+  outcome: ViewingOutcome | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MemberRow = { user_id: string; email: string; role: OrgRole; created_at: string };

@@ -1,10 +1,10 @@
 import type { ReactNode } from 'react';
-import { Building2, LogOut, Users } from 'lucide-react';
+import { Building2, CalendarClock, LogOut, UserCog, Users } from 'lucide-react';
 import { AmplifyLogo } from './Brand';
 import { t } from '../lib/i18n';
 import type { Office } from '../lib/types';
 
-export type View = 'properties' | 'leads';
+export type View = 'properties' | 'leads' | 'viewings' | 'team';
 
 export function Shell({ offices, office, view, onView, onPick, onSignOut, children }: {
   offices: Office[]; office: Office; view: View; onView: (v: View) => void; onPick: (id: string) => void; onSignOut: () => void; children: ReactNode;
@@ -12,6 +12,8 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, childr
   const tabs: { id: View; label: string; icon: ReactNode }[] = [
     { id: 'properties', label: t('Properties'), icon: <Building2 className="h-4 w-4" /> },
     { id: 'leads', label: t('Leads'), icon: <Users className="h-4 w-4" /> },
+    { id: 'viewings', label: t('Viewings'), icon: <CalendarClock className="h-4 w-4" /> },
+    { id: 'team', label: t('Team'), icon: <UserCog className="h-4 w-4" /> },
   ];
   return (
     <div className="flex min-h-full flex-col">
@@ -31,10 +33,10 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, childr
               className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/15 hover:text-white"><LogOut className="h-4 w-4" /></button>
           </div>
         </div>
-        <nav className="flex gap-1" aria-label={t('Sections')}>
+        <nav className="-mx-4 flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden" aria-label={t('Sections')}>
           {tabs.map(x => (
             <button key={x.id} onClick={() => onView(x.id)} aria-current={view === x.id ? 'page' : undefined}
-              className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${view === x.id ? 'bg-white text-night' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}>
+              className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${view === x.id ? 'bg-white text-night' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}>
               {x.icon}{x.label}
             </button>
           ))}

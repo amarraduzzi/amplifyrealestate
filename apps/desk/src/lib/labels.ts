@@ -1,4 +1,4 @@
-import type { DealPurpose, LeadStatus, MandateBasis, MandateStatus, PartyRole, PropertyStatus, PropertyType } from '@vastgoed/shared';
+import type { DealPurpose, LeadStatus, MandateBasis, MandateStatus, OrgRole, PartyRole, PropertyStatus, PropertyType, ViewingOutcome, ViewingStatus } from '@vastgoed/shared';
 import { t } from './i18n';
 
 export const PURPOSES: DealPurpose[] = ['sale', 'rent_long', 'rent_short'];
@@ -71,3 +71,39 @@ export const leadStatusCls: Record<LeadStatus, string> = {
   won: 'bg-ink text-bg',
   lost: 'bg-surface-3 text-muted',
 };
+
+export const VIEWING_STATUSES: ViewingStatus[] = ['scheduled', 'done', 'no_show', 'cancelled'];
+
+export const viewingStatusLabel = (s: ViewingStatus) =>
+  t(({ scheduled: 'Scheduled', done: 'Done', no_show: 'No-show', cancelled: 'Cancelled' } as const)[s]);
+
+export const viewingStatusCls: Record<ViewingStatus, string> = {
+  scheduled: 'bg-qr/10 text-qr',
+  done: 'bg-ok/10 text-ok',
+  no_show: 'bg-warn/10 text-warn',
+  cancelled: 'bg-surface-3 text-muted',
+};
+
+export const VIEWING_OUTCOMES: ViewingOutcome[] = ['interested', 'offer_made', 'not_interested'];
+
+export const outcomeLabel = (o: ViewingOutcome) =>
+  t(({ interested: 'Interested', not_interested: 'Not interested', offer_made: 'Made an offer' } as const)[o]);
+
+export const outcomeCls: Record<ViewingOutcome, string> = {
+  interested: 'bg-ok/10 text-ok',
+  offer_made: 'bg-ink text-bg',
+  not_interested: 'bg-surface-3 text-muted',
+};
+
+export const ROLES: OrgRole[] = ['owner', 'manager', 'agent', 'viewer'];
+
+export const roleLabel = (r: OrgRole) =>
+  t(({ owner: 'Owner', manager: 'Manager', agent: 'Agent', viewer: 'Viewer' } as const)[r]);
+
+export const roleHint = (r: OrgRole) =>
+  t(({
+    owner: 'Everything, including managing the team',
+    manager: 'Edit everything and manage the team',
+    agent: 'Add and edit properties, leads and viewings',
+    viewer: 'View only',
+  } as const)[r]);

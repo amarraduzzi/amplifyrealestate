@@ -1,13 +1,21 @@
 import { createPortal } from 'react-dom';
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { t } from '../lib/i18n';
 
+// Open modals, last one on top: Escape only closes the top one (a viewing opened from a lead, for example).
+const openModals: symbol[] = [];
+
 export function Modal({ title, onClose, children, footer }: { title: ReactNode; onClose: () => void; children: ReactNode; footer?: ReactNode }) {
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
   useEffect(() => {
-    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k);
-  }, [onClose]);
+    const id = Symbol('modal');
+    openModals.push(id);
+    const k = (e: KeyboardEvent) => { if (e.key === 'Escape' && openModals[openModals.length - 1] === id) closeRef.current(); };
+    window.addEventListener('keydown', k);
+    return () => { window.removeEventListener('keydown', k); const i = openModals.indexOf(id); if (i >= 0) openModals.splice(i, 1); };
+  }, []);
   return createPortal((
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-night/50 p-2 backdrop-blur-[2px] sm:p-3" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div role="dialog" className="pop flex max-h-full w-full max-w-xl flex-col overflow-hidden rounded-2xl bg-surface shadow-2xl sm:rounded-3xl">

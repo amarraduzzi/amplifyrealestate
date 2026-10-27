@@ -10,6 +10,8 @@ import { Login } from './pages/Login';
 import { Onboarding } from './pages/Onboarding';
 import { Properties } from './pages/Properties';
 import { Leads } from './pages/Leads';
+import { Viewings } from './pages/Viewings';
+import { Team } from './pages/Team';
 
 const ORG_KEY = 'desk-org';
 
@@ -55,8 +57,9 @@ function Workspace({ session }: { session: Session }) {
   const office = offices.find(o => o.id === orgId) ?? offices[0];
   return (
     <Shell offices={offices} office={office} view={view} onView={setView} onPick={pick} onSignOut={signOut}>
-      {view === 'leads'
-        ? <Leads key={office.id} office={office} />
+      {view === 'leads' ? <Leads key={office.id} office={office} />
+        : view === 'viewings' ? <Viewings key={office.id} office={office} />
+        : view === 'team' ? <Team key={office.id} office={office} userId={session.user.id} onSelfChanged={load} />
         : <Properties key={office.id} office={office} userId={session.user.id} />}
     </Shell>
   );

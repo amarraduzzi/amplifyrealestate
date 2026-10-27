@@ -12,6 +12,7 @@ import { ContactLinks } from '../components/ContactLinks';
 import { ContactAge } from '../components/ContactAge';
 import { budgetText, criteriaText } from '../components/leadText';
 import { LeadForm } from './LeadForm';
+import { ViewingsSection } from './ViewingsSection';
 
 export function LeadDetail({ office, lead, person, matches, onChanged, onClose }: {
   office: Office; lead: LeadRow; person: PersonRow | undefined; matches: MatchProp[]; onChanged: () => void; onClose: () => void;
@@ -85,6 +86,8 @@ export function LeadDetail({ office, lead, person, matches, onChanged, onClose }
         )}
 
         {error && <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
+
+        <ViewingsSection office={office} lead={lead} onChanged={onChanged} />
 
         <div>
           <h3 className="mb-2 text-sm font-semibold">{t('Matching properties')} <span className="tabular opacity-60">{matches.length}</span></h3>
