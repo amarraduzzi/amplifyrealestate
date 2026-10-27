@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Bath, BedDouble, Pencil, Ruler, ShieldCheck } from 'lucide-react';
+import { Bath, BedDouble, FileText, Pencil, Ruler, ShieldCheck } from 'lucide-react';
 import { formatMad, type PropertyStatus } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { getLang, t } from '../lib/i18n';
@@ -13,6 +13,7 @@ import { PropertyMandates } from './PropertyMandates';
 import { PropertyLeads } from './PropertyLeads';
 import { PhotosSection } from './PhotosSection';
 import { PublishSection } from './PublishSection';
+import { OwnerReport } from './OwnerReport';
 import { ViewingsSection } from './ViewingsSection';
 import { TasksSection } from './TasksSection';
 import { planError } from '../lib/plan';
@@ -48,6 +49,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+  const [report, setReport] = useState(false);
 
   const loadHistory = useCallback(async () => {
     const { data, error } = await supabase.from('property_status_history')
@@ -92,6 +94,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
   return (
     <Modal title={<span className="block truncate">{row.title}</span>} onClose={onClose}
       footer={<div className="flex justify-end gap-2">
+        <Btn onClick={() => setReport(true)}><FileText className="h-4 w-4" /> {t('Owner report')}</Btn>
         {canWrite && <Btn onClick={() => setEditing(true)}><Pencil className="h-4 w-4" /> {t('Edit')}</Btn>}
         <Btn tone="brand" onClick={onClose}>{t('Close')}</Btn>
       </div>}>
@@ -144,6 +147,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
 
         {error && <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
 
+        {report && <OwnerReport office={office} property={row} onClose={() => setReport(false)} />}
         <PropertyParties office={office} property={row} canWrite={canWrite} />
         <PropertyMandates office={office} property={row} canWrite={canWrite} />
         <PhotosSection office={office} property={row} canWrite={canWrite} onChanged={onChanged} />

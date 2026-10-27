@@ -73,3 +73,11 @@ html, body { overflow-x: hidden; }
   [role="tablist"].flex > * { flex-shrink: 0; white-space: nowrap; }
 }
 fieldset { min-width: 0; }
+
+/* Owner report: when printing, show only the report sheet. */
+@media print {
+  #root, .no-print { display: none !important; }
+  body { background: #fff !important; }
+  .report-overlay { position: static !important; display: block !important; background: none !important; padding: 0 !important; overflow: visible !important; }
+  .report-sheet { box-shadow: none !important; max-width: none !important; padding: 0 !important; animation: none !important; }
+}
