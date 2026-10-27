@@ -19,11 +19,15 @@ Bezoekers hebben **geen** toegang tot tabellen. De site roept alleen `public_off
 - pand: titel, type, doel, status, prijs, wijk en stad, kamers, oppervlakte, gemeubileerd, beschrijving, "laatst bevestigd"
 - kantoor: naam, stad, WhatsApp, telefoon, e-mail (die je zelf invult onder Team > Public pages)
 
+- foto's (etappe 1d): de omslagfoto in de lijst, alle foto's als galerij op de pandpagina (swipen, op volle grootte openen)
+
 Nooit: exact adres, eigenaar of andere personen, mandaten, interne notities, leads, taken.
 
 Een pand is alleen zichtbaar als **alle drie** kloppen: de pagina staat aan (per pand), de status is beschikbaar, gereserveerd, verhuurd of verkocht, en er is een actief mandaat. Een verhuurd of verkocht pand blijft bereikbaar met een melding, zodat een oude WhatsApp-link niet op een foutpagina uitkomt.
 
 ## Voorbeeld bij delen via WhatsApp
+
+Heeft het pand foto's, dan is de omslagfoto (klein formaat, snel te laden) het plaatje in het voorbeeld; anders de standaardafbeelding.
 
 WhatsApp maakt het voorbeeld (titel, prijs) uit de HTML, zonder JavaScript uit te voeren. Daarom staat er een kleine worker in `public/_worker.js` die voor `/{kantoor}/{referentie}` de gegevens opzoekt en in de HTML zet. Gaat er iets mis (database onbereikbaar), dan krijgt de bezoeker gewoon de normale pagina. Zonder worker werkt de site ook, alleen is het voorbeeld dan algemeen ("Amplify Real Estate").
 

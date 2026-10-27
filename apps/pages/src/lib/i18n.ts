@@ -83,6 +83,11 @@ const FR: Record<string, string> = {
   'Open the link your agent sent you to see a property.': 'Ouvrez le lien envoyé par votre agent pour voir un bien.',
   'Moroccan real estate, shared simply.': 'L’immobilier au Maroc, partagé simplement.',
   'Language': 'Langue',
+  'Photos': 'Photos',
+  'Photo {i} of {n}': 'Photo {i} sur {n}',
+  'Previous': 'Précédent',
+  'Next': 'Suivant',
+  'Close': 'Fermer',
 };
 
 const AR: Record<string, string> = {
@@ -128,6 +133,11 @@ const AR: Record<string, string> = {
   'Open the link your agent sent you to see a property.': 'افتح الرابط الذي أرسله لك الوكيل لعرض العقار.',
   'Moroccan real estate, shared simply.': 'العقار بالمغرب، بطريقة مبسطة.',
   'Language': 'اللغة',
+  'Photos': 'الصور',
+  'Photo {i} of {n}': 'الصورة {i} من {n}',
+  'Previous': 'السابق',
+  'Next': 'التالي',
+  'Close': 'إغلاق',
 };
 
 export function t(en: string, vars?: Record<string, string | number>): string {

@@ -31,6 +31,14 @@ Voor 1b-2 en 1b-3 is geen nieuwe SQL nodig. Voor 1b-4 wel: `supabase/migrations/
 
 Stel in Cloudflare (en in `.env.local`) ook `VITE_PUBLIC_SITE_URL` in: het adres van de publieke site, zonder slash aan het eind (bijvoorbeeld `https://pandpagina.pages.dev`). Zonder die variabele werkt alles, maar de app kan geen links tonen.
 
+## Etappe 1d: foto's
+
+- Op een pand staat een blok **Photos**: meerdere foto's tegelijk toevoegen (maximaal 20), omslagfoto kiezen (ster), verwijderen (prullenbak). De eerste foto wordt automatisch de omslag
+- Elke foto wordt in de browser verkleind (lange zijde 1600 px, JPEG) plus een klein voorbeeld van 480 px, zodat de publieke pagina ook op mobiel data snel laadt
+- Een viewer ziet de foto's maar kan niets wijzigen
+- Foto's staan in Supabase Storage (bucket `property-photos`, wordt door de SQL aangemaakt). Ze verschijnen alleen op de publieke pagina als die pagina online is
+- Voor 1d is `supabase/migrations/20261027000600_photos.sql` nodig. Er zijn geen nieuwe variabelen
+
 ## Talen
 
 Engels is de basis: de Engelse tekst is de sleutel, zoals bij de andere apps.

@@ -11,6 +11,7 @@ import { PropertyForm } from './PropertyForm';
 import { PropertyParties } from './PropertyParties';
 import { PropertyMandates } from './PropertyMandates';
 import { PropertyLeads } from './PropertyLeads';
+import { PhotosSection } from './PhotosSection';
 import { PublishSection } from './PublishSection';
 import { ViewingsSection } from './ViewingsSection';
 import { TasksSection } from './TasksSection';
@@ -144,6 +145,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
 
         <PropertyParties office={office} property={row} canWrite={canWrite} />
         <PropertyMandates office={office} property={row} canWrite={canWrite} />
+        <PhotosSection office={office} property={row} canWrite={canWrite} onChanged={onChanged} />
         <PublishSection office={office} property={row} canWrite={canWrite} onChanged={() => { onChanged(); loadHistory(); }} />
         <PropertyLeads office={office} property={row} />
         <ViewingsSection office={office} property={row} />

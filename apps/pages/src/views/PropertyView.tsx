@@ -8,6 +8,7 @@ import { t } from '../lib/i18n';
 import { Link } from '../lib/router';
 import { Layout } from '../components/Layout';
 import { ContactBar } from '../components/ContactBar';
+import { Gallery } from '../components/Gallery';
 import { PropertyIcon } from '../components/PropertyIcon';
 import { Failed, Loading, NotFound } from './States';
 
@@ -59,6 +60,8 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
           </p>
           <p className="tabular mt-4 text-xs text-white/55">{t('Reference')}: <span dir="ltr">{p.reference}</span></p>
         </section>
+
+        {p.photos && p.photos.length > 0 && <Gallery photos={p.photos} title={p.title} />}
 
         {banner && (
           <p className="flex items-start gap-2 rounded-2xl bg-warn/10 px-4 py-3 text-sm font-semibold text-warn"><Info className="mt-0.5 h-4 w-4 shrink-0" />{banner}</p>

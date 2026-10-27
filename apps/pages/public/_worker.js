@@ -72,7 +72,8 @@ async function metaFor(parts, lang, env) {
     const title = [p.status !== 'available' ? w.status[p.status] : null, p.title].filter(Boolean).join(' · ');
     const description = [price(p.price_cents, p.purpose, w), `${w.types[p.property_type] || ''} ${w.purposes[p.purpose] || ''}`.trim(), place, d.office.name]
       .filter(Boolean).join(' · ');
-    return { found: true, title, description };
+    const image = p.photos && p.photos[0] ? `${String(env.VITE_SUPABASE_URL).replace(/\/+$/, '')}/storage/v1/object/public/property-photos/${p.photos[0]}_t.jpg` : null;
+    return { found: true, title, description, image };
   }
   return { found: false };
 }
@@ -109,7 +110,7 @@ export default {
       .on('meta[name="description"]', set('content', meta.description))
       .on('meta[property="og:title"]', set('content', meta.title))
       .on('meta[property="og:description"]', set('content', meta.description))
-      .on('meta[property="og:image"]', set('content', `${url.origin}/og.png`))
+      .on('meta[property="og:image"]', set('content', meta.image || `${url.origin}/og.png`))
       .on('head', { element(e) { e.append(`<meta property="og:url" content="${url.origin}${url.pathname.replace(/[<>"&]/g, '')}">`, { html: true }); } })
       .transform(res);
   },

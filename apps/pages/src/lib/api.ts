@@ -9,14 +9,18 @@ export type PublicCard = {
   reference: string; title: string; property_type: PropertyType; purpose: DealPurpose; status: PropertyStatus;
   price_cents: number | null; currency: string; city: string | null; neighborhood: string | null;
   bedrooms: number | null; bathrooms: number | null; area_m2: number | null;
+  cover?: string | null;
 };
-export type PublicProperty = PublicCard & { furnished: boolean | null; description: string | null; info_confirmed_at: string | null; published_at: string | null };
+export type PublicProperty = PublicCard & { furnished: boolean | null; description: string | null; info_confirmed_at: string | null; published_at: string | null; photos?: string[] };
 
 export type OfficePage = { office: PublicOffice; listings: PublicCard[] };
 export type PropertyPage = { office: PublicOffice; property: PublicProperty };
 
 const BASE = ((import.meta.env.VITE_SUPABASE_URL as string | undefined) ?? '').replace(/\/+$/, '');
 const KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ?? '';
+
+/** Public address of a photo. `base` comes from the database; the small version ends in _t. */
+export const photoUrl = (base: string, small = false) => `${BASE}/storage/v1/object/public/property-photos/${base}${small ? '_t' : ''}.jpg`;
 
 export const apiConfigured = Boolean(BASE && KEY);
 

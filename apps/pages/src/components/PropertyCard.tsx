@@ -1,6 +1,6 @@
 import { Bath, BedDouble, MapPin, Ruler } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
-import type { PublicCard } from '../lib/api';
+import { photoUrl, type PublicCard } from '../lib/api';
 import { placeText, priceSuffix, purposeLabel, statusCls, statusLabel, typeLabel } from '../lib/format';
 import { Link } from '../lib/router';
 import { t } from '../lib/i18n';
@@ -11,7 +11,9 @@ export function PropertyCard({ slug, p }: { slug: string; p: PublicCard }) {
   return (
     <Link to={`/${slug}/${encodeURIComponent(p.reference)}`}
       className="card group flex gap-3.5 rounded-2xl p-3.5 transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand sm:p-4">
-      <span className="night grid h-16 w-16 shrink-0 place-items-center rounded-xl sm:h-20 sm:w-20"><PropertyIcon type={p.property_type} className="h-7 w-7 text-white/90 sm:h-8 sm:w-8" /></span>
+      {p.cover
+        ? <img src={photoUrl(p.cover, true)} alt="" loading="lazy" width={80} height={80} className="h-16 w-16 shrink-0 rounded-xl bg-surface-3 object-cover sm:h-20 sm:w-20" />
+        : <span className="night grid h-16 w-16 shrink-0 place-items-center rounded-xl sm:h-20 sm:w-20"><PropertyIcon type={p.property_type} className="h-7 w-7 text-white/90 sm:h-8 sm:w-8" /></span>}
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-1.5">
           <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-muted">{purposeLabel(p.purpose)}</span>
