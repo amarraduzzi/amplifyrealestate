@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { KeyRound, Plus, Search } from 'lucide-react';
+import { Download, KeyRound, Plus, Search } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { t } from '../lib/i18n';
 import type { LeaseStatus, Office } from '../lib/types';
@@ -9,6 +9,7 @@ import { LEASE_STATUSES, leaseStatusCls, leaseStatusLabel } from '../lib/labels'
 import { Btn, Card, inputCls } from '../components/ui';
 import { LeaseForm } from './LeaseForm';
 import { LeaseDetail } from './LeaseDetail';
+import { downloadCsv, leasesCsv } from '../lib/exportCsv';
 
 type Filter = 'all' | LeaseStatus;
 
@@ -81,7 +82,10 @@ export function Leases({ office }: { office: Office }) {
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Rentals')}</h1>
           <p className="text-sm text-muted">{t('{n} in total', { n: counts.all })}</p>
         </div>
-        {canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Start a lease')}</Btn>}
+        <div className="flex flex-wrap gap-2">
+          {shown.length > 0 && <Btn tone="ghost" onClick={() => downloadCsv(`rentals-${new Date().toISOString().slice(0, 10)}.csv`, leasesCsv(shown, open))}><Download className="h-4 w-4" /> {t('Export to Excel')}</Btn>}
+          {canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Start a lease')}</Btn>}
+        </div>
       </div>
 
       {error && <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}

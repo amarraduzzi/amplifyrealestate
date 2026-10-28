@@ -636,4 +636,7 @@ export const AR: Record<string, string> = {
   '{n} months added': 'تمت إضافة {n} أشهر',
   'No new months to add.': 'لا توجد أشهر جديدة لإضافتها.',
   'Use this for a lease that started before it was added to the app. Months already in the list are kept.': 'لعقد بدأ قبل إضافته إلى التطبيق. الأشهر الموجودة في القائمة تبقى كما هي.',
+  'Rent': 'الكراء',
+  'Overdue months': 'أشهر متأخرة',
+  'Overdue amount': 'المبلغ المتأخر',
 };

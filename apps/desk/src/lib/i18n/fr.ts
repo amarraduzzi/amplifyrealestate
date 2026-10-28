@@ -636,4 +636,7 @@ export const FR: Record<string, string> = {
   '{n} months added': '{n} mois ajoutés',
   'No new months to add.': 'Aucun nouveau mois à ajouter.',
   'Use this for a lease that started before it was added to the app. Months already in the list are kept.': 'Pour un bail commencé avant son ajout dans l’application. Les mois déjà dans la liste sont conservés.',
+  'Rent': 'Loyer',
+  'Overdue months': 'Mois en retard',
+  'Overdue amount': 'Montant en retard',
 };

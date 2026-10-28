@@ -1,6 +1,9 @@
 import { t } from './i18n';
 import { dealStageLabel, leadStatusLabel, purposeLabel, statusLabel, typeLabel } from './labels';
 import type { DealView } from './deals';
+import type { LeaseView } from './leases';
+import { leaseStatusLabel } from './labels';
+import { isOverdue, type PaymentRow } from './payments';
 import { ourShareCents, sharedPct } from './splits';
 import type { LeadRow, PersonRow, PropertyRow } from './types';
 
@@ -53,6 +56,19 @@ export function leadsCsv(rows: LeadRow[], people: Record<string, PersonRow>): st
       return [p?.full_name, phone(p?.phone), phone(p?.whatsapp), p?.email, leadStatusLabel(l.status), purposeLabel(l.purpose), l.city,
         l.neighborhoods.join(', '), money(l.budget_min_cents), money(l.budget_max_cents), day(l.last_contact_at), l.notes];
     }));
+}
+
+/** The leases with what is overdue per lease (unpaid and past the due date). */
+export function leasesCsv(rows: LeaseView[], open: PaymentRow[]): string {
+  const late = new Map<string, { n: number; cents: number }>();
+  for (const p of open) if (isOverdue(p)) { const x = late.get(p.lease_id) ?? { n: 0, cents: 0 }; x.n++; x.cents += p.amount_cents; late.set(p.lease_id, x); }
+  return toCsv(
+    [t('Reference'), t('Property'), t('Tenant'), t('Phone'), t('Status'), t('Rent'), t('Deposit'), t('Rent is due on day'), t('Start date'), t('End date'), t('Overdue months'), t('Overdue amount'), t('Notes')],
+    rows.map(({ l, person, property }) => [
+      property?.reference, property?.title, person?.full_name, phone(person?.whatsapp || person?.phone), leaseStatusLabel(l.status),
+      money(l.rent_cents), money(l.deposit_cents), l.payment_day, day(l.start_date), day(l.end_date),
+      late.get(l.id)?.n ?? 0, money(late.get(l.id)?.cents ?? 0), l.notes,
+    ]));
 }
 
 export function downloadCsv(name: string, text: string) {
