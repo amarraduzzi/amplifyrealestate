@@ -2,7 +2,7 @@
 
 Platform voor de Marokkaanse vastgoedsector: panden, personen, mandaten en (later) leads, transacties, beheer en samenwerking tussen bemiddelaars.
 
-Stand: **etappe 1 is afgerond** (1a t/m 1l); etappe 2 is begonnen met **2a** (deals met commissie) **2b** (WhatsApp-herinnering voor de klant en dagoverzicht voor het team) **2c** (rapport voor de eigenaar per pand) en **2d** (deals exporteren naar Excel) **2e** (leads en panden exporteren), **2f** (eigenaarsupdate via WhatsApp) en **2g** (databasetest voor deals) **2h** (documenten bij een deal) en **3a** (huurovereenkomsten), **3b** (huurbetalingen), **3c** (onderhoud) en **3d** (achterstand op Today); **4a** (eigenaarsrapport met huur en reparaties) **4b** (commissie delen met een andere makelaar) **4c** (eerdere huurmaanden achteraf invullen) **4d** (huurovereenkomsten exporteren naar Excel) en **5a** (Amplify Network: samenwerken met andere kantoren) en **6b** (alle teksten en foutmeldingen in het Frans en Arabisch nagelopen). Een vastgoedkantoor kan nu werken met panden, personen, mandaten, leads, bezichtigingen, taken en team, in het Frans, Arabisch en Engels; panden online zetten en delen via WhatsApp; en heeft een plan (30 dagen proef, daarna betaald of alleen-lezen).
+Stand: **etappe 0 (repo compleet en demo-kantoor)** en **etappe 1 zijn afgerond** (1a t/m 1l); etappe 2 is begonnen met **2a** (deals met commissie) **2b** (WhatsApp-herinnering voor de klant en dagoverzicht voor het team) **2c** (rapport voor de eigenaar per pand) en **2d** (deals exporteren naar Excel) **2e** (leads en panden exporteren), **2f** (eigenaarsupdate via WhatsApp) en **2g** (databasetest voor deals) **2h** (documenten bij een deal) en **3a** (huurovereenkomsten), **3b** (huurbetalingen), **3c** (onderhoud) en **3d** (achterstand op Today); **4a** (eigenaarsrapport met huur en reparaties) **4b** (commissie delen met een andere makelaar) **4c** (eerdere huurmaanden achteraf invullen) **4d** (huurovereenkomsten exporteren naar Excel) en **5a** (Amplify Network: samenwerken met andere kantoren) en **6b** (alle teksten en foutmeldingen in het Frans en Arabisch nagelopen). Een vastgoedkantoor kan nu werken met panden, personen, mandaten, leads, bezichtigingen, taken en team, in het Frans, Arabisch en Engels; panden online zetten en delen via WhatsApp; en heeft een plan (30 dagen proef, daarna betaald of alleen-lezen).
 
 Gebouwd per onderdeel: **1a** databasekern, **1b** desk-app (panden, personen, mandaten, leads, bezichtigingen, team, taken, Today), **1c** publieke pandpagina's, **1d** foto's, **1e** Frans en Arabisch, **1f** panden naar een lead sturen via WhatsApp, **1g** contacten importeren, **1h** eigen adresnaam, **1i** Overview, **1j** eerste stappen, **1k** automatische taak bij aflopende mandaten, **1l** plan per kantoor.
 
@@ -14,7 +14,7 @@ Gebouwd per onderdeel: **1a** databasekern, **1b** desk-app (panden, personen, m
 | Personen, panden, betrokkenen per pand, mandaten | klaar |
 | Onveranderlijke geschiedenis (aanmaken, status, prijs, "laatst bevestigd") | klaar |
 | Beveiliging per organisatie (RLS + samengestelde foreign keys) | klaar |
-| Tests (31 + 13 + 30 controles in drie SQL-bestanden; taken zijn apart getest) | klaar |
+| Tests (elf SQL-bestanden in `supabase/tests`, elk eindigt met TESTRESULTAAT) | klaar |
 | Desk-app: inloggen, kantoor aanmaken, panden tonen en toevoegen (EN) | klaar (1b-1) |
 | Desk-app: pand openen en wijzigen, personen, leads | klaar (1b-2 t/m 1b-4) |
 | Desk-app: bezichtigingen (afspraak tussen lead en pand, met uitkomst) | klaar (1b-5) |
@@ -52,15 +52,15 @@ Gebouwd per onderdeel: **1a** databasekern, **1b** desk-app (panden, personen, m
 
 Gebruikershandleiding voor het team (Frans, één pagina): `docs/guide-fr.md`.
 
-## Buiten etappe 1 (bewust nog niet gebouwd)
+## Bewust nog niet gebouwd
 
-Verdeling van de commissie tussen twee kantoren die allebei in de app zitten (nu leg je die vast als contact in de deal), automatische betaling, en automatische meldingen (zelf versturen vanuit de app kan al via WhatsApp; automatisch vraagt een WhatsApp Business-koppeling).
+Verdeling van de commissie tussen twee kantoren die allebei in de app zitten (nu leg je die vast als contact in de deal, gepland in 11a), automatische betaling, en automatische meldingen (zelf versturen vanuit de app kan al via WhatsApp; automatisch vraagt een WhatsApp Business-koppeling).
 
 ## Ontwerpkeuzes
 
 - Elke rij hoort bij precies een organisatie; verwijzen over organisaties heen kan niet.
 - Bedragen in centimes. Panden worden nooit verwijderd (status `withdrawn`).
-- Delen tussen organisaties (Amplify Network) bestaat bewust nog niet.
+- Delen tussen organisaties loopt alleen via het Amplify Network (5a) en alleen via databasefuncties: een partner leest nooit rechtstreeks de tabellen van een ander kantoor.
 - Publieke pagina's: bezoekers hebben geen toegang tot tabellen, alleen tot twee databasefuncties (`public_office_page`, `public_property_page`). Een pand is alleen zichtbaar als de pagina bewust aanstaat, het pand beschikbaar/gereserveerd (of verhuurd/verkocht) is, en er een actief mandaat is. Het exacte adres, personen, mandaten en interne notities staan er nooit in.
 
 ## Opzetten (eenmalig)
@@ -80,7 +80,7 @@ Verdeling van de commissie tussen twee kantoren die allebei in de app zitten (nu
 
 10. Etappe 1l: plak `supabase/migrations/20261027000900_subscription.sql` en klik Run. Test daarna met `supabase/tests/05_subscription.test.sql` (`TESTRESULTAAT: 33 geslaagd, 0 mislukt` is goed). Bestaande kantoren krijgen vandaag + 30 dagen proef.
 
-11. Etappe 2a: plak `supabase/migrations/20261027001000_deals.sql` en klik Run. Test daarna met `supabase/tests/06_deals.test.sql` (`TESTRESULTAAT: 26 geslaagd, 0 mislukt` is goed).
+11. Etappe 2a: plak `supabase/migrations/20261027001000_deals.sql` en klik Run. Test daarna met `supabase/tests/06_deals.test.sql` (`TESTRESULTAAT: 12 geslaagd, 0 mislukt` is goed).
 12. Etappe 2h: plak `supabase/migrations/20261027001100_deal_documents.sql` en klik Run. Test daarna met `supabase/tests/07_deal_documents.test.sql` (`TESTRESULTAAT: 22 geslaagd, 0 mislukt` is goed). Er komt een prive opslagbucket `deal-documents` bij; die is niet openbaar.
 13. Etappe 3a: plak `supabase/migrations/20261027001200_leases.sql` en klik Run. Test daarna met `supabase/tests/08_leases.test.sql` (`TESTRESULTAAT: 24 geslaagd, 0 mislukt` is goed).
 
@@ -92,9 +92,10 @@ Verdeling van de commissie tussen twee kantoren die allebei in de app zitten (nu
 
 17. Etappe 4a: geen SQL, alleen de app.
 18. Etappe 4b: plak `supabase/migrations/20261027001500_commission_splits.sql` en klik Run. Doe dit vóór je de app uploadt of meteen erna; zonder de SQL werkt Deals gewoon, maar het blok "Commission split" geeft een foutmelding.
-19. Etappe 4c: plak `supabase/migrations/20261027001600_backfill_rent.sql` en klik Run. Zonder de SQL werkt alles gewoon, maar "Add earlier months" geeft dan een foutmelding. Test (optioneel): `supabase/tests/10_backfill_rent.test.sql`.
+19. Etappe 4c: plak `supabase/migrations/20261027001600_backfill_rent.sql` en klik Run. Zonder de SQL werkt alles gewoon, maar "Add earlier months" geeft dan een foutmelding. Test (optioneel): `supabase/tests/10_backfill_rent.test.sql` (`TESTRESULTAAT: 8 geslaagd, 0 mislukt` is goed).
 20. Etappe 4d: geen SQL, alleen de app.
-21. Etappe 5a: plak `supabase/migrations/20261027001700_network.sql` en klik Run. Zonder de SQL werkt de rest gewoon, maar het tabblad Network geeft dan een foutmelding. Test (optioneel): `supabase/tests/11_network.test.sql`.
+21. Etappe 5a: plak `supabase/migrations/20261027001700_network.sql` en klik Run. Zonder de SQL werkt de rest gewoon, maar het tabblad Network geeft dan een foutmelding. Test (optioneel): `supabase/tests/11_network.test.sql` (`TESTRESULTAAT: 16 geslaagd, 0 mislukt` is goed).
+22. Demo-kantoor (etappe 0b, optioneel): open `supabase/seed/demo_kantoor.sql`, vervang `JOUW-EMAIL@VOORBEELD.COM` door je eigen inlog-e-mail en klik Run. Je krijgt een tweede kantoor "Amplify Immobilier (démo)" met 30 panden, leads, deals, verhuur en onderhoud; in de desk wissel je bovenaan van kantoor. Werkt maar een keer.
 
 ### Een kantoor op betaald zetten of verlengen
 
