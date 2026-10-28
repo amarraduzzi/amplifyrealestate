@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
-import { BarChart3, Building2, CalendarClock, CreditCard, Handshake, ListChecks, LogOut, Sun, UserCog, Users } from 'lucide-react';
+import { BarChart3, Building2, CalendarClock, CreditCard, Handshake, KeyRound, ListChecks, LogOut, Sun, UserCog, Users } from 'lucide-react';
 import { AmplifyLogo } from './Brand';
 import { LangSwitch } from './LangSwitch';
 import { t } from '../lib/i18n';
 import type { Office } from '../lib/types';
 
-export type View = 'today' | 'overview' | 'properties' | 'leads' | 'viewings' | 'deals' | 'tasks' | 'team' | 'plan';
+export type View = 'today' | 'overview' | 'properties' | 'leads' | 'viewings' | 'deals' | 'leases' | 'tasks' | 'team' | 'plan';
 
 /** The overview with the numbers is for the owner and managers. */
 export const canSeeOverview = (role: Office['role']) => role === 'owner' || role === 'manager';
@@ -20,6 +20,7 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
     { id: 'leads', label: t('Leads'), icon: <Users className="h-4 w-4" /> },
     { id: 'viewings', label: t('Viewings'), icon: <CalendarClock className="h-4 w-4" /> },
     { id: 'deals', label: t('Deals'), icon: <Handshake className="h-4 w-4" /> },
+    { id: 'leases', label: t('Rentals'), icon: <KeyRound className="h-4 w-4" /> },
     { id: 'tasks', label: t('Tasks'), icon: <ListChecks className="h-4 w-4" /> },
     { id: 'team', label: t('Team'), icon: <UserCog className="h-4 w-4" /> },
     ...(canSeeOverview(office.role) ? [{ id: 'plan' as View, label: t('Plan'), icon: <CreditCard className="h-4 w-4" /> }] : []),

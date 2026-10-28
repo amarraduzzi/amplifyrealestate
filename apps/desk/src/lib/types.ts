@@ -104,3 +104,22 @@ export type DealRow = {
   created_at: string;
   updated_at: string;
 };
+
+export type LeaseStatus = 'active' | 'ended';
+
+export type LeaseRow = {
+  id: string;
+  org_id: string;
+  property_id: string;
+  tenant_person_id: string;
+  status: LeaseStatus;
+  rent_cents: number;
+  deposit_cents: number | null;
+  start_date: string;
+  end_date: string | null;
+  payment_day: number;
+  ended_on: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+};
