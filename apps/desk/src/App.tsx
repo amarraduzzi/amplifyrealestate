@@ -11,13 +11,11 @@ import { Onboarding } from './pages/Onboarding';
 import { Properties } from './pages/Properties';
 import { Leads } from './pages/Leads';
 import { Viewings } from './pages/Viewings';
-import { Team } from './pages/Team';
-import { Tasks } from './pages/Tasks';
 import { Today } from './pages/Today';
 import { Agenda } from './pages/Agenda';
 import { Overview } from './pages/Overview';
 import { Network } from './pages/Network';
-import { Plan } from './pages/Plan';
+import { Settings } from './pages/Settings';
 import { Deals } from './pages/Deals';
 import { Invoices } from './pages/Invoices';
 import { Leases } from './pages/Leases';
@@ -90,15 +88,15 @@ function Workspace({ session }: { session: Session }) {
         : shown === 'agenda' ? <Agenda key={office.id} office={work} userId={session.user.id} onGo={setView} />
         : shown === 'overview' ? <Overview key={office.id} office={office} onGo={setView} />
         : shown === 'leads' ? <Leads key={office.id} office={work} userId={session.user.id} />
-        : shown === 'tasks' ? <Tasks key={office.id} office={work} userId={session.user.id} />
+        : shown === 'tasks' ? <Agenda key={`${office.id}-tasks`} office={work} userId={session.user.id} onGo={setView} initialTab="tasks" />
         : shown === 'invoices' ? <Invoices key={office.id} office={work} />
         : shown === 'deals' ? <Deals key={office.id} office={work} />
         : shown === 'leases' ? <Leases key={office.id} office={work} />
         : shown === 'network' ? <Network key={office.id} office={work} />
         : shown === 'maintenance' ? <Maintenance key={office.id} office={work} />
         : shown === 'viewings' ? <Viewings key={office.id} office={work} />
-        : shown === 'plan' ? <Plan key={office.id} office={office} />
-        : shown === 'team' ? <Team key={office.id} office={office} userId={session.user.id} onSelfChanged={load} />
+        : shown === 'settings' || shown === 'team' || shown === 'plan' || shown === 'site' || shown === 'billing'
+          ? <Settings key={`${office.id}-${shown}`} office={office} userId={session.user.id} onSelfChanged={load} initialTab={shown === 'plan' || shown === 'site' || shown === 'billing' ? shown : 'team'} />
         : <Properties key={office.id} office={work} userId={session.user.id} />}
     </Shell>
   );

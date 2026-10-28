@@ -67,10 +67,10 @@ export function NewMatches({ office, onGo, onCount }: { office: Office; onGo: (v
   return (
     <section>
       <div className="mb-2 flex items-center justify-between gap-3">
-        <h2 className="font-display flex items-center gap-2 text-lg font-semibold">
+        <h2 className="font-display flex min-w-0 items-center gap-2 text-lg font-semibold">
           <Sparkles className="h-4 w-4 text-brand" /> {t('New matches')} <span className="tabular text-base opacity-60">{rows.length}</span>
         </h2>
-        <button type="button" onClick={() => onGo('leads')} className="inline-flex items-center gap-0.5 text-sm font-semibold text-muted hover:text-ink">
+        <button type="button" onClick={() => onGo('leads')} className="inline-flex shrink-0 items-center gap-0.5 text-sm font-semibold text-muted hover:text-ink">
           {t('See all')}<ChevronRight className="h-4 w-4 rtl:rotate-180" />
         </button>
       </div>

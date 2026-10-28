@@ -1,6 +1,4 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { BillingSettings } from '../components/BillingSettings';
-import { WebsiteSettings } from '../components/WebsiteSettings';
 import { LogOut, UserMinus, UserPlus } from 'lucide-react';
 import type { OrgRole } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
@@ -8,7 +6,6 @@ import { t } from '../lib/i18n';
 import type { MemberRow, Office } from '../lib/types';
 import { ROLES, roleHint, roleLabel } from '../lib/labels';
 import { Btn, Card, Field, inputCls } from '../components/ui';
-import { PublicProfile } from './PublicProfile';
 import { planError } from '../lib/plan';
 
 /** The database answers with short codes; show a sentence the person understands. */
@@ -28,7 +25,7 @@ const roleCls: Record<OrgRole, string> = {
   viewer: 'bg-surface-3 text-muted',
 };
 
-export function Team({ office, userId, onSelfChanged }: { office: Office; userId: string; onSelfChanged: () => void }) {
+export function Team({ office, userId, onSelfChanged, embedded = false }: { office: Office; userId: string; onSelfChanged: () => void; embedded?: boolean }) {
   const [members, setMembers] = useState<MemberRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -81,11 +78,13 @@ export function Team({ office, userId, onSelfChanged }: { office: Office; userId
   };
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
-      <div>
-        <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Team')}</h1>
-        <p className="text-sm text-muted">{office.name}</p>
-      </div>
+    <div className={embedded ? '' : 'mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8'}>
+      {!embedded && (
+        <div>
+          <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Team')}</h1>
+          <p className="text-sm text-muted">{office.name}</p>
+        </div>
+      )}
 
       {error && <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
       {added && <p className="mt-4 rounded-xl bg-ok/10 px-3 py-2 text-sm font-semibold text-ok">{t('{email} is now part of the team.', { email: added })}</p>}
@@ -126,9 +125,6 @@ export function Team({ office, userId, onSelfChanged }: { office: Office; userId
         </ul>
       )}
 
-      <PublicProfile office={office} canManage={canManage} onSlugChanged={onSelfChanged} />
-      <WebsiteSettings office={office} canManage={canManage} />
-      {office.role !== 'viewer' && <BillingSettings office={office} canManage={canManage} />}
 
       {canManage ? (
         <Card className="mt-6">

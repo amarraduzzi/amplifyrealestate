@@ -38,7 +38,7 @@ export function GettingStarted({ office, onGo }: { office: Office; onGo: (v: Vie
         if (org.error) throw new Error(org.error.message);
         const d = org.data;
         const list: Step[] = [
-          { id: 'contact', label: t('Add the contact details for your public pages'), hint: t('Your WhatsApp number, phone or e-mail, shown on every public page. You find it under Team.'), done: !!(d?.public_whatsapp || d?.public_phone || d?.public_email), to: 'team' },
+          { id: 'contact', label: t('Add the contact details for your public pages'), hint: t('Your WhatsApp number, phone or e-mail, shown on every public page. You find it under Settings.'), done: !!(d?.public_whatsapp || d?.public_phone || d?.public_email), to: 'site' },
           { id: 'property', label: t('Add your first property'), hint: t('Every price and status change from then on is recorded.'), done: props > 0, to: 'properties' },
           { id: 'online', label: t('Put a property online'), hint: t('Add a mandate, then switch on the public page of the property and share the link.'), done: online > 0, to: 'properties' },
           { id: 'lead', label: t('Add your first lead'), hint: t('Add one by hand, or import your contacts from a CSV file or from Excel.'), done: leads > 0, to: 'leads' },

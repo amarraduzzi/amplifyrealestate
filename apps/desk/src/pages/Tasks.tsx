@@ -12,7 +12,7 @@ import { friendly } from '../lib/errors';
 
 type Filter = 'all' | TaskStatus;
 
-export function Tasks({ office, userId }: { office: Office; userId: string }) {
+export function Tasks({ office, userId, embedded = false }: { office: Office; userId: string; embedded?: boolean }) {
   const [rows, setRows] = useState<TaskView[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('open');
@@ -54,10 +54,10 @@ export function Tasks({ office, userId }: { office: Office; userId: string }) {
   const editing = rows?.find(x => x.task.id === editId)?.task;
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
+    <div className={embedded ? 'mt-5' : 'mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8'}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Tasks')}</h1>
+          {embedded ? <h2 className="font-display text-lg font-semibold">{t('All tasks')}</h2> : <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Tasks')}</h1>}
           <p className="text-sm text-muted">{t('{n} open', { n: counts.open ?? 0 })}</p>
         </div>
         {canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add task')}</Btn>}

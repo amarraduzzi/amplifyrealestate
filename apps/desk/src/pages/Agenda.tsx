@@ -10,6 +10,7 @@ import { Btn, Card } from '../components/ui';
 import { TaskForm } from './TaskForm';
 import { ViewingForm } from './ViewingForm';
 import { ViewingDetail } from './ViewingDetail';
+import { Tasks } from './Tasks';
 import type { View } from '../components/Shell';
 import { friendly } from '../lib/errors';
 
@@ -31,7 +32,35 @@ const TONE: Record<AgendaItem['kind'], string> = {
 };
 
 /** The week at a glance: viewings, deadlines, mandates and leases that end, and rent that is due. */
-export function Agenda({ office, userId, onGo }: { office: Office; userId: string; onGo: (v: View) => void }) {
+function AgendaTabs({ tab, onTab }: { tab: 'week' | 'tasks'; onTab: (t: 'week' | 'tasks') => void }) {
+  return (
+    <div className="mt-3 inline-flex rounded-full bg-surface p-1 ring-1 ring-line/10" role="tablist">
+      {(['week', 'tasks'] as const).map(x => (
+        <button key={x} type="button" role="tab" aria-selected={tab === x} onClick={() => onTab(x)}
+          className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${tab === x ? 'bg-ink text-bg' : 'text-muted hover:text-ink'}`}>
+          {x === 'week' ? t('Week') : t('Tasks')}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** The Agenda tab: the week at a glance, or the full task list. */
+export function Agenda({ office, userId, onGo, initialTab = 'week' }: { office: Office; userId: string; onGo: (v: View) => void; initialTab?: 'week' | 'tasks' }) {
+  const [tab, setTab] = useState<'week' | 'tasks'>(initialTab);
+  if (tab === 'tasks') {
+    return (
+      <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+        <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Agenda')}</h1>
+        <AgendaTabs tab={tab} onTab={setTab} />
+        <Tasks office={office} userId={userId} embedded />
+      </div>
+    );
+  }
+  return <AgendaWeek office={office} userId={userId} onGo={onGo} tabs={<AgendaTabs tab={tab} onTab={setTab} />} />;
+}
+
+function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: string; onGo: (v: View) => void; tabs: ReactNode }) {
   const canWrite = office.role !== 'viewer';
   const [items, setItems] = useState<AgendaItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -158,6 +187,7 @@ export function Agenda({ office, userId, onGo }: { office: Office; userId: strin
         <div>
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Agenda')}</h1>
           <p className="text-sm text-muted">{weekLabel(start)} · {t('{n} items', { n: weekCount })}</p>
+          {tabs}
         </div>
         {canWrite && (
           <div className="flex flex-wrap gap-2">

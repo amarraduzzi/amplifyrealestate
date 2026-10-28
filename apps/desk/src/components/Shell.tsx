@@ -1,64 +1,166 @@
-import type { ReactNode } from 'react';
-import { Receipt, BarChart3, Building2, CalendarClock, CalendarDays, CreditCard, Handshake, KeyRound, ListChecks, LogOut, Network, Sun, UserCog, Users, Wrench } from 'lucide-react';
-import { AmplifyLogo } from './Brand';
+import { useEffect, useState, type ReactNode } from 'react';
+import {
+  BarChart3, Building2, CalendarClock, CalendarDays, Handshake, KeyRound, LayoutGrid, LogOut, Network, Receipt, Settings, Sun, Users, Wrench, X,
+} from 'lucide-react';
+import { AmplifyLogo, AmplifyMark } from './Brand';
 import { LangSwitch } from './LangSwitch';
 import { t } from '../lib/i18n';
 import type { Office } from '../lib/types';
 
-export type View = 'today' | 'agenda' | 'overview' | 'properties' | 'leads' | 'viewings' | 'deals' | 'invoices' | 'leases' | 'maintenance' | 'network' | 'tasks' | 'team' | 'plan';
+// 'tasks', 'team' and 'plan' are no longer separate tabs (tasks live in the Agenda, team and plan in Settings),
+// but other screens may still send the user there: App opens the right place.
+export type View = 'today' | 'agenda' | 'overview' | 'properties' | 'leads' | 'viewings' | 'deals' | 'invoices' | 'leases' | 'maintenance'
+  | 'network' | 'settings' | 'tasks' | 'team' | 'plan' | 'site' | 'billing';
 
 /** The overview with the numbers is for the owner and managers. */
 export const canSeeOverview = (role: Office['role']) => role === 'owner' || role === 'manager';
 
+type Item = { id: View; label: string; icon: ReactNode };
+type Group = { title: string; items: Item[] };
+
+/** Which tab a view belongs to (so "tasks" lights up the Agenda, "team" lights up Settings). */
+const ownerOf = (v: View): View => (v === 'tasks' ? 'agenda' : v === 'team' || v === 'plan' || v === 'site' || v === 'billing' ? 'settings' : v);
+
+function groups(role: Office['role']): Group[] {
+  const i = (id: View, label: string, icon: ReactNode): Item => ({ id, label, icon });
+  const ic = 'h-[18px] w-[18px] shrink-0';
+  return [
+    { title: t('Work'), items: [i('today', t('Today'), <Sun className={ic} />), i('agenda', t('Agenda'), <CalendarDays className={ic} />)] },
+    { title: t('Sales'), items: [
+      i('properties', t('Properties'), <Building2 className={ic} />), i('leads', t('Leads'), <Users className={ic} />),
+      i('viewings', t('Viewings'), <CalendarClock className={ic} />), i('deals', t('Deals'), <Handshake className={ic} />),
+      i('network', t('Network'), <Network className={ic} />),
+    ] },
+    { title: t('Rentals and management'), items: [i('leases', t('Rentals'), <KeyRound className={ic} />), i('maintenance', t('Maintenance'), <Wrench className={ic} />)] },
+    { title: t('Money'), items: [
+      ...(role !== 'viewer' ? [i('invoices', t('Invoices'), <Receipt className={ic} />)] : []),
+      ...(canSeeOverview(role) ? [i('overview', t('Overview'), <BarChart3 className={ic} />)] : []),
+    ] },
+  ].filter(g => g.items.length > 0);
+}
+
+/** On a phone the bar at the bottom holds the four screens used most; the rest is under "More". */
+const BOTTOM: View[] = ['today', 'properties', 'leads', 'agenda'];
+
+function OfficePick({ offices, office, onPick }: { offices: Office[]; office: Office; onPick: (id: string) => void }) {
+  if (offices.length < 2) return <span className="block truncate text-sm font-semibold text-white/85">{office.name}</span>;
+  return (
+    <select value={office.id} onChange={e => onPick(e.target.value)} aria-label={t('Office')}
+      className="w-full truncate rounded-lg bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white outline-none ring-1 ring-white/15">
+      {offices.map(o => <option key={o.id} value={o.id} className="text-ink">{o.name}</option>)}
+    </select>
+  );
+}
+
 export function Shell({ offices, office, view, onView, onPick, onSignOut, banner, children }: {
   offices: Office[]; office: Office; view: View; onView: (v: View) => void; onPick: (id: string) => void; onSignOut: () => void; banner?: ReactNode; children: ReactNode;
 }) {
-  const tabs: { id: View; label: string; icon: ReactNode }[] = [
-    { id: 'today', label: t('Today'), icon: <Sun className="h-4 w-4" /> },
-    { id: 'agenda', label: t('Agenda'), icon: <CalendarDays className="h-4 w-4" /> },
-    ...(canSeeOverview(office.role) ? [{ id: 'overview' as View, label: t('Overview'), icon: <BarChart3 className="h-4 w-4" /> }] : []),
-    { id: 'properties', label: t('Properties'), icon: <Building2 className="h-4 w-4" /> },
-    { id: 'leads', label: t('Leads'), icon: <Users className="h-4 w-4" /> },
-    { id: 'viewings', label: t('Viewings'), icon: <CalendarClock className="h-4 w-4" /> },
-    { id: 'deals', label: t('Deals'), icon: <Handshake className="h-4 w-4" /> },
-    ...(office.role !== 'viewer' ? [{ id: 'invoices' as View, label: t('Invoices'), icon: <Receipt className="h-4 w-4" /> }] : []),
-    { id: 'leases', label: t('Rentals'), icon: <KeyRound className="h-4 w-4" /> },
-    { id: 'maintenance', label: t('Maintenance'), icon: <Wrench className="h-4 w-4" /> },
-    { id: 'network', label: t('Network'), icon: <Network className="h-4 w-4" /> },
-    { id: 'tasks', label: t('Tasks'), icon: <ListChecks className="h-4 w-4" /> },
-    { id: 'team', label: t('Team'), icon: <UserCog className="h-4 w-4" /> },
-    ...(canSeeOverview(office.role) ? [{ id: 'plan' as View, label: t('Plan'), icon: <CreditCard className="h-4 w-4" /> }] : []),
-  ];
+  const [more, setMore] = useState(false);
+  const active = ownerOf(view);
+  const gs = groups(office.role);
+  const all = gs.flatMap(g => g.items);
+  const settings: Item = { id: 'settings', label: t('Settings'), icon: <Settings className="h-[18px] w-[18px] shrink-0" /> };
+  const go = (v: View) => { setMore(false); onView(v); window.scrollTo(0, 0); };
+
+  useEffect(() => {
+    if (!more) return;
+    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') setMore(false); };
+    window.addEventListener('keydown', k);
+    return () => window.removeEventListener('keydown', k);
+  }, [more]);
+
+  const navButton = (x: Item) => (
+    <button key={x.id} type="button" onClick={() => go(x.id)} aria-current={active === x.id ? 'page' : undefined}
+      className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-start text-sm font-semibold transition ${active === x.id ? 'bg-white text-night' : 'text-white/75 hover:bg-white/10 hover:text-white'}`}>
+      {x.icon}<span className="truncate">{x.label}</span>
+    </button>
+  );
+
   return (
-    <div className="flex min-h-full flex-col">
-      <header className="night sticky top-0 z-30 px-4 pb-2 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
-        <div className="flex items-center justify-between gap-3 pb-2">
-          <AmplifyLogo size="sm" className="min-w-0" />
-          <div className="flex min-w-0 items-center gap-3">
-            {offices.length > 1
-              ? (
-                <select value={office.id} onChange={e => onPick(e.target.value)} aria-label={t('Office')}
-                  className="max-w-[10rem] truncate rounded-lg bg-white/10 px-2.5 py-1.5 text-sm font-semibold text-white outline-none ring-1 ring-white/15">
-                  {offices.map(o => <option key={o.id} value={o.id} className="text-ink">{o.name}</option>)}
-                </select>
-              )
-              : <span className="hidden max-w-[12rem] truncate text-sm font-semibold text-white/80 sm:block">{office.name}</span>}
+    <div className="flex min-h-full">
+      {/* ---- Desktop: sidebar ---- */}
+      <aside className="night sticky top-0 hidden h-screen w-60 shrink-0 flex-col lg:flex">
+        <div className="space-y-3 px-4 pb-3 pt-5">
+          <AmplifyLogo size="sm" />
+          <OfficePick offices={offices} office={office} onPick={onPick} />
+        </div>
+        <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-2" aria-label={t('Sections')}>
+          {gs.map(g => (
+            <div key={g.title}>
+              <p className="mb-1 px-3 text-[11px] font-bold uppercase tracking-wider text-white/45">{g.title}</p>
+              <div className="space-y-0.5">{g.items.map(navButton)}</div>
+            </div>
+          ))}
+        </nav>
+        <div className="space-y-2 border-t border-white/10 px-3 py-3">
+          {navButton(settings)}
+          <div className="flex items-center justify-between gap-2 px-1">
             <LangSwitch />
             <button onClick={onSignOut} aria-label={t('Sign out')} title={t('Sign out')}
               className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-white/10 text-white/80 ring-1 ring-white/15 hover:text-white"><LogOut className="h-4 w-4" /></button>
           </div>
         </div>
-        <nav className="-mx-4 flex gap-1 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden" aria-label={t('Sections')}>
-          {tabs.map(x => (
-            <button key={x.id} onClick={() => onView(x.id)} aria-current={view === x.id ? 'page' : undefined}
-              className={`inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${view === x.id ? 'bg-white text-night' : 'text-white/70 hover:bg-white/10 hover:text-white'}`}>
-              {x.icon}{x.label}
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        {/* ---- Phone and tablet: slim header ---- */}
+        <header className="night sticky top-0 z-30 px-4 pb-2.5 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 lg:hidden">
+          <div className="flex items-center justify-between gap-3">
+            <AmplifyLogo size="sm" className="hidden min-w-0 sm:flex" />
+            <AmplifyMark className="h-6 w-9 shrink-0 sm:hidden" />
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="min-w-0 max-w-[12rem]"><OfficePick offices={offices} office={office} onPick={onPick} /></div>
+              <LangSwitch />
+            </div>
+          </div>
+        </header>
+        {banner}
+        <main className="flex-1 pb-24 lg:pb-0">{children}</main>
+      </div>
+
+      {/* ---- Phone and tablet: bottom bar ---- */}
+      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line/10 bg-surface/95 backdrop-blur lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} aria-label={t('Sections')}>
+        <div className="mx-auto grid max-w-lg grid-cols-5">
+          {BOTTOM.map(id => all.find(x => x.id === id)).filter((x): x is Item => !!x).map(x => (
+            <button key={x.id} type="button" onClick={() => go(x.id)} aria-current={active === x.id ? 'page' : undefined}
+              className={`flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold transition ${active === x.id ? 'text-brand' : 'text-muted hover:text-ink'}`}>
+              {x.icon}<span className="max-w-full truncate px-1">{x.label}</span>
             </button>
           ))}
-        </nav>
-      </header>
-      {banner}
-      <main className="flex-1">{children}</main>
+          <button type="button" onClick={() => setMore(true)} aria-expanded={more}
+            className={`flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold transition ${!BOTTOM.includes(active) ? 'text-brand' : 'text-muted hover:text-ink'}`}>
+            <LayoutGrid className="h-[18px] w-[18px]" /><span>{t('More')}</span>
+          </button>
+        </div>
+      </nav>
+
+      {/* ---- "More": everything, grouped ---- */}
+      {more && (
+        <div className="fixed inset-0 z-40 flex items-end bg-night/50 lg:hidden" onMouseDown={e => { if (e.target === e.currentTarget) setMore(false); }}>
+          <div className="pop max-h-[85vh] w-full overflow-y-auto rounded-t-3xl bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3" role="dialog" aria-label={t('More')}>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="font-display text-lg font-bold">{t('All sections')}</p>
+              <button type="button" onClick={() => setMore(false)} aria-label={t('Close')} className="grid h-9 w-9 place-items-center rounded-full bg-surface-2"><X className="h-5 w-5" /></button>
+            </div>
+            {[...gs, { title: t('Office'), items: [settings] }].map(g => (
+              <div key={g.title} className="mb-3">
+                <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-muted">{g.title}</p>
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {g.items.map(x => (
+                    <button key={x.id} type="button" onClick={() => go(x.id)}
+                      className={`flex flex-col items-center gap-1.5 rounded-2xl px-2 py-3 text-xs font-semibold transition ${active === x.id ? 'bg-brand/10 text-brand' : 'bg-surface-2 text-ink hover:ring-2 hover:ring-brand/25'}`}>
+                      {x.icon}<span className="max-w-full truncate">{x.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <button type="button" onClick={onSignOut} className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-surface-2 py-3 text-sm font-semibold text-muted hover:text-ink">
+              <LogOut className="h-4 w-4" /> {t('Sign out')}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

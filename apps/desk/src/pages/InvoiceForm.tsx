@@ -14,7 +14,7 @@ type Line = { label: string; qty: string; amount: string };
 type Party = { key: string; label: string; name: string };
 
 function invoiceError(m: string): string {
-  if (m.includes('billing_info_missing')) return t('Fill in the invoice details of your office first (Team, Invoice details): name, ICE and IF.');
+  if (m.includes('billing_info_missing')) return t('Fill in the invoice details of your office first (Settings, Invoice details): name, ICE and IF.');
   if (m.includes('invoice_lines_invalid')) return t('Every line needs a description and an amount.');
   if (m.includes('client_ice')) return t('The ICE of the client has exactly 15 digits.');
   if (m.includes('client_name')) return t('Enter the name of the client.');
@@ -98,7 +98,7 @@ export function InvoiceForm({ office, deal, onClose, onCreated }: { office: Offi
         <p className="rounded-xl bg-warn/10 px-3 py-2 text-sm font-semibold text-warn">{t('Run the SQL of etappe 6f first.')}</p>
       ) : (
         <form id="invoice-form" onSubmit={submit} className="space-y-4">
-          {!ready && <p className="rounded-xl bg-warn/10 px-3 py-2 text-sm font-semibold text-warn">{t('Fill in the invoice details of your office first (Team, Invoice details): name, ICE and IF.')}</p>}
+          {!ready && <p className="rounded-xl bg-warn/10 px-3 py-2 text-sm font-semibold text-warn">{t('Fill in the invoice details of your office first (Settings, Invoice details): name, ICE and IF.')}</p>}
           <div className="flex flex-wrap gap-1.5" role="group">
             {(['facture', 'note_honoraires'] as const).map(x => (
               <button key={x} type="button" aria-pressed={title === x} onClick={() => setTitle(x)}

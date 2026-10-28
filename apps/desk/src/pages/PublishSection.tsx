@@ -87,7 +87,7 @@ export function PublishSection({ office, property, canWrite, onChanged }: {
         )}
 
         {noContact && (state === 'offline' || state === 'live') && (
-          <p className="text-sm text-warn">{t('Your office has no WhatsApp or phone number on the public page yet. Add it under Team, so clients can reach you.')}</p>
+          <p className="text-sm text-warn">{t('Your office has no WhatsApp or phone number on the public page yet. Add it under Settings, so clients can reach you.')}</p>
         )}
 
         {state === 'live' && (

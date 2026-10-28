@@ -68,7 +68,7 @@ export function Invoices({ office }: { office: Office }) {
           <Card className="mt-6 text-center">
             <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><Receipt className="h-6 w-6" /></span>
             <h2 className="font-display mt-3 text-xl font-bold">{t('No invoices yet')}</h2>
-            <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('Open a deal and tap "Make an invoice", or make one here. Fill in your invoice details under Team first.')}</p>
+            <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('Open a deal and tap "Make an invoice", or make one here. Fill in your invoice details under Settings first.')}</p>
           </Card>
         ) : (<>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">

@@ -22,16 +22,16 @@ function Usage({ label, used, max }: { label: string; used: number; max: number 
 }
 
 /** The plan of the office: trial or paid, last day, and use against the limits. For the owner and managers. */
-export function Plan({ office }: { office: Office }) {
+export function Plan({ office, embedded = false }: { office: Office; embedded?: boolean }) {
   const [plan, setPlan] = useState<PlanInfo | null | undefined>(undefined);
   useEffect(() => { let live = true; loadPlan(office.id).then(p => { if (live) setPlan(p); }); return () => { live = false; }; }, [office.id]);
 
   const date = (iso: string) => new Intl.DateTimeFormat(LOCALES[getLang()], { dateStyle: 'long' }).format(new Date(iso + 'T12:00:00'));
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
-      <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Plan')}</h1>
-      <p className="text-sm text-muted">{office.name}</p>
+    <div className={embedded ? '' : 'mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8'}>
+      {!embedded && <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Plan')}</h1>}
+      {!embedded && <p className="text-sm text-muted">{office.name}</p>}
 
       {plan === undefined && <p className="mt-10 text-center text-muted">…</p>}
       {plan === null && <Card className="mt-6"><p className="text-sm text-muted">{t('The plan could not be loaded.')}</p></Card>}
