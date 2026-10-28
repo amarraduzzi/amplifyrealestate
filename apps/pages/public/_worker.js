@@ -120,6 +120,32 @@ async function ical(token, env) {
   return new Response(lines.join('\r\n') + '\r\n', { headers: { 'content-type': 'text/calendar; charset=utf-8', 'cache-control': 'public, max-age=300' } });
 }
 
+// The desk asks the worker to fetch a channel calendar. Only for signed-in users of the platform, only https, only public
+// hosts, at most 2 MB, and only when the answer really is a calendar.
+const CORS = origin => ({ 'access-control-allow-origin': origin || '*', 'access-control-allow-headers': 'authorization', vary: 'origin' });
+async function icalProxy(request, url, env) {
+  const h = CORS(request.headers.get('origin'));
+  const deny = (status, text) => new Response(text, { status, headers: { ...h, 'content-type': 'text/plain' } });
+  const auth = request.headers.get('authorization') || '';
+  if (!/^Bearer [\w-]+\.[\w-]+\.[\w-]+$/.test(auth) || !env.VITE_SUPABASE_URL || !env.VITE_SUPABASE_ANON_KEY) return deny(401, 'unauthorized');
+  try {
+    const who = await fetch(`${String(env.VITE_SUPABASE_URL).replace(/\/+$/, '')}/auth/v1/user`, { headers: { apikey: env.VITE_SUPABASE_ANON_KEY, authorization: auth } });
+    if (!who.ok) return deny(401, 'unauthorized');
+  } catch { return deny(503, 'unavailable'); }
+  let target;
+  try { target = new URL(url.searchParams.get('url') || ''); } catch { return deny(400, 'invalid'); }
+  const host = target.hostname.toLowerCase();
+  if (target.protocol !== 'https:' || target.username || target.password || (target.port && target.port !== '443')
+      || !host.includes('.') || /^[\d.]+$/.test(host) || host.includes(':') || host === 'localhost' || host.endsWith('.local') || host.endsWith('.internal')) return deny(400, 'invalid');
+  try {
+    const r = await fetch(target.toString(), { redirect: 'follow', headers: { accept: 'text/calendar, text/plain, */*', 'user-agent': 'AmplifyRealEstate/1.0' } });
+    if (!r.ok) return deny(502, `status_${r.status}`);
+    const text = await r.text();
+    if (text.length > 2_000_000 || !text.includes('BEGIN:VCALENDAR')) return deny(422, 'not_calendar');
+    return new Response(text, { headers: { ...h, 'content-type': 'text/calendar; charset=utf-8', 'cache-control': 'no-store' } });
+  } catch { return deny(502, 'unreachable'); }
+}
+
 const xmlEsc = v => String(v ?? '').replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
 const tag = (n, v) => (v === null || v === undefined || v === '' ? '' : `<${n}>${xmlEsc(v)}</${n}>`);
 /** The available properties of one office as XML, for portals that agreed to pick them up. */
@@ -147,12 +173,15 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     let parts = url.pathname.split('/').filter(Boolean);
+    if (request.method === 'OPTIONS' && parts[0] === 'api' && parts[1] === 'ical') return new Response(null, { status: 204, headers: { ...CORS(request.headers.get('origin')), 'access-control-allow-methods': 'GET' } });
     // /ical/<code>.ics: the busy dates of a short-term rental, for Airbnb, Booking or Google Calendar
     if (parts[0] === 'ical' && parts.length === 2 && request.method === 'GET') return ical(parts[1].replace(/\.ics$/, ''), env);
     // /feed/<code>.xml: the available properties of an office, for portals
     if (parts[0] === 'feed' && parts.length === 2 && request.method === 'GET') return feed(parts[1].replace(/\.xml$/, ''), url, env);
-    // /o/<code> (owner) and /r/<code> (co-owner): private pages. Plain page, never cached, never in search engines.
-    if ((parts[0] === 'o' || parts[0] === 'r') && parts.length === 2 && request.method === 'GET') {
+    // /api/ical?url=...: fetch the iCal calendar of Airbnb or Booking for a signed-in team member (the browser may not read it directly)
+    if (parts[0] === 'api' && parts[1] === 'ical' && parts.length === 2 && request.method === 'GET') return icalProxy(request, url, env);
+    // /o/<code> (owner), /r/<code> (co-owner), /g/<code> (guest) and /c/<code> (cleaner): private pages. Plain page, never cached, never in search engines.
+    if ((parts[0] === 'o' || parts[0] === 'r' || parts[0] === 'g' || parts[0] === 'c') && parts.length === 2 && request.method === 'GET') {
       try {
         const r = await env.ASSETS.fetch(new Request(new URL('/', url), { headers: request.headers }));
         const h = new Headers(r.headers);

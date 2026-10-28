@@ -8,6 +8,7 @@ import { channelCls, channelName, iso, loadStayProps, loadStays, nights, type St
 import { PUBLIC_SITE } from '../lib/publicSite';
 import { Btn, Card } from '../components/ui';
 import { StayForm } from './StayForm';
+import { StayTools } from '../components/StayTools';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 const monthStart = (d = new Date()) => new Date(Date.UTC(d.getFullYear(), d.getMonth(), 1));
@@ -129,7 +130,7 @@ export function Stays({ office }: { office: Office }) {
                       return (
                         <button key={s.id} type="button" onClick={() => setForm({ stay: s })} title={`${s.guest_name} · ${channelName(s.channel, t('Other'))}`}
                           style={{ gridRow: 2, gridColumn: `${a + 1} / ${b + 1}` }}
-                          className={`z-10 mx-px my-0.5 truncate rounded-lg px-1.5 text-start text-[11px] font-bold leading-8 shadow-sm ${channelCls[s.channel]}`}>
+                          className={`z-10 mx-px my-0.5 truncate rounded-lg px-1.5 text-start text-[11px] font-bold leading-8 shadow-sm ${channelCls[s.channel]} ${s.is_block ? 'opacity-60' : ''}`}>
                           {s.guest_name}
                         </button>
                       );
@@ -145,6 +146,7 @@ export function Stays({ office }: { office: Office }) {
           <span>{t('Tap a free day to add a booking.')}</span>
         </p>
         {error && <p className="mt-3 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
+        {canWrite && <StayTools office={office} props={props} onSynced={load} />}
       </>)}
 
       {form && props && (

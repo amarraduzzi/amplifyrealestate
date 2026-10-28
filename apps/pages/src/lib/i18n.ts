@@ -6,6 +6,8 @@
 // Arabic and French here are a careful first version: have a native speaker read them once before
 // you send the links to many clients.
 
+import { STAY_AR, STAY_FR, STAY_NL } from './i18nStay';
+
 export type Lang = 'fr' | 'ar' | 'en' | 'nl';
 export const LANGS: { id: Lang; name: string }[] = [
   { id: 'fr', name: 'Français' },
@@ -494,7 +496,8 @@ const NL: Record<string, string> = {
 
 export function t(en: string, vars?: Record<string, string | number>): string {
   const dict = current === 'ar' ? AR : current === 'fr' ? FR : current === 'nl' ? NL : null;
-  let s = dict ? (dict[en] ?? en) : en;
+  const extra = current === 'ar' ? STAY_AR : current === 'fr' ? STAY_FR : current === 'nl' ? STAY_NL : null;
+  let s = dict ? (dict[en] ?? extra?.[en] ?? en) : en;
   if (vars) s = s.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
   return s;
 }

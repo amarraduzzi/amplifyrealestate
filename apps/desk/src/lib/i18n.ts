@@ -6,6 +6,7 @@
 
 import { FR } from './i18n/fr';
 import { AR } from './i18n/ar';
+import { AR2, FR2 } from './i18n/stays2';
 
 export type Lang = 'en' | 'fr' | 'ar';
 const isLang = (x: unknown): x is Lang => x === 'en' || x === 'fr' || x === 'ar';
@@ -32,7 +33,8 @@ export function saveLang(l: Lang) {
 
 export function t(en: string, vars?: Record<string, string | number>): string {
   const dict = current === 'ar' ? AR : current === 'fr' ? FR : null;
-  let s = dict ? (dict[en] ?? en) : en;
+  const extra = current === 'ar' ? AR2 : current === 'fr' ? FR2 : null;
+  let s = dict ? (dict[en] ?? extra?.[en] ?? en) : en;
   if (vars) s = s.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
   return s;
 }

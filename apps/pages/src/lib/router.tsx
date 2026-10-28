@@ -9,6 +9,8 @@ export type Route =
   | { kind: 'property'; slug: string; reference: string }
   | { kind: 'owner'; token: string }
   | { kind: 'resident'; token: string }
+  | { kind: 'guest'; token: string }
+  | { kind: 'cleaner'; token: string }
   | { kind: 'project'; slug: string; project: string };
 
 // On an office's own domain (www.atlas-immo.ma) the office is the whole site: / is the office, /P-AB12 a property.
@@ -28,6 +30,9 @@ export function parse(pathname: string): Route {
   if (parts[0] === 'o' && parts.length === 2) return { kind: 'owner', token: parts[1] };
   // /r/<code>: the co-owner page of a residence managed by a syndic
   if (parts[0] === 'r' && parts.length === 2) return { kind: 'resident', token: parts[1] };
+  // /g/<code>: the guest page of a short-term rental. /c/<code>: the cleaning list of a cleaner
+  if (parts[0] === 'g' && parts.length === 2) return { kind: 'guest', token: parts[1] };
+  if (parts[0] === 'c' && parts.length === 2) return { kind: 'cleaner', token: parts[1] };
   // /<office>/projet/<project> (or /projet/<project> on the office's own domain): a new-build project
   if (domainSlug && parts.length === 2 && parts[0] === 'projet') return { kind: 'project', slug: domainSlug, project: parts[1].toLowerCase() };
   if (!domainSlug && parts.length === 3 && parts[1] === 'projet') return { kind: 'project', slug: parts[0].toLowerCase(), project: parts[2].toLowerCase() };

@@ -5,6 +5,7 @@ export type Stay = {
   id: string; org_id: string; property_id: string; guest_name: string; guest_phone: string | null; channel: Channel;
   check_in: string; check_out: string; guests: number | null; total_cents: number; cleaning_cents: number; channel_fee_cents: number;
   notes: string | null; status: 'confirmed' | 'cancelled';
+  guest_lang?: 'fr' | 'ar' | 'en' | 'nl'; is_block?: boolean; feed_id?: string | null;
 };
 export type StayProp = { id: string; title: string; reference: string; price_cents: number | null; ical_token: string | null };
 

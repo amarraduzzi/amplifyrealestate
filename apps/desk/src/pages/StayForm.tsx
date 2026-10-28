@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react';
+import { MessageCircle } from 'lucide-react';
 import { dirhamToCents } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
@@ -6,6 +7,11 @@ import type { Office } from '../lib/types';
 import { CHANNELS, channelName, nights, stayError, type Channel, type Stay, type StayProp } from '../lib/stays';
 import { planError } from '../lib/plan';
 import { Btn, Field, Modal, inputCls } from '../components/ui';
+import { waLink } from '../components/ContactLinks';
+import { PUBLIC_SITE } from '../lib/publicSite';
+import { GUEST_LANGS, GUEST_MSG_KINDS, guestMessage, guideUrl, type GuestLang, type GuestMsgKind } from '../lib/stayPack';
+
+const MSG_LABEL: Record<GuestMsgKind, string> = { arrival: 'Welcome', instructions: 'Arrival info', checkout: 'Check-out reminder', review: 'Ask for a review' };
 
 const dh = (c: number | undefined) => (c ? String(c / 100) : '');
 const toCents = (s: string) => { const v = Number(s.replace(/\s/g, '').replace(',', '.')); return Number.isFinite(v) && v > 0 ? dirhamToCents(v) : 0; };
@@ -19,6 +25,7 @@ export function StayForm({ office, props, stay, defaults, onClose, onSaved }: {
     property: stay?.property_id ?? defaults?.propertyId ?? props[0]?.id ?? '',
     guest: stay?.guest_name ?? '', phone: stay?.guest_phone ?? '', channel: (stay?.channel ?? 'direct') as Channel,
     inDate: stay?.check_in ?? defaults?.checkIn ?? '', outDate: stay?.check_out ?? '', guests: stay?.guests ? String(stay.guests) : '',
+    lang: (stay?.guest_lang ?? 'fr') as GuestLang,
     total: dh(stay?.total_cents), cleaning: dh(stay?.cleaning_cents), fee: dh(stay?.channel_fee_cents), notes: stay?.notes ?? '',
   });
   const [busy, setBusy] = useState(false);
@@ -35,7 +42,7 @@ export function StayForm({ office, props, stay, defaults, onClose, onSaved }: {
     const row = {
       guest_name: f.guest.trim(), guest_phone: f.phone.trim() || null, channel: f.channel, check_in: f.inDate, check_out: f.outDate,
       guests: f.guests ? Math.max(1, Math.min(50, Number(f.guests) || 1)) : null, total_cents: toCents(f.total), cleaning_cents: toCents(f.cleaning),
-      channel_fee_cents: toCents(f.fee), notes: f.notes.trim() || null,
+      channel_fee_cents: toCents(f.fee), notes: f.notes.trim() || null, guest_lang: f.lang,
     };
     const r = stay
       ? await supabase.from('stays').update(row).eq('id', stay.id).select('id')
@@ -43,6 +50,19 @@ export function StayForm({ office, props, stay, defaults, onClose, onSaved }: {
     setBusy(false);
     if (r.error) { const m = stayError(r.error.message); setError(m ? t(m) : planError(r.error.message)); return; }
     onSaved();
+  };
+  const sendMsg = async (kind: GuestMsgKind) => {
+    if (!stay) return;
+    let link: string | null = null, inTime: string | null = null, outTime: string | null = null;
+    if (PUBLIC_SITE) {
+      const g = await supabase.from('stay_guides').select('token, checkin_time, checkout_time').eq('property_id', stay.property_id).maybeSingle();
+      const d = g.data as { token: string | null; checkin_time: string | null; checkout_time: string | null } | null;
+      if (d) { link = d.token ? guideUrl(d.token, f.lang) : null; inTime = d.checkin_time; outTime = d.checkout_time; }
+    }
+    const place = props.find(p => p.id === stay.property_id)?.title ?? '';
+    const text = guestMessage(kind, f.lang, { name: stay.guest_name, place, office: office.name, link, inTime, outTime });
+    const phone = (stay.guest_phone ?? '').trim();
+    window.open(phone ? `${waLink(phone)}?text=${encodeURIComponent(text)}` : `https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener');
   };
   const cancel = async () => {
     if (!stay || !window.confirm(t('Cancel this booking? The welcome and cleaning tasks are cancelled too.'))) return;
@@ -71,6 +91,22 @@ export function StayForm({ office, props, stay, defaults, onClose, onSaved }: {
             <Field label={t('Guest')}><input className={inputCls} value={f.guest} onChange={e => set({ guest: e.target.value })} maxLength={200} /></Field>
             <Field label={t('Phone or WhatsApp')}><input className={inputCls} dir="ltr" value={f.phone} onChange={e => set({ phone: e.target.value })} maxLength={40} /></Field>
           </div>
+          <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label={t('Language of the guest')}>
+            <span className="me-1 text-xs font-semibold text-muted">{t('Language of the guest')}</span>
+            {GUEST_LANGS.map(l => (
+              <button key={l.id} type="button" aria-pressed={f.lang === l.id} lang={l.id} onClick={() => set({ lang: l.id })}
+                className={`rounded-full px-3 py-1 text-xs font-semibold transition ${f.lang === l.id ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>{l.name}</button>
+            ))}
+          </div>
+          {stay && stay.status === 'confirmed' && !stay.is_block && canWrite && (
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('Message the guest')}>
+              {GUEST_MSG_KINDS.map(k => (
+                <button key={k} type="button" onClick={() => sendMsg(k)} className="inline-flex items-center gap-1.5 rounded-full bg-ok/10 px-3 py-1.5 text-xs font-semibold text-ok hover:bg-ok/15">
+                  <MessageCircle className="h-3.5 w-3.5" /> {t(MSG_LABEL[k])}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('Channel')}>
             {CHANNELS.map(c => (
               <button key={c} type="button" aria-pressed={f.channel === c} onClick={() => set({ channel: c })}

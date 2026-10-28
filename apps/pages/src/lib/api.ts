@@ -163,3 +163,36 @@ export async function submitProjectInquiry(o: { slug: string; project: string; u
     return 'error';
   } catch { return 'error'; }
 }
+
+export type GuestGuideData = {
+  office: PublicOffice;
+  property: { title: string; reference: string; city: string | null; neighborhood: string | null; address_note: string | null; bedrooms: number | null; photos: string[]; online: boolean };
+  guide: { intro: string | null; arrival: string | null; checkin_time: string | null; checkout_time: string | null; wifi_name: string | null; wifi_password: string | null; rules: string | null; tips: string | null };
+};
+
+/** The guest page of a short-term rental behind its private link. null = the link is not valid (anymore). */
+export async function loadGuestGuide(token: string): Promise<GuestGuideData | null> {
+  if (!/^[0-9a-f]{64}$/.test(token)) return null;
+  return rpc<GuestGuideData>('public_stay_guide', { p_token: token });
+}
+
+export type CleanerTask = { id: string; due_date: string; title: string; city: string | null; neighborhood: string | null; address_note: string | null; next_arrival: string | null };
+export type CleanerPageData = { cleaner: string; office: PublicOffice; tasks: CleanerTask[]; done: { title: string; done_at: string }[] };
+
+/** The cleaning list behind the cleaner's private link. null = the link is not valid (anymore). */
+export async function loadCleanerPage(token: string): Promise<CleanerPageData | null> {
+  if (!/^[0-9a-f]{64}$/.test(token)) return null;
+  return rpc<CleanerPageData>('public_cleaner_page', { p_token: token });
+}
+
+/** Mark a cleaning as done, with a short note and a small photo (base64 jpeg without prefix). */
+export async function markCleaned(token: string, task: string, note: string, photo: string | null): Promise<boolean> {
+  try {
+    const r = await fetch(`${BASE}/rest/v1/rpc/cleaner_mark_done`, {
+      method: 'POST',
+      headers: { apikey: KEY, 'content-type': 'application/json' },
+      body: JSON.stringify({ p_token: token, p_task: task, p_note: note, p_photo: photo }),
+    });
+    return r.ok && (await r.json()) === true;
+  } catch { return false; }
+}
