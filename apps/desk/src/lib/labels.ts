@@ -112,7 +112,7 @@ export const roleHint = (r: OrgRole) =>
 export const TASK_STATUSES: TaskStatus[] = ['open', 'done', 'cancelled'];
 
 export const taskStatusLabel = (s: TaskStatus) =>
-  t(({ open: 'Open', done: 'Done', cancelled: 'Cancelled' } as const)[s]);
+  t(({ open: 'Still open', done: 'Done', cancelled: 'Cancelled' } as const)[s]);
 
 export const DEAL_STAGES: DealStage[] = ['offer', 'accepted', 'signed', 'paid', 'lost'];
 
