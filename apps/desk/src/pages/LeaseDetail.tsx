@@ -9,6 +9,7 @@ import { leaseStatusCls, leaseStatusLabel } from '../lib/labels';
 import { planError } from '../lib/plan';
 import { Btn, Modal } from '../components/ui';
 import { ContactLinks } from '../components/ContactLinks';
+import { RentPayments } from '../components/RentPayments';
 import { LeaseForm } from './LeaseForm';
 
 /** One lease: tenant, rent, dates, and the buttons to edit or end it. */
@@ -56,6 +57,7 @@ export function LeaseDetail({ office, item, onChanged, onClose }: { office: Offi
         {left !== null && left < 0 && <p className="rounded-xl bg-warn/10 px-3 py-2 text-sm font-semibold text-warn">{t('The end date has passed. End the lease or set a new end date.')}</p>}
         {left !== null && left >= 0 && left <= 60 && <p className="rounded-xl bg-warn/10 px-3 py-2 text-sm font-semibold text-warn">{t('This lease ends in {n} days.', { n: left })}</p>}
         {l.notes && <p className="whitespace-pre-line text-sm leading-relaxed">{l.notes}</p>}
+        <RentPayments office={office} leaseId={l.id} person={person} propertyTitle={property?.title ?? ''} active={l.status === 'active'} onChanged={onChanged} />
         {canWrite && (
           <div>
             {l.status === 'active'

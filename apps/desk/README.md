@@ -61,6 +61,15 @@ Stel in Cloudflare (en in `.env.local`) ook `VITE_PUBLIC_SITE_URL` in: het adres
 - Een naam kan maximaal 5 keer gewijzigd worden; terugkeren naar een eerdere eigen naam kan
 - Voor 1h is `supabase/migrations/20261027000700_office_slug.sql` nodig
 
+## Etappe 3b: huurbetalingen
+
+- In **Rentals** > een huurovereenkomst staat het blok **Rent payments**: per maand een regel op de betaaldag met bedrag en status (te betalen, te laat, betaald). **Mark as paid** zet de betaaldatum op vandaag; **Undo** haalt dat weer weg
+- **Send reminder** opent WhatsApp met een herinnering aan de huurder in FR, AR of EN (kies bovenaan het blok) en onthoudt de datum van de laatste herinnering. Er wordt niets automatisch verstuurd
+- De regels worden aangemaakt bij het openen van Rentals: voor elke lopende overeenkomst op de betaaldag, tot 31 dagen vooruit en nooit na de einddatum. Betalingen worden bijgehouden vanaf de dag dat de overeenkomst in de app is aangemaakt, dus een al lang lopende huur krijgt geen tientallen verlopen maanden
+- Verandert de huur, dan krijgen de nog niet verlopen, onbetaalde maanden het nieuwe bedrag. Eindigt de overeenkomst, dan vervallen de onbetaalde maanden daarna; wat al verlopen was blijft openstaan
+- Het scherm Rentals toont de totale achterstallige huur en een rode markering bij overeenkomsten met achterstand
+- Viewers kunnen kijken, niet wijzigen; na afloop van het plan is alles alleen-lezen
+
 ## Talen
 
 De desk is er in Engels, Frans en Arabisch (rechts naar links). Rechtsboven (en op het inlogscherm) staat een keuze **FR / AR / EN**; de keuze wordt op dat apparaat onthouden. Testen kan ook met `?lang=fr` of `?lang=ar`.

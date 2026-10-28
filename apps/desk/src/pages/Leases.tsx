@@ -4,6 +4,7 @@ import { formatMad } from '@vastgoed/shared';
 import { t } from '../lib/i18n';
 import type { LeaseStatus, Office } from '../lib/types';
 import { daysTo, dateText, loadLeases, type LeaseView } from '../lib/leases';
+import { ensureRentDue, isOverdue, loadOpenPayments, type PaymentRow } from '../lib/payments';
 import { LEASE_STATUSES, leaseStatusCls, leaseStatusLabel } from '../lib/labels';
 import { Btn, Card, inputCls } from '../components/ui';
 import { LeaseForm } from './LeaseForm';
@@ -24,6 +25,7 @@ function Total({ label, value, hint }: { label: string; value: string; hint: str
 /** Rentals of the office: who rents what, for how much, and which leases end soon. */
 export function Leases({ office }: { office: Office }) {
   const [rows, setRows] = useState<LeaseView[] | null>(null);
+  const [open, setOpen] = useState<PaymentRow[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<Filter>('active');
   const [q, setQ] = useState('');
@@ -32,7 +34,11 @@ export function Leases({ office }: { office: Office }) {
   const canWrite = office.role !== 'viewer';
 
   const load = useCallback(async () => {
-    try { setRows(await loadLeases(office.id)); setError(null); }
+    try {
+      await ensureRentDue(office.id);
+      const [v, o] = await Promise.all([loadLeases(office.id), loadOpenPayments(office.id)]);
+      setRows(v); setOpen(o); setError(null);
+    }
     catch (e) { setError(e instanceof Error ? e.message : t('Something went wrong.')); }
   }, [office.id]);
   useEffect(() => { setRows(null); load(); }, [load]);
@@ -45,6 +51,13 @@ export function Leases({ office }: { office: Office }) {
       ending: active.filter(r => r.l.end_date !== null && daysTo(r.l.end_date) <= 60).length,
     };
   }, [rows]);
+
+  const overdue = useMemo(() => {
+    const byLease = new Map<string, number>();
+    let cents = 0, n = 0;
+    for (const p of open) if (isOverdue(p)) { byLease.set(p.lease_id, (byLease.get(p.lease_id) ?? 0) + 1); cents += p.amount_cents; n++; }
+    return { byLease, cents, n };
+  }, [open]);
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: rows?.length ?? 0 };
@@ -85,9 +98,10 @@ export function Leases({ office }: { office: Office }) {
 
       {rows !== null && rows.length > 0 && (
         <>
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <Total label={t('Running leases')} value={String(stats.active)} hint={t('Properties that are rented out now')} />
             <Total label={t('Monthly rent')} value={formatMad(stats.monthly)} hint={t('Total of the running leases')} />
+            <Total label={t('Rent overdue')} value={formatMad(overdue.cents)} hint={overdue.n === 0 ? t('Nothing overdue') : t('{n} unpaid months', { n: overdue.n })} />
             <Total label={t('Ending soon')} value={String(stats.ending)} hint={t('Within 60 days, or past the end date')} />
           </div>
 
@@ -119,7 +133,10 @@ export function Leases({ office }: { office: Office }) {
                       className="card rise cursor-pointer rounded-2xl p-4 outline-none transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
                       <div className="flex items-start justify-between gap-3">
                         <p className="font-display tabular text-base font-bold">{formatMad(l.rent_cents)} <span className="text-sm font-semibold text-muted">{t('/ month')}</span></p>
-                        <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${leaseStatusCls[l.status]}`}>{leaseStatusLabel(l.status)}</span>
+                        <span className="flex shrink-0 flex-wrap justify-end gap-1.5">
+                          {overdue.byLease.has(l.id) && <span className="rounded-full bg-danger/10 px-2.5 py-1 text-xs font-bold text-danger">{t('Overdue')}</span>}
+                          <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${leaseStatusCls[l.status]}`}>{leaseStatusLabel(l.status)}</span>
+                        </span>
                       </div>
                       <h3 className="font-display mt-2 truncate text-lg font-semibold">{person?.full_name ?? '…'}</h3>
                       <p className="truncate text-sm text-muted">{property ? `${property.title} · ${property.reference}` : '…'}</p>

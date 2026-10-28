@@ -75,6 +75,8 @@ Samenwerking tussen kantoren (Amplify Network), automatische betaling, en automa
 12. Etappe 2h: plak `supabase/migrations/20261027001100_deal_documents.sql` en klik Run. Test daarna met `supabase/tests/07_deal_documents.test.sql` (`TESTRESULTAAT: 22 geslaagd, 0 mislukt` is goed). Er komt een prive opslagbucket `deal-documents` bij; die is niet openbaar.
 13. Etappe 3a: plak `supabase/migrations/20261027001200_leases.sql` en klik Run. Test daarna met `supabase/tests/08_leases.test.sql` (`TESTRESULTAAT: 24 geslaagd, 0 mislukt` is goed).
 
+14. Etappe 3b: plak `supabase/migrations/20261027001300_rent_payments.sql` en klik Run. Test daarna met `supabase/tests/09_rent_payments.test.sql` (`TESTRESULTAAT: 22 geslaagd, 0 mislukt` is goed).
+
 ### Een kantoor op betaald zetten of verlengen
 
 Plak in de SQL-editor (slug van het kantoor, laatste dag, en optioneel max. leden en max. panden):
