@@ -627,4 +627,13 @@ export const AR: Record<string, string> = {
   'Totals show what stays with your office, after the shares for other agents.': 'تعرض المجاميع ما يبقى لوكالتك بعد حصص الوسطاء الآخرين.',
   'Your office keeps': 'تحتفظ وكالتك بـ',
   'Your share': 'حصتك',
+  'Add earlier months': 'إضافة الأشهر السابقة',
+  'Starting from': 'ابتداءً من',
+  'Were they paid?': 'هل تم أداؤها؟',
+  'Yes, already paid': 'نعم، تم أداؤها',
+  'No, still unpaid': 'لا، لم تؤدَّ بعد',
+  'Add months': 'إضافة',
+  '{n} months added': 'تمت إضافة {n} أشهر',
+  'No new months to add.': 'لا توجد أشهر جديدة لإضافتها.',
+  'Use this for a lease that started before it was added to the app. Months already in the list are kept.': 'لعقد بدأ قبل إضافته إلى التطبيق. الأشهر الموجودة في القائمة تبقى كما هي.',
 };

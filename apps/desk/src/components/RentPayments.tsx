@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Check, MessageCircle, Undo2 } from 'lucide-react';
+import { Check, History, MessageCircle, Undo2 } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
@@ -9,12 +9,13 @@ import type { Office, PersonRow } from '../lib/types';
 import { SHARE_LANGS, type ShareLang } from '../lib/publicSite';
 import { ensureRentDue, isOverdue, loadPayments, reminderMessage, todayIso, type PaymentRow } from '../lib/payments';
 import { waLink } from './ContactLinks';
+import { Btn } from './ui';
 
 const SHOWN = 6;
 
 /** The monthly rent of one lease: what is due, what is paid, and a WhatsApp reminder for the tenant. */
-export function RentPayments({ office, leaseId, person, propertyTitle, active, onChanged }: {
-  office: Office; leaseId: string; person: PersonRow | undefined; propertyTitle: string; active: boolean; onChanged: () => void;
+export function RentPayments({ office, leaseId, startDate, person, propertyTitle, active, onChanged }: {
+  office: Office; leaseId: string; startDate: string; person: PersonRow | undefined; propertyTitle: string; active: boolean; onChanged: () => void;
 }) {
   const [rows, setRows] = useState<PaymentRow[] | null>(null);
   const [all, setAll] = useState(false);
@@ -22,6 +23,10 @@ export function RentPayments({ office, leaseId, person, propertyTitle, active, o
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const canWrite = office.role !== 'viewer';
+  const [back, setBack] = useState(false);
+  const [from, setFrom] = useState(startDate);
+  const [paid, setPaid] = useState(true);
+  const [info, setInfo] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try { setRows(await loadPayments(leaseId)); }
@@ -43,6 +48,17 @@ export function RentPayments({ office, leaseId, person, propertyTitle, active, o
     if (!data?.length) { setError(t('You do not have permission to change this.')); return false; }
     await load(); onChanged();
     return true;
+  };
+
+  const backfill = async () => {
+    if (busy) return;
+    setBusy('backfill'); setError(null); setInfo(null);
+    const { data, error } = await supabase.rpc('backfill_rent', { p_lease: leaseId, p_from: from, p_paid: paid });
+    setBusy(null);
+    if (error) { setError(planError(error.message)); return; }
+    const n = Number(data ?? 0);
+    setInfo(n > 0 ? t('{n} months added', { n }) : t('No new months to add.'));
+    if (n > 0) { await load(); onChanged(); }
   };
 
   const remind = async (p: PaymentRow) => {
@@ -116,6 +132,30 @@ export function RentPayments({ office, leaseId, person, propertyTitle, active, o
 
       {!all && hidden > 0 && (
         <button type="button" onClick={() => setAll(true)} className="mt-2 text-sm font-semibold text-brand">{t('Show all {n}', { n: visible.length })}</button>
+      )}
+      {canWrite && (
+        <div className="mt-3">
+          <button type="button" onClick={() => setBack(b => !b)} className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"><History className="h-4 w-4" /> {t('Add earlier months')}</button>
+          {back && (
+            <div className="mt-2 space-y-3 rounded-2xl bg-surface-2 px-3.5 py-3">
+              <p className="text-xs text-muted">{t('Use this for a lease that started before it was added to the app. Months already in the list are kept.')}</p>
+              <label className="block text-sm font-semibold">{t('Starting from')}
+                <input type="date" min={startDate} max={todayIso()} value={from} onChange={e => setFrom(e.target.value)} className="mt-1 block w-full rounded-xl bg-surface px-3 py-2 text-sm ring-1 ring-line/10" />
+              </label>
+              <fieldset>
+                <legend className="text-sm font-semibold">{t('Were they paid?')}</legend>
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {([true, false] as const).map(v => (
+                    <button key={String(v)} type="button" aria-pressed={paid === v} onClick={() => setPaid(v)}
+                      className={`rounded-full px-3 py-1 text-sm font-semibold ${paid === v ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10'}`}>{v ? t('Yes, already paid') : t('No, still unpaid')}</button>
+                  ))}
+                </div>
+              </fieldset>
+              <Btn tone="brand" disabled={busy !== null || !from || from < startDate} onClick={backfill}>{t('Add months')}</Btn>
+              {info && <p className="text-sm font-semibold text-ok">{info}</p>}
+            </div>
+          )}
+        </div>
       )}
       {error && <p className="mt-2 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
     </div>

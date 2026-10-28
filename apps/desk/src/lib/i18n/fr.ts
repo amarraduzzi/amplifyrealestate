@@ -627,4 +627,13 @@ export const FR: Record<string, string> = {
   'Totals show what stays with your office, after the shares for other agents.': 'Les totaux montrent ce qui reste à votre agence, après les parts des autres agents.',
   'Your office keeps': 'Votre agence garde',
   'Your share': 'Votre part',
+  'Add earlier months': 'Ajouter les mois précédents',
+  'Starting from': 'À partir du',
+  'Were they paid?': 'Ont-ils été payés ?',
+  'Yes, already paid': 'Oui, déjà payés',
+  'No, still unpaid': 'Non, encore impayés',
+  'Add months': 'Ajouter',
+  '{n} months added': '{n} mois ajoutés',
+  'No new months to add.': 'Aucun nouveau mois à ajouter.',
+  'Use this for a lease that started before it was added to the app. Months already in the list are kept.': 'Pour un bail commencé avant son ajout dans l’application. Les mois déjà dans la liste sont conservés.',
 };
