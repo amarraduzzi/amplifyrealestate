@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { MessageCircle, Network as NetworkIcon } from 'lucide-react';
+import { Handshake, MessageCircle, Network as NetworkIcon, Send } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { t } from '../lib/i18n';
 import type { Office } from '../lib/types';
-import { loadNetwork, networkCall, networkError, type NetProperty, type Partner } from '../lib/network';
+import { loadNetwork, loadWork, networkCall, networkError, type Collab, type NetProperty, type Partner, type Referral } from '../lib/network';
+import { CollabsTab, ProposeCollab, ReferralForm, ReferralsTab } from './NetworkWork';
 import { purposeLabel, typeLabel } from '../lib/labels';
 import { waLink } from '../components/ContactLinks';
 import { Btn, Card, inputCls } from '../components/ui';
@@ -17,8 +18,14 @@ export function Network({ office }: { office: Office }) {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const canManage = office.role === 'owner' || office.role === 'manager';
+  const canWrite = office.role !== 'viewer';
+  const [tab, setTab] = useState<'partners' | 'shared' | 'referrals' | 'collabs'>('partners');
+  const [work, setWork] = useState<{ referrals: Referral[]; collabs: Collab[] } | null>(null);
+  const [refForm, setRefForm] = useState(false);
+  const [propose, setPropose] = useState<NetProperty | null>(null);
 
   const load = useCallback(async () => {
+    loadWork(office.id).then(setWork);
     try { setData(await loadNetwork(office.id)); setError(null); }
     catch (e) { setError(networkError(friendly(e))); }
   }, [office.id]);
@@ -45,8 +52,28 @@ export function Network({ office }: { office: Office }) {
       <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Network')}</h1>
       {error && <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
       {info && <p className="mt-4 rounded-xl bg-ok/10 px-3 py-2 text-sm font-semibold text-ok">{info}</p>}
+      {(() => {
+        const incomingRefs = work?.referrals.filter(r => !r.outgoing && r.status === 'sent').length ?? 0;
+        const incomingCols = work?.collabs.filter(c => c.listing && c.status === 'proposed').length ?? 0;
+        const pending = data?.partners.filter(p => p.status === 'pending' && p.incoming).length ?? 0;
+        return (
+          <div className="mt-5 flex flex-wrap items-center gap-1.5" role="tablist">
+            {([['partners', t('Partner offices'), pending], ['shared', t('Shared with you'), data?.properties.length ?? 0], ['referrals', t('Referred clients'), incomingRefs], ['collabs', t('Collaborations'), incomingCols]] as const)
+              .filter(([x]) => (x !== 'referrals' && x !== 'collabs') || work)
+              .map(([x, label, n]) => (
+                <button key={x} type="button" role="tab" aria-selected={tab === x} onClick={() => setTab(x)}
+                  className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${tab === x ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
+                  {label}{n ? <span className="ms-1.5 rounded-full bg-brand px-1.5 text-xs text-white">{n}</span> : null}</button>))}
+            {canWrite && work && (data?.partners.some(p => p.status === 'accepted') ?? false) && <Btn tone="brand" className="ms-auto" onClick={() => setRefForm(true)}><Send className="h-4 w-4" /> {t('Send a client')}</Btn>}
+          </div>
+        );
+      })()}
+      {tab === 'referrals' && work && <ReferralsTab referrals={work.referrals} canWrite={canWrite} run={(fn, args) => run(fn, args)} />}
+      {tab === 'collabs' && work && <CollabsTab office={office} collabs={work.collabs} canWrite={canWrite} run={(fn, args) => run(fn, args)} />}
+      {refForm && data && <ReferralForm office={office} partners={data.partners} onClose={() => setRefForm(false)} onSent={() => { setRefForm(false); setTab('referrals'); load(); }} />}
+      {propose && <ProposeCollab office={office} p={propose} onClose={() => setPropose(null)} onSent={() => { setPropose(null); setTab('collabs'); load(); }} />}
 
-      <Card className="mt-5">
+      {tab === 'partners' && <Card className="mt-5">
         <h2 className="text-sm font-semibold">{t('Partner offices')}</h2>
         <p className="mt-1 text-sm text-muted">{t('Your office code')}: <span className="tabular font-bold text-ink">{office.slug}</span></p>
         <p className="text-xs text-muted">{t('Give this code to another office so it can invite you.')}</p>
@@ -86,9 +113,9 @@ export function Network({ office }: { office: Office }) {
             ))}
           </ul>
         )}
-      </Card>
+      </Card>}
 
-      <h2 className="mt-8 text-sm font-semibold">{t('Properties shared with you')}</h2>
+      {tab === 'shared' && <>
       {data !== null && data.properties.length === 0 && (
         <Card className="mt-3 text-center">
           <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><NetworkIcon className="h-6 w-6" /></span>
@@ -106,10 +133,14 @@ export function Network({ office }: { office: Office }) {
             {p.description && <p className="mt-2 line-clamp-3 text-sm">{p.description}</p>}
             {p.commission_pct !== null && <p className="mt-2 text-sm font-semibold text-brand">{t('Commission offered to you')}: {t('{n}% of their commission', { n: Number(p.commission_pct) })}</p>}
             {p.note && <p className="mt-1 text-sm text-muted">{p.note}</p>}
-            <Btn className="mt-3" onClick={() => contact(p)}><MessageCircle className="h-4 w-4" /> {t('Contact on WhatsApp')}</Btn>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {canWrite && work && <Btn tone="brand" onClick={() => setPropose(p)}><Handshake className="h-4 w-4" /> {t('I have a client')}</Btn>}
+              <Btn onClick={() => contact(p)}><MessageCircle className="h-4 w-4" /> {t('Contact on WhatsApp')}</Btn>
+            </div>
           </Card></li>
         ))}
       </ul>
+      </>}
     </div>
   );
 }
