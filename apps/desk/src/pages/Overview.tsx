@@ -8,6 +8,7 @@ import { STATUSES, VIEWING_OUTCOMES, LEAD_STATUSES, leadStatusCls, leadStatusLab
 import { computeOverview, type MandateAlert, type OverviewInput } from '../lib/overview';
 import { Card } from '../components/ui';
 import type { View } from '../components/Shell';
+import { friendly } from '../lib/errors';
 
 const PAGE = 1000;
 const SHOWN = 8;
@@ -98,7 +99,7 @@ export function Overview({ office, onGo }: { office: Office; onGo: (v: View) => 
       ]);
       setData({ properties, mandates, leads, viewings, payments, repairs });
       setError(null);
-    } catch (e) { setError(e instanceof Error ? e.message : t('Something went wrong.')); }
+    } catch (e) { setError(friendly(e)); }
   }, [office.id]);
   useEffect(() => { load(); }, [load]);
 

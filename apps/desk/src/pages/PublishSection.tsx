@@ -7,12 +7,13 @@ import type { Office, PropertyRow } from '../lib/types';
 import { priceSuffix } from '../lib/labels';
 import { PUBLIC_SITE, SHARE_LANGS, propertyUrl, whatsappShareUrl, type ShareLang } from '../lib/publicSite';
 import { Btn, inputCls } from '../components/ui';
+import { friendly } from '../lib/errors';
 
 /** The database answers with short codes; show a sentence the person understands. */
 function publishError(message: string): string {
   if (message.includes('publiceren_vereist_beschikbaar_pand')) return t('Only available or reserved properties can be published.');
   if (message.includes('publiceren_vereist_actief_mandaat')) return t('Add an active mandate first (see Mandate above). Without it the property cannot go online.');
-  return message;
+  return friendly(message);
 }
 
 type State = 'live' | 'offline' | 'hidden_status' | 'hidden_mandate';
@@ -33,7 +34,7 @@ export function PublishSection({ office, property, canWrite, onChanged }: {
 
   const loadState = useCallback(async () => {
     const { data, error } = await supabase.rpc('property_public_state', { p_property: property.id });
-    if (error) setError(error.message); else setState((data ?? null) as State | null);
+    if (error) setError(friendly(error)); else setState((data ?? null) as State | null);
   }, [property.id]);
   useEffect(() => { loadState(); }, [loadState, property.is_published, property.status, property.updated_at]);
 

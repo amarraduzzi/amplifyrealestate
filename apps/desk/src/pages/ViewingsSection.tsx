@@ -8,6 +8,7 @@ import { whenText } from '../lib/dates';
 import { Btn } from '../components/ui';
 import { ViewingForm } from './ViewingForm';
 import { ViewingDetail } from './ViewingDetail';
+import { friendly } from '../lib/errors';
 
 /**
  * The viewings of one lead or one property, with a button to schedule a new one.
@@ -27,7 +28,7 @@ export function ViewingsSection({ office, lead, property, onChanged }: {
     try {
       const list = await loadViewings(office.id, { leadId, propertyId });
       setError(null); setRows(list.sort((a, b) => b.v.scheduled_at.localeCompare(a.v.scheduled_at)));
-    } catch (e) { setError(e instanceof Error ? e.message : t('Something went wrong.')); }
+    } catch (e) { setError(friendly(e)); }
   }, [office.id, leadId, propertyId]);
   useEffect(() => { reload(); }, [reload]);
 

@@ -10,6 +10,7 @@ import { Btn, Card, inputCls } from '../components/ui';
 import { LeaseForm } from './LeaseForm';
 import { LeaseDetail } from './LeaseDetail';
 import { downloadCsv, leasesCsv } from '../lib/exportCsv';
+import { friendly } from '../lib/errors';
 
 type Filter = 'all' | LeaseStatus;
 
@@ -40,7 +41,7 @@ export function Leases({ office }: { office: Office }) {
       const [v, o] = await Promise.all([loadLeases(office.id), loadOpenPayments(office.id)]);
       setRows(v); setOpen(o); setError(null);
     }
-    catch (e) { setError(e instanceof Error ? e.message : t('Something went wrong.')); }
+    catch (e) { setError(friendly(e)); }
   }, [office.id]);
   useEffect(() => { setRows(null); load(); }, [load]);
 

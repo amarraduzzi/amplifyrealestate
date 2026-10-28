@@ -6,6 +6,7 @@ import { getLang, t } from '../lib/i18n';
 import type { Office, PropertyRow } from '../lib/types';
 import { BASES, basisLabel, mandateCls, mandateStatusLabel } from '../lib/labels';
 import { Btn, Field, inputCls } from '../components/ui';
+import { friendly } from '../lib/errors';
 
 type Mandate = {
   id: string; owner_person_id: string | null; basis: MandateBasis; status: MandateStatus;
@@ -47,7 +48,7 @@ function MandateForm({ orgId, propertyId, onDone, onCancel }: { orgId: string; p
       evidence_note: note.trim() || null,
     });
     setBusy(false);
-    if (error) setError(error.message); else onDone();
+    if (error) setError(friendly(error)); else onDone();
   };
 
   return (
@@ -89,7 +90,7 @@ export function PropertyMandates({ office, property, canWrite }: { office: Offic
     const { data, error } = await supabase.from('property_mandates')
       .select('id, owner_person_id, basis, status, valid_from, valid_until, evidence_note, created_at')
       .eq('property_id', property.id).order('created_at', { ascending: false });
-    if (error) { setError(error.message); return; }
+    if (error) { setError(friendly(error)); return; }
     const list = (data ?? []) as Mandate[];
     const ids = Array.from(new Set(list.map(m => m.owner_person_id).filter((x): x is string => !!x)));
     const map: Record<string, string> = {};
@@ -104,7 +105,7 @@ export function PropertyMandates({ office, property, canWrite }: { office: Offic
   const revoke = async (m: Mandate) => {
     if (!window.confirm(t('Revoke this mandate? You can add a new one afterwards.'))) return;
     const { data, error } = await supabase.from('property_mandates').update({ status: 'revoked' }).eq('id', m.id).select('id');
-    if (error) setError(error.message);
+    if (error) setError(friendly(error));
     else if (!data?.length) setError(t('You do not have permission to change this property.'));
     else load();
   };

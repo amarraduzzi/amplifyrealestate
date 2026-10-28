@@ -7,6 +7,7 @@ import { OPEN_LEAD_STATUSES, priceSuffix, purposeLabel } from '../lib/labels';
 import { dealError, type DealProp } from '../lib/deals';
 import { planError } from '../lib/plan';
 import { Btn, Field, Modal, inputCls } from '../components/ui';
+import { friendly } from '../lib/errors';
 
 type LeadOpt = { lead: LeadRow; name: string };
 const num = (s: string) => (s.trim() === '' ? null : Number(s.replace(',', '.')));
@@ -43,7 +44,7 @@ export function DealForm({ orgId, deal, leadId, propertyId, onClose, onSaved }: 
       ]);
       if (cancelled) return;
       const err = l.error ?? p.error ?? pr.error;
-      if (err) { setError(err.message); setLeads([]); return; }
+      if (err) { setError(friendly(err)); setLeads([]); return; }
       const names = new Map(((p.data ?? []) as { id: string; full_name: string }[]).map(x => [x.id, x.full_name]));
       const lopts = ((l.data ?? []) as LeadRow[])
         .filter(x => OPEN_LEAD_STATUSES.includes(x.status) || x.id === leadId)

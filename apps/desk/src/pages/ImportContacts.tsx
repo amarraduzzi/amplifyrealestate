@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import { EXAMPLE_CSV, parseTable, planImport, type ImportPlan } from '../lib/importContacts';
 import { Btn, Modal, inputCls } from '../components/ui';
+import { friendly } from '../lib/errors';
 
 type Purpose = 'none' | DealPurpose;
 
@@ -30,7 +31,7 @@ export function ImportContacts({ orgId, onClose, onDone }: { orgId: string; onCl
     setBusy(true);
     const { data, error: e } = await supabase.from('people').select('phone, whatsapp, email').eq('org_id', orgId);
     setBusy(false);
-    if (e) { setError(e.message); return; }
+    if (e) { setError(friendly(e)); return; }
     const r = planImport(parseTable(raw), (data ?? []) as { phone: string | null; whatsapp: string | null; email: string | null }[]);
     if ('error' in r) {
       setError(r.error === 'empty' ? t('No rows found. The first row must contain the column names.')
@@ -64,11 +65,11 @@ export function ImportContacts({ orgId, onClose, onDone }: { orgId: string; onCl
       const ins = await supabase.from('people')
         .insert(batch.map(r => ({ org_id: orgId, full_name: r.name, phone: r.phone, whatsapp: r.whatsapp, email: r.email })))
         .select('id');
-      if (ins.error || !ins.data) { setError(`${t('{n} contacts were added before an error stopped the import.', { n })} ${ins.error?.message ?? ''}`); setBusy(false); if (n > 0) onDone(); return; }
+      if (ins.error || !ins.data) { setError(`${t('{n} contacts were added before an error stopped the import.', { n })} ${friendly(ins.error)}`); setBusy(false); if (n > 0) onDone(); return; }
       n += ins.data.length;
       if (purpose !== 'none') {
         const l = await supabase.from('leads').insert(ins.data.map(p => ({ org_id: orgId, person_id: p.id, purpose })));
-        if (l.error) { setError(`${t('{n} contacts were added before an error stopped the import.', { n })} ${l.error.message}`); setBusy(false); onDone(); return; }
+        if (l.error) { setError(`${t('{n} contacts were added before an error stopped the import.', { n })} ${friendly(l.error)}`); setBusy(false); onDone(); return; }
       }
     }
     setBusy(false); setAdded(n); onDone();

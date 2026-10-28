@@ -6,6 +6,7 @@ import { loadTasks, sortTasks, toggleTask, type TaskView } from '../lib/tasks';
 import { Btn } from '../components/ui';
 import { TaskItem } from '../components/TaskItem';
 import { TaskForm } from './TaskForm';
+import { friendly } from '../lib/errors';
 
 /** The tasks of one lead or one property, with a button to add one. Used inside the lead and property screens. */
 export function TasksSection({ office, userId, lead, property }: { office: Office; userId: string; lead?: LeadRow; property?: PropertyRow }) {
@@ -19,7 +20,7 @@ export function TasksSection({ office, userId, lead, property }: { office: Offic
   const leadId = lead?.id, propertyId = property?.id;
   const reload = useCallback(async () => {
     try { const r = await loadTasks(office.id, { leadId, propertyId }); setError(null); setRows(sortTasks(r.tasks)); }
-    catch (e) { setError(e instanceof Error ? e.message : t('Something went wrong.')); }
+    catch (e) { setError(friendly(e)); }
   }, [office.id, leadId, propertyId]);
   useEffect(() => { reload(); }, [reload]);
 

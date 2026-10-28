@@ -14,6 +14,7 @@ import { budgetText, criteriaText } from '../components/leadText';
 import { LeadForm } from './LeadForm';
 import { ViewingsSection } from './ViewingsSection';
 import { TasksSection } from './TasksSection';
+import { friendly } from '../lib/errors';
 
 export function LeadDetail({ office, userId, lead, person, matches, onChanged, onClose }: {
   office: Office; userId: string; lead: LeadRow; person: PersonRow | undefined; matches: MatchProp[]; onChanged: () => void; onClose: () => void;
@@ -28,7 +29,7 @@ export function LeadDetail({ office, userId, lead, person, matches, onChanged, o
     setBusy(true); setError(null);
     const { data, error } = await supabase.from('leads').update({ status: s }).eq('id', lead.id).select('id');
     setBusy(false);
-    if (error) setError(error.message);
+    if (error) setError(friendly(error));
     else if (!data?.length) setError(t('You do not have permission to change this property.'));
     else onChanged();
   };
@@ -37,7 +38,7 @@ export function LeadDetail({ office, userId, lead, person, matches, onChanged, o
     setBusy(true); setError(null);
     const { error } = await supabase.rpc('touch_lead_contact', { p_lead: lead.id });
     setBusy(false);
-    if (error) setError(error.message); else onChanged();
+    if (error) setError(friendly(error)); else onChanged();
   };
 
   if (editing) {

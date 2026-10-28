@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import { Btn, Field, inputCls } from '../components/ui';
 import { Showcase, promises } from '../components/Showcase';
+import { friendly } from '../lib/errors';
 
 type Mode = 'login' | 'signup';
 
@@ -21,10 +22,10 @@ export function Login() {
     e.preventDefault(); setBusy(true); setError(null); setInfo(null);
     if (mode === 'login') {
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
-      if (error) setError(/invalid login/i.test(error.message) ? t('Wrong email or password.') : error.message);
+      if (error) setError(friendly(error));
     } else {
       const { data, error } = await supabase.auth.signUp({ email: email.trim(), password, options: { emailRedirectTo: location.origin } });
-      if (error) setError(error.message);
+      if (error) setError(friendly(error));
       else if (!data.session) setInfo(t('Account created. Open the link we emailed you to confirm it, then sign in.'));
     }
     setBusy(false);

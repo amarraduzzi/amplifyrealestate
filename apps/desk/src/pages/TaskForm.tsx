@@ -5,6 +5,7 @@ import type { LeadRow, MemberRow, TaskRow } from '../lib/types';
 import { TASK_STATUSES, taskStatusLabel } from '../lib/labels';
 import { loadMembers } from '../lib/tasks';
 import { Btn, Field, Modal, inputCls } from '../components/ui';
+import { friendly } from '../lib/errors';
 
 type Opt = { id: string; label: string };
 
@@ -49,7 +50,7 @@ export function TaskForm({ orgId, userId, task, leadId, propertyId, onClose, onS
           .filter(x => x.status !== 'withdrawn' || x.id === (task?.property_id ?? propertyId))
           .map(x => ({ id: x.id, label: `${x.title} · ${x.reference}` })));
         setReady(true);
-      } catch (e) { if (!cancelled) { setError(e instanceof Error ? e.message : t('Something went wrong.')); setReady(true); } }
+      } catch (e) { if (!cancelled) { setError(friendly(e)); setReady(true); } }
     })();
     return () => { cancelled = true; };
   }, [orgId, task?.lead_id, task?.property_id, leadId, propertyId]);
@@ -65,14 +66,14 @@ export function TaskForm({ orgId, userId, task, leadId, propertyId, onClose, onS
     if (task) {
       const { data, error } = await supabase.from('tasks').update({ ...fields, status }).eq('id', task.id).select('id');
       setBusy(false);
-      if (error) setError(error.message);
+      if (error) setError(friendly(error));
       else if (!data?.length) setError(t('You do not have permission to change this.'));
       else onSaved();
       return;
     }
     const { error } = await supabase.from('tasks').insert({ org_id: orgId, ...fields });
     setBusy(false);
-    if (error) setError(error.message); else onSaved();
+    if (error) setError(friendly(error)); else onSaved();
   };
 
   return (

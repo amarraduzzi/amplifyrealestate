@@ -9,6 +9,7 @@ import { whenText } from '../lib/dates';
 import { Btn, Card, inputCls } from '../components/ui';
 import { ViewingForm } from './ViewingForm';
 import { ViewingDetail } from './ViewingDetail';
+import { friendly } from '../lib/errors';
 
 type Filter = 'all' | ViewingStatus;
 
@@ -23,7 +24,7 @@ export function Viewings({ office }: { office: Office }) {
 
   const load = useCallback(async () => {
     try { setRows(await loadViewings(office.id)); setError(null); }
-    catch (e) { setError(e instanceof Error ? e.message : t('Something went wrong.')); }
+    catch (e) { setError(friendly(e)); }
   }, [office.id]);
   useEffect(() => { setRows(null); load(); }, [load]);
 

@@ -5,6 +5,7 @@ import { t } from '../lib/i18n';
 import type { LeadRow, PersonRow } from '../lib/types';
 import { PURPOSES, TYPES, purposeLabel, typeLabel } from '../lib/labels';
 import { Btn, Field, Modal, inputCls } from '../components/ui';
+import { friendly } from '../lib/errors';
 
 const num = (s: string) => (s.trim() === '' ? null : Number(s));
 const str = (x: number | null | undefined) => (x === null || x === undefined ? '' : String(x));
@@ -37,7 +38,7 @@ export function LeadForm({ orgId, lead, onClose, onSaved }: { orgId: string; lea
   useEffect(() => {
     if (editing) return;
     supabase.from('people').select('id, full_name, phone, whatsapp, email').eq('org_id', orgId).order('full_name').then(({ data, error }) => {
-      if (error) { setError(error.message); setOrgPeople([]); return; }
+      if (error) { setError(friendly(error)); setOrgPeople([]); return; }
       const list = (data ?? []) as PersonRow[];
       setOrgPeople(list);
       if (list.length > 0) { setMode('existing'); setPersonId(list[0].id); }
@@ -68,7 +69,7 @@ export function LeadForm({ orgId, lead, onClose, onSaved }: { orgId: string; lea
     if (lead) {
       const { data, error } = await supabase.from('leads').update(fields).eq('id', lead.id).select('id');
       setBusy(false);
-      if (error) setError(error.message);
+      if (error) setError(friendly(error));
       else if (!data?.length) setError(t('You do not have permission to change this property.'));
       else onSaved();
       return;
@@ -80,13 +81,13 @@ export function LeadForm({ orgId, lead, onClose, onSaved }: { orgId: string; lea
         org_id: orgId, full_name: name.trim(),
         phone: phone.trim() || null, whatsapp: whatsapp.trim() || null, email: email.trim() || null,
       }).select('id').single();
-      if (error || !data) { setBusy(false); setError(error?.message ?? t('Something went wrong.')); return; }
+      if (error || !data) { setBusy(false); setError(friendly(error)); return; }
       id = data.id as string;
     }
     if (!id) { setBusy(false); setError(t('Choose a person.')); return; }
     const { error } = await supabase.from('leads').insert({ org_id: orgId, person_id: id, ...fields });
     setBusy(false);
-    if (error) setError(error.message); else onSaved();
+    if (error) setError(friendly(error)); else onSaved();
   };
 
   const per = purpose === 'rent_long' ? t('Per month') : purpose === 'rent_short' ? t('Per night') : t('Total price');
@@ -139,8 +140,8 @@ export function LeadForm({ orgId, lead, onClose, onSaved }: { orgId: string; lea
           </Field>
           <Field label={t('Budget from (DH)')} hint={per}><input className={inputCls} dir="ltr" inputMode="decimal" type="number" min="0" step="any" value={bmin} onChange={e => setBmin(e.target.value)} /></Field>
           <Field label={t('Budget up to (DH)')} hint={per}><input className={inputCls} dir="ltr" inputMode="decimal" type="number" min="0" step="any" value={bmax} onChange={e => setBmax(e.target.value)} /></Field>
-          <Field label={t('City')}><input className={inputCls} value={city} onChange={e => setCity(e.target.value)} placeholder="Rabat" /></Field>
-          <Field label={t('Neighborhoods')} hint={t('Separate with commas. Empty means anywhere.')}><input className={inputCls} value={hood} onChange={e => setHood(e.target.value)} placeholder="Agdal, Hay Riad" /></Field>
+          <Field label={t('City')}><input className={inputCls} value={city} onChange={e => setCity(e.target.value)} placeholder={t('Rabat')} /></Field>
+          <Field label={t('Neighborhoods')} hint={t('Separate with commas. Empty means anywhere.')}><input className={inputCls} value={hood} onChange={e => setHood(e.target.value)} placeholder={t('Agdal, Hay Riad')} /></Field>
           <Field label={t('Minimum bedrooms')}><input className={inputCls} dir="ltr" inputMode="numeric" type="number" min="0" value={beds} onChange={e => setBeds(e.target.value)} /></Field>
           <Field label={t('Minimum area (m²)')}><input className={inputCls} dir="ltr" inputMode="decimal" type="number" min="0" step="any" value={area} onChange={e => setArea(e.target.value)} /></Field>
         </div>

@@ -18,6 +18,7 @@ import { OwnerReport } from './OwnerReport';
 import { ViewingsSection } from './ViewingsSection';
 import { TasksSection } from './TasksSection';
 import { planError } from '../lib/plan';
+import { friendly } from '../lib/errors';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 const when = (iso: string) =>
@@ -57,7 +58,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
       .select('id, changed_by, changed_at, field, old_value, new_value')
       .eq('property_id', row.id)
       .order('changed_at', { ascending: false }).order('id', { ascending: false });
-    if (error) setError(error.message); else setHistory((data ?? []) as HistoryRow[]);
+    if (error) setError(friendly(error)); else setHistory((data ?? []) as HistoryRow[]);
   }, [row.id]);
   useEffect(() => { loadHistory(); }, [loadHistory]);
 
@@ -80,7 +81,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
     // A status change is also a fresh confirmation.
     const r = await supabase.rpc('confirm_property_info', { p_property: row.id });
     setBusy(false);
-    if (r.error) setError(r.error.message);
+    if (r.error) setError(friendly(r.error));
     onChanged(); loadHistory();
   };
 

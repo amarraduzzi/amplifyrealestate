@@ -6,6 +6,7 @@ import type { PropertyRow } from '../lib/types';
 import { PURPOSES, TYPES, purposeLabel, statusLabel, typeLabel } from '../lib/labels';
 import { Btn, Field, Modal, inputCls } from '../components/ui';
 import { planError } from '../lib/plan';
+import { friendly } from '../lib/errors';
 
 const num = (s: string) => (s.trim() === '' ? null : Number(s));
 const str = (x: number | null | undefined) => (x === null || x === undefined ? '' : String(x));
@@ -62,7 +63,7 @@ export function PropertyForm({ orgId, property, onClose, onSaved }: {
     // A new price counts as a fresh confirmation of price and availability.
     if (priceCents !== property.price_cents) {
       const r = await supabase.rpc('confirm_property_info', { p_property: property.id });
-      if (r.error) { setBusy(false); setError(r.error.message); return; }
+      if (r.error) { setBusy(false); setError(friendly(r.error)); return; }
     }
     setBusy(false);
     onSaved();
@@ -96,8 +97,8 @@ export function PropertyForm({ orgId, property, onClose, onSaved }: {
               </select>
             </Field>
           )}
-          <Field label={t('City')}><input className={inputCls} value={city} onChange={e => setCity(e.target.value)} placeholder="Rabat" /></Field>
-          <Field label={t('Neighborhood')}><input className={inputCls} value={hood} onChange={e => setHood(e.target.value)} placeholder="Agdal" /></Field>
+          <Field label={t('City')}><input className={inputCls} value={city} onChange={e => setCity(e.target.value)} placeholder={t('Rabat')} /></Field>
+          <Field label={t('Neighborhood')}><input className={inputCls} value={hood} onChange={e => setHood(e.target.value)} placeholder={t('Agdal')} /></Field>
           <Field label={t('Bedrooms')}><input className={inputCls} dir="ltr" inputMode="numeric" type="number" min="0" value={beds} onChange={e => setBeds(e.target.value)} /></Field>
           <Field label={t('Bathrooms')}><input className={inputCls} dir="ltr" inputMode="numeric" type="number" min="0" value={baths} onChange={e => setBaths(e.target.value)} /></Field>
           <Field label={t('Area (m²)')}><input className={inputCls} dir="ltr" inputMode="decimal" type="number" min="0" step="any" value={area} onChange={e => setArea(e.target.value)} /></Field>

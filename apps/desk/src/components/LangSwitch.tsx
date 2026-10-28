@@ -1,4 +1,4 @@
-import { getLang, saveLang, type Lang } from '../lib/i18n';
+import { getLang, saveLang, t, type Lang } from '../lib/i18n';
 
 const OPTIONS: { id: Lang; label: string }[] = [
   { id: 'fr', label: 'FR' },
@@ -18,7 +18,7 @@ export function LangSwitch({ light = false }: { light?: boolean }) {
     window.location.replace(u.toString());
   };
   return (
-    <div className="flex items-center gap-0.5 rounded-full p-0.5" dir="ltr" role="group" aria-label="Language">
+    <div className="flex items-center gap-0.5 rounded-full p-0.5" dir="ltr" role="group" aria-label={t('Language')}>
       {OPTIONS.map(o => (
         <button key={o.id} type="button" onClick={() => pick(o.id)} aria-pressed={o.id === cur}
           className={`rounded-full px-2 py-1 text-[11px] font-bold transition ${

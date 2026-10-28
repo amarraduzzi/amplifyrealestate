@@ -16,6 +16,7 @@ import { computeFinance, periodStart } from '../lib/ownerFinance';
 import { Btn } from '../components/ui';
 import { waLink } from '../components/ContactLinks';
 import { PUBLIC_SITE, propertyUrl, whatsappShareUrl } from '../lib/publicSite';
+import { friendly } from '../lib/errors';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 const fmt = (d: string | Date, style: 'medium' | 'long', utc = false) =>
@@ -57,7 +58,7 @@ export function OwnerReport({ office, property, onClose }: { office: Office; pro
           owner = r ? { name: r.full_name, number: r.whatsapp || r.phone } : null;
         }
         if (live) setData({ viewings: viewings.sort((a, b) => b.v.scheduled_at.localeCompare(a.v.scheduled_at)), deals, lease, payments, repairs, mandate: active, owner });
-      } catch (e) { if (live) setError(e instanceof Error ? e.message : t('Something went wrong.')); }
+      } catch (e) { if (live) setError(friendly(e)); }
     })();
     return () => { live = false; };
   }, [office.id, property.id]);

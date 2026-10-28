@@ -10,6 +10,7 @@ import { Confirmed } from '../components/Confirmed';
 import { PropertyForm } from './PropertyForm';
 import { PropertyDetail } from './PropertyDetail';
 import { downloadCsv, propertiesCsv } from '../lib/exportCsv';
+import { friendly } from '../lib/errors';
 
 type Filter = 'all' | PropertyStatus;
 
@@ -24,7 +25,7 @@ export function Properties({ office, userId }: { office: Office; userId: string 
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.from('properties').select('*').eq('org_id', office.id).order('created_at', { ascending: false });
-    if (error) setError(error.message); else { setError(null); setRows((data ?? []) as PropertyRow[]); }
+    if (error) setError(friendly(error)); else { setError(null); setRows((data ?? []) as PropertyRow[]); }
   }, [office.id]);
   useEffect(() => { setRows(null); load(); }, [load]);
 

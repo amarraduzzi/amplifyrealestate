@@ -7,6 +7,7 @@ import { matches } from '../lib/matching';
 import { ContactLinks } from '../components/ContactLinks';
 import { ContactAge } from '../components/ContactAge';
 import { budgetText, criteriaText } from '../components/leadText';
+import { friendly } from '../lib/errors';
 
 /** On a property: which leads are looking for something like this? Only shown while the property is available. */
 export function PropertyLeads({ office, property }: { office: Office; property: PropertyRow }) {
@@ -19,7 +20,7 @@ export function PropertyLeads({ office, property }: { office: Office; property: 
     let cancelled = false;
     (async () => {
       const l = await supabase.from('leads').select('*').eq('org_id', office.id).eq('purpose', property.purpose).in('status', OPEN_LEAD_STATUSES);
-      if (l.error) { if (!cancelled) setError(l.error.message); return; }
+      if (l.error) { if (!cancelled) setError(friendly(l.error)); return; }
       const fits = ((l.data ?? []) as LeadRow[]).filter(x => matches(x, property));
       const ids = Array.from(new Set(fits.map(x => x.person_id)));
       const map: Record<string, PersonRow> = {};

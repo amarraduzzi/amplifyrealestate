@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { friendly } from './errors';
 import type { LeadRow, MemberRow, PersonRow, TaskRow } from './types';
 
 /** A task with the names of who it is for and what it is about. */
@@ -63,7 +64,7 @@ export function sortTasks(list: TaskView[]): TaskView[] {
 export async function toggleTask(task: TaskRow): Promise<string | null> {
   const next = task.status === 'done' ? 'open' : 'done';
   const { data, error } = await supabase.from('tasks').update({ status: next }).eq('id', task.id).select('id');
-  if (error) return error.message;
+  if (error) return friendly(error);
   if (!data?.length) return 'You do not have permission to change this.';
   return null;
 }

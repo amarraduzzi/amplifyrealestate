@@ -5,6 +5,7 @@ import { t } from '../lib/i18n';
 import { COST_BY, MAINT_PRIORITIES, costByLabel, priorityLabel, type CostBy, type MaintPriority, type MaintRow } from '../lib/maintenance';
 import { planError } from '../lib/plan';
 import { Btn, Field, Modal, inputCls } from '../components/ui';
+import { friendly } from '../lib/errors';
 
 type PropOpt = { id: string; title: string; reference: string };
 type Person = { id: string; full_name: string };
@@ -40,7 +41,7 @@ export function MaintenanceForm({ orgId, item, propertyId, onClose, onSaved }: {
       ]);
       if (cancelled) return;
       const err = pr.error ?? pe.error;
-      if (err) { setError(err.message); setProps([]); return; }
+      if (err) { setError(friendly(err)); setProps([]); return; }
       const opts = ((pr.data ?? []) as (PropOpt & { status: string })[]).filter(x => x.status !== 'withdrawn' || x.id === (item?.property_id ?? propertyId));
       setProps(opts);
       setPeople((pe.data ?? []) as Person[]);

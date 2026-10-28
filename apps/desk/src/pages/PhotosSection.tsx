@@ -5,6 +5,7 @@ import { t } from '../lib/i18n';
 import type { Office, PropertyRow } from '../lib/types';
 import { MAX_PHOTOS, deletePhoto, photoUrl, uploadPhoto } from '../lib/photos';
 import { Btn } from '../components/ui';
+import { friendly } from '../lib/errors';
 
 type Photo = { id: string; org_id: string; property_id: string; is_cover: boolean };
 const base = (p: Photo) => `${p.org_id}/${p.property_id}/${p.id}`;
@@ -12,7 +13,7 @@ const base = (p: Photo) => `${p.org_id}/${p.property_id}/${p.id}`;
 function photoError(message: string): string {
   if (message.includes('maximaal_20_fotos')) return t('A property can have at most {n} photos.', { n: MAX_PHOTOS });
   if (message === 'no_permission') return t('You do not have permission to change this property.');
-  return message;
+  return friendly(message);
 }
 
 /** Photos of one property: upload (several at once), choose the cover, delete. */
@@ -30,7 +31,7 @@ export function PhotosSection({ office, property, canWrite, onChanged }: {
       .select('id, org_id, property_id, is_cover')
       .eq('property_id', property.id)
       .order('is_cover', { ascending: false }).order('created_at').order('id');
-    if (error) setError(error.message); else setPhotos((data ?? []) as Photo[]);
+    if (error) setError(friendly(error)); else setPhotos((data ?? []) as Photo[]);
   }, [property.id]);
   useEffect(() => { load(); }, [load]);
 

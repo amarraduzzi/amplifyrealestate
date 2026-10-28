@@ -15,6 +15,7 @@ import { SHARE_LANGS, whatsappShareUrl, type ShareLang } from '../lib/publicSite
 import { viewingReminder } from '../lib/leadMessage';
 import { waLink } from '../components/ContactLinks';
 import { MessageCircle } from 'lucide-react';
+import { friendly } from '../lib/errors';
 
 /** One viewing: when, who, which property, and how it went. */
 export function ViewingDetail({ office, item, onChanged, onClose }: {
@@ -34,7 +35,7 @@ export function ViewingDetail({ office, item, onChanged, onClose }: {
     // An outcome only exists for a viewing that took place.
     const patch = s === 'done' ? { status: s } : { status: s, outcome: null };
     const { data, error } = await supabase.from('viewings').update(patch).eq('id', v.id).select('id');
-    if (error) { setBusy(false); setError(error.message); return; }
+    if (error) { setBusy(false); setError(friendly(error)); return; }
     if (!data?.length) { setBusy(false); setError(t('You do not have permission to change this.')); return; }
     // A viewing that took place is also a moment of contact with the lead.
     if (s === 'done') await supabase.rpc('touch_lead_contact', { p_lead: v.lead_id });
@@ -47,7 +48,7 @@ export function ViewingDetail({ office, item, onChanged, onClose }: {
     setBusy(true); setError(null);
     const { data, error } = await supabase.from('viewings').update({ outcome: v.outcome === o ? null : o }).eq('id', v.id).select('id');
     setBusy(false);
-    if (error) setError(error.message);
+    if (error) setError(friendly(error));
     else if (!data?.length) setError(t('You do not have permission to change this.'));
     else onChanged();
   };

@@ -11,6 +11,7 @@ import { ourShareCents, sharedPct, splitCents, splitError, splitMessage } from '
 import { dateText } from '../lib/leases';
 import { Btn, Field, inputCls } from './ui';
 import { ContactLinks, waLink } from './ContactLinks';
+import { friendly } from '../lib/errors';
 
 function SplitForm({ orgId, dealId, taken, remaining, onDone, onCancel }: {
   orgId: string; dealId: string; taken: string[]; remaining: number; onDone: () => void; onCancel: () => void;
@@ -30,7 +31,7 @@ function SplitForm({ orgId, dealId, taken, remaining, onDone, onCancel }: {
 
   useEffect(() => {
     supabase.from('people').select('id, full_name, phone, whatsapp, email').eq('org_id', orgId).order('full_name').then(({ data, error }) => {
-      if (error) { setError(error.message); setOrgPeople([]); return; }
+      if (error) { setError(friendly(error)); setOrgPeople([]); return; }
       const list = ((data ?? []) as PersonRow[]).filter(p => !taken.includes(p.id));
       setOrgPeople(list);
       if (list.length > 0) { setMode('existing'); setPersonId(list[0].id); }
@@ -128,7 +129,7 @@ export function DealSplits({ office, item, onChanged }: { office: Office; item: 
 
   const load = useCallback(async () => {
     const r = await supabase.from('deal_splits').select('*').eq('deal_id', d.id).order('created_at');
-    if (r.error) { setError(r.error.message); setRows([]); return; }
+    if (r.error) { setError(friendly(r.error)); setRows([]); return; }
     const list = (r.data ?? []) as SplitRow[];
     const map: Record<string, PersonRow> = {};
     const ids = Array.from(new Set(list.map(x => x.person_id)));

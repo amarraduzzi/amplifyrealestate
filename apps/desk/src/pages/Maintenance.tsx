@@ -8,6 +8,7 @@ import { isOpen, loadMaintenance, maintStatusCls, maintStatusLabel, priorityCls,
 import { Btn, Card, inputCls } from '../components/ui';
 import { MaintenanceForm } from './MaintenanceForm';
 import { MaintenanceDetail } from './MaintenanceDetail';
+import { friendly } from '../lib/errors';
 
 type Filter = 'active' | 'all' | MaintStatus;
 
@@ -33,7 +34,7 @@ export function Maintenance({ office }: { office: Office }) {
 
   const load = useCallback(async () => {
     try { setRows(await loadMaintenance(office.id)); setError(null); }
-    catch (e) { setError(e instanceof Error ? e.message : t('Something went wrong.')); }
+    catch (e) { setError(friendly(e)); }
   }, [office.id]);
   useEffect(() => { setRows(null); load(); }, [load]);
 

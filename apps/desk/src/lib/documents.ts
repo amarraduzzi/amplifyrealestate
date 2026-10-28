@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { t } from './i18n';
+import { friendly } from './errors';
 
 export const DOC_BUCKET = 'deal-documents';
 export const MAX_DOCS = 20;
@@ -23,7 +24,7 @@ const path = (d: Pick<DealDocument, 'org_id' | 'deal_id' | 'id'>) => `${d.org_id
 export function docError(message: string): string {
   if (message.includes('maximaal_20_documenten')) return t('A deal can have at most {n} documents.', { n: MAX_DOCS });
   if (message.includes('plan_expired') || message.includes('row-level security') || message === 'no_permission') return t('You do not have permission to change this, or your plan has ended.');
-  return message;
+  return friendly(message);
 }
 
 export async function loadDocuments(dealId: string): Promise<DealDocument[]> {

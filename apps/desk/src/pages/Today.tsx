@@ -18,6 +18,7 @@ import { GettingStarted } from '../components/GettingStarted';
 import { TaskForm } from './TaskForm';
 import { ViewingDetail } from './ViewingDetail';
 import type { View } from '../components/Shell';
+import { friendly } from '../lib/errors';
 
 type StaleLead = { lead: LeadRow; name: string; days: number };
 type StaleProp = { id: string; title: string; reference: string; days: number };
@@ -79,7 +80,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
         .filter(x => x.days > PROP_DAYS).sort((a, b) => b.days - a.days));
       setRent(ra); setRepairs(rp);
       setError(null);
-    } catch (e) { setError(e instanceof Error ? e.message : t('Something went wrong.')); }
+    } catch (e) { setError(friendly(e)); }
   }, [office.id, canWrite]);
   // Once per visit: make a task for every mandate that ends soon or has ended (idempotent). Never blocks the screen:
   // when the database function is not installed yet, or fails, Today simply loads as before.

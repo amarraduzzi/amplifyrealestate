@@ -5,6 +5,7 @@ import type { LeadRow, ViewingRow } from '../lib/types';
 import { OPEN_LEAD_STATUSES, purposeLabel } from '../lib/labels';
 import { defaultViewingTime, fromInputValue, toInputValue } from '../lib/dates';
 import { Btn, Field, Modal, inputCls } from '../components/ui';
+import { friendly } from '../lib/errors';
 
 type LeadOpt = { lead: LeadRow; name: string };
 type PropOpt = { id: string; title: string; reference: string };
@@ -37,7 +38,7 @@ export function ViewingForm({ orgId, viewing, leadId, propertyId, onClose, onSav
       ]);
       if (cancelled) return;
       const err = l.error ?? p.error ?? pr.error;
-      if (err) { setError(err.message); setLeads([]); return; }
+      if (err) { setError(friendly(err)); setLeads([]); return; }
       const names = new Map(((p.data ?? []) as { id: string; full_name: string }[]).map(x => [x.id, x.full_name]));
       const lopts = ((l.data ?? []) as LeadRow[])
         .filter(x => OPEN_LEAD_STATUSES.includes(x.status) || x.id === leadId)
@@ -62,7 +63,7 @@ export function ViewingForm({ orgId, viewing, leadId, propertyId, onClose, onSav
     if (viewing) {
       const { data, error } = await supabase.from('viewings').update({ scheduled_at: iso, notes: notes.trim() || null }).eq('id', viewing.id).select('id');
       setBusy(false);
-      if (error) setError(error.message);
+      if (error) setError(friendly(error));
       else if (!data?.length) setError(t('You do not have permission to change this.'));
       else onSaved();
       return;
@@ -70,7 +71,7 @@ export function ViewingForm({ orgId, viewing, leadId, propertyId, onClose, onSav
 
     if (!lead || !property) { setBusy(false); setError(t('Choose a lead and a property.')); return; }
     const { error } = await supabase.from('viewings').insert({ org_id: orgId, lead_id: lead, property_id: property, scheduled_at: iso, notes: notes.trim() || null });
-    if (error) { setBusy(false); setError(error.message); return; }
+    if (error) { setBusy(false); setError(friendly(error)); return; }
     // A lead that gets a viewing is now in the viewing phase. Not worth failing the save over.
     const chosen = leads?.find(x => x.lead.id === lead)?.lead;
     if (chosen && (chosen.status === 'new' || chosen.status === 'active')) {

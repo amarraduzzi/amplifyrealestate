@@ -22,6 +22,7 @@ import { Leases } from './pages/Leases';
 import { Maintenance } from './pages/Maintenance';
 import { PlanBanner } from './components/PlanBanner';
 import { loadPlan, type PlanInfo } from './lib/plan';
+import { friendly } from './lib/errors';
 
 const ORG_KEY = 'desk-org';
 
@@ -38,7 +39,7 @@ function Workspace({ session }: { session: Session }) {
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.from('memberships').select('role, organizations(id, name, slug, city)').eq('user_id', session.user.id);
-    if (error) { setError(error.message); return; }
+    if (error) { setError(friendly(error)); return; }
     setError(null);
     const list: Office[] = [];
     for (const m of (data ?? []) as any[]) {

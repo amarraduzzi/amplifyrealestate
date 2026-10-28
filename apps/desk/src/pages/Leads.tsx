@@ -12,6 +12,7 @@ import { ImportContacts } from './ImportContacts';
 import { LeadForm } from './LeadForm';
 import { LeadDetail } from './LeadDetail';
 import { downloadCsv, leadsCsv } from '../lib/exportCsv';
+import { friendly } from '../lib/errors';
 
 type Filter = 'all' | LeadRow['status'];
 
@@ -34,7 +35,7 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
       supabase.from('properties').select(MATCH_COLUMNS).eq('org_id', office.id).eq('status', 'available'),
     ]);
     const err = l.error ?? p.error ?? a.error;
-    if (err) { setError(err.message); return; }
+    if (err) { setError(friendly(err)); return; }
     const map: Record<string, PersonRow> = {};
     for (const x of (p.data ?? []) as PersonRow[]) map[x.id] = x;
     setError(null); setPeople(map); setAvailable((a.data ?? []) as MatchProp[]); setLeads((l.data ?? []) as LeadRow[]);

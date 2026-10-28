@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import { t } from './i18n';
+import { friendly } from './errors';
 
 export type PlanInfo = {
   plan: 'trial' | 'active';
@@ -26,5 +27,5 @@ export function planError(message: string): string {
   if (message.includes('plan_expired')) return t('Your plan has ended. You can still look at everything, but not change anything.');
   if (message.includes('plan_limit_properties')) return t('You have reached the maximum number of properties of your plan.');
   if (message.includes('plan_limit_members')) return t('You have reached the maximum number of team members of your plan.');
-  return message;
+  return friendly(message);
 }

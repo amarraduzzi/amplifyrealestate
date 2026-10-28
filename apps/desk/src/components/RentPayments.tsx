@@ -10,6 +10,7 @@ import { SHARE_LANGS, type ShareLang } from '../lib/publicSite';
 import { ensureRentDue, isOverdue, loadPayments, reminderMessage, todayIso, type PaymentRow } from '../lib/payments';
 import { waLink } from './ContactLinks';
 import { Btn } from './ui';
+import { friendly } from '../lib/errors';
 
 const SHOWN = 6;
 
@@ -30,7 +31,7 @@ export function RentPayments({ office, leaseId, startDate, person, propertyTitle
 
   const load = useCallback(async () => {
     try { setRows(await loadPayments(leaseId)); }
-    catch (e) { setError(e instanceof Error ? e.message : t('Something went wrong.')); setRows([]); }
+    catch (e) { setError(friendly(e)); setRows([]); }
   }, [leaseId]);
 
   useEffect(() => {

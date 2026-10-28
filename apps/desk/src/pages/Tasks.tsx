@@ -8,6 +8,7 @@ import { TASK_STATUSES, taskStatusLabel } from '../lib/labels';
 import { Btn, Card, inputCls } from '../components/ui';
 import { TaskItem } from '../components/TaskItem';
 import { TaskForm } from './TaskForm';
+import { friendly } from '../lib/errors';
 
 type Filter = 'all' | TaskStatus;
 
@@ -24,7 +25,7 @@ export function Tasks({ office, userId }: { office: Office; userId: string }) {
 
   const load = useCallback(async () => {
     try { const r = await loadTasks(office.id); setError(null); setRows(sortTasks(r.tasks)); }
-    catch (e) { setError(e instanceof Error ? e.message : t('Something went wrong.')); }
+    catch (e) { setError(friendly(e)); }
   }, [office.id]);
   useEffect(() => { setRows(null); load(); }, [load]);
 

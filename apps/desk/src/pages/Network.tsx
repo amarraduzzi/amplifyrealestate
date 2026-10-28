@@ -7,6 +7,7 @@ import { loadNetwork, networkCall, networkError, type NetProperty, type Partner 
 import { purposeLabel, typeLabel } from '../lib/labels';
 import { waLink } from '../components/ContactLinks';
 import { Btn, Card, inputCls } from '../components/ui';
+import { friendly } from '../lib/errors';
 
 /** Amplify Network: partner offices, and the properties they share with this office. */
 export function Network({ office }: { office: Office }) {
@@ -19,7 +20,7 @@ export function Network({ office }: { office: Office }) {
 
   const load = useCallback(async () => {
     try { setData(await loadNetwork(office.id)); setError(null); }
-    catch (e) { setError(networkError(e instanceof Error ? e.message : t('Something went wrong.'))); }
+    catch (e) { setError(networkError(friendly(e))); }
   }, [office.id]);
   useEffect(() => { setData(null); load(); }, [load]);
 

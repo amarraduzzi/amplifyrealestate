@@ -3,6 +3,7 @@ import { loadNetwork, loadShares, networkCall, networkError, type Partner, type 
 import { t } from '../lib/i18n';
 import type { Office, PropertyRow } from '../lib/types';
 import { Btn, inputCls } from './ui';
+import { friendly } from '../lib/errors';
 
 /** In a property: share it with the partner offices of this office (percentage of the commission and a note for the partner). */
 export function NetworkShare({ office, property, canWrite }: { office: Office; property: PropertyRow; canWrite: boolean }) {
@@ -16,7 +17,7 @@ export function NetworkShare({ office, property, canWrite }: { office: Office; p
     try {
       const [n, s] = await Promise.all([loadNetwork(office.id), loadShares(property.id)]);
       setPartners(n.partners.filter(p => p.status === 'accepted')); setShares(s); setError(null);
-    } catch (e) { setError(networkError(e instanceof Error ? e.message : t('Something went wrong.'))); setPartners([]); }
+    } catch (e) { setError(networkError(friendly(e))); setPartners([]); }
   }, [office.id, property.id]);
   useEffect(() => { load(); }, [load, property.status]);
 

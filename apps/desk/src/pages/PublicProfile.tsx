@@ -5,6 +5,7 @@ import { t } from '../lib/i18n';
 import type { Office } from '../lib/types';
 import { PUBLIC_SITE, officeUrl } from '../lib/publicSite';
 import { Btn, Card, Field, inputCls } from '../components/ui';
+import { friendly } from '../lib/errors';
 
 /** Contact details that appear on every public page of this office, plus the link to the office page. */
 const RESERVED = ['assets', 'api', 'admin', 'app', 'desk', 'www', 'static', 'icon', 'og', 'favicon'];
@@ -17,8 +18,7 @@ function slugError(message: string): string {
   if (message.includes('adresnaam_ongeldig')) return t('Use only letters and numbers, with single hyphens between words (3 to 40 characters).');
   if (message.includes('adresnaam_gereserveerd')) return t('This name cannot be used.');
   if (message.includes('adresnaam_te_vaak')) return t('The name in the link can be changed at most 5 times.');
-  if (message.includes('geen_toegang')) return t('You do not have permission to do this.');
-  return message;
+  return friendly(message);
 }
 
 export function PublicProfile({ office, canManage, onSlugChanged }: { office: Office; canManage: boolean; onSlugChanged: () => void }) {
@@ -39,7 +39,7 @@ export function PublicProfile({ office, canManage, onSlugChanged }: { office: Of
     setLoaded(false);
     supabase.from('organizations').select('public_whatsapp, public_phone, public_email').eq('id', office.id).maybeSingle()
       .then(({ data, error }) => {
-        if (error) setError(error.message);
+        if (error) setError(friendly(error));
         setWa(data?.public_whatsapp ?? ''); setPhone(data?.public_phone ?? ''); setEmail(data?.public_email ?? '');
         setLoaded(true);
       });
@@ -55,7 +55,7 @@ export function PublicProfile({ office, canManage, onSlugChanged }: { office: Of
       .update({ public_whatsapp: wa.trim() || null, public_phone: phone.trim() || null, public_email: email.trim() || null })
       .eq('id', office.id).select('id');
     setBusy(false);
-    if (error) { setError(error.message); return; }
+    if (error) { setError(friendly(error)); return; }
     if (!data?.length) { setError(t('You do not have permission to do this.')); return; }
     setSaved(true);
   };

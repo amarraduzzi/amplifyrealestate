@@ -5,6 +5,7 @@ import { t } from '../lib/i18n';
 import { AmplifyLogo } from '../components/Brand';
 import { LangSwitch } from '../components/LangSwitch';
 import { Btn, Card, Field, inputCls } from '../components/ui';
+import { friendly } from '../lib/errors';
 
 /** "bravo-immo" style slug plus a short random suffix, so two offices with the same name never collide. */
 function makeSlug(name: string) {
@@ -26,7 +27,7 @@ export function Onboarding({ onDone, onSignOut }: { onDone: () => void; onSignOu
     setBusy(true); setError(null);
     const { error } = await supabase.rpc('create_organization', { p_name: name.trim(), p_slug: makeSlug(name), p_city: city.trim() || null });
     setBusy(false);
-    if (error) setError(error.message);
+    if (error) setError(friendly(error));
     else onDone();
   };
 
@@ -47,7 +48,7 @@ export function Onboarding({ onDone, onSignOut }: { onDone: () => void; onSignOu
               <input className={inputCls} value={name} onChange={e => setName(e.target.value)} placeholder={t('e.g. Atlas Immobilier')} maxLength={120} required autoFocus />
             </Field>
             <Field label={t('City')}>
-              <input className={inputCls} value={city} onChange={e => setCity(e.target.value)} placeholder="Rabat" maxLength={80} />
+              <input className={inputCls} value={city} onChange={e => setCity(e.target.value)} placeholder={t('Rabat')} maxLength={80} />
             </Field>
             {error && <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
             <Btn tone="brand" className="h-12 w-full text-base" disabled={busy}>{busy ? '…' : t('Create office')}</Btn>

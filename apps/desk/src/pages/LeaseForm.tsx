@@ -6,6 +6,7 @@ import type { LeaseRow } from '../lib/types';
 import { leaseError, type LeaseProp } from '../lib/leases';
 import { planError } from '../lib/plan';
 import { Btn, Field, Modal, inputCls } from '../components/ui';
+import { friendly } from '../lib/errors';
 
 type PropOpt = LeaseProp & { price_cents: number | null };
 type Person = { id: string; full_name: string };
@@ -45,7 +46,7 @@ export function LeaseForm({ orgId, lease, propertyId, onClose, onSaved }: {
       ]);
       if (cancelled) return;
       const err = pr.error ?? pe.error ?? ls.error;
-      if (err) { setError(err.message); setProps([]); return; }
+      if (err) { setError(friendly(err)); setProps([]); return; }
       const taken = new Set(((ls.data ?? []) as { property_id: string }[]).map(x => x.property_id));
       const opts = ((pr.data ?? []) as (PropOpt & { purpose: string; status: string })[])
         .filter(x => (x.purpose === 'rent_long' || x.purpose === 'rent_short') && (x.status === 'available' || x.status === 'reserved' || x.id === propertyId) && !taken.has(x.id));

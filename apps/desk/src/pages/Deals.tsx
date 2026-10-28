@@ -11,6 +11,7 @@ import { DealForm } from './DealForm';
 import { DealDetail } from './DealDetail';
 import { dealsCsv, downloadCsv } from '../lib/exportCsv';
 import { ourShareCents } from '../lib/splits';
+import { friendly } from '../lib/errors';
 
 type Filter = 'all' | DealStage;
 
@@ -39,7 +40,7 @@ export function Deals({ office }: { office: Office }) {
 
   const load = useCallback(async () => {
     try { setRows(await loadDeals(office.id)); setError(null); }
-    catch (e) { setError(e instanceof Error ? e.message : t('Something went wrong.')); }
+    catch (e) { setError(friendly(e)); }
   }, [office.id]);
   useEffect(() => { setRows(null); load(); }, [load]);
 

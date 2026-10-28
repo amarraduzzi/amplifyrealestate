@@ -6,6 +6,7 @@ import { t } from '../lib/i18n';
 import type { Office, PropertyRow } from '../lib/types';
 import { PARTY_ROLES, partyRoleLabel } from '../lib/labels';
 import { Btn, Field, inputCls } from '../components/ui';
+import { friendly } from '../lib/errors';
 
 type Person = { id: string; full_name: string; phone: string | null; whatsapp: string | null; email: string | null };
 type Party = { person_id: string; role: PartyRole };
@@ -31,7 +32,7 @@ function PartyForm({ orgId, propertyId, onDone, onCancel }: { orgId: string; pro
 
   useEffect(() => {
     supabase.from('people').select('id, full_name, phone, whatsapp, email').eq('org_id', orgId).order('full_name').then(({ data, error }) => {
-      if (error) { setError(error.message); setOrgPeople([]); return; }
+      if (error) { setError(friendly(error)); setOrgPeople([]); return; }
       const list = (data ?? []) as Person[];
       setOrgPeople(list);
       if (list.length > 0) { setMode('existing'); setPersonId(list[0].id); }
@@ -47,13 +48,13 @@ function PartyForm({ orgId, propertyId, onDone, onCancel }: { orgId: string; pro
         org_id: orgId, full_name: name.trim(),
         phone: phone.trim() || null, whatsapp: whatsapp.trim() || null, email: email.trim() || null,
       }).select('id').single();
-      if (error || !data) { setBusy(false); setError(error?.message ?? t('Something went wrong.')); return; }
+      if (error || !data) { setBusy(false); setError(friendly(error)); return; }
       id = data.id as string;
     }
     if (!id) { setBusy(false); setError(t('Choose a person.')); return; }
     const { error } = await supabase.from('property_parties').insert({ org_id: orgId, property_id: propertyId, person_id: id, role });
     setBusy(false);
-    if (error) setError(error.code === '23505' ? t('This person already has that role on this property.') : error.message);
+    if (error) setError(error.code === '23505' ? t('This person already has that role on this property.') : friendly(error));
     else onDone();
   };
 
@@ -116,13 +117,13 @@ export function PropertyParties({ office, property, canWrite }: { office: Office
 
   const load = useCallback(async () => {
     const { data, error } = await supabase.from('property_parties').select('person_id, role').eq('property_id', property.id).order('created_at');
-    if (error) { setError(error.message); return; }
+    if (error) { setError(friendly(error)); return; }
     const list = (data ?? []) as Party[];
     const ids = Array.from(new Set(list.map(p => p.person_id)));
     const map: Record<string, Person> = {};
     if (ids.length > 0) {
       const r = await supabase.from('people').select('id, full_name, phone, whatsapp, email').in('id', ids);
-      if (r.error) { setError(r.error.message); return; }
+      if (r.error) { setError(friendly(r.error)); return; }
       for (const p of (r.data ?? []) as Person[]) map[p.id] = p;
     }
     setError(null); setPeople(map); setParties(list);
@@ -133,7 +134,7 @@ export function PropertyParties({ office, property, canWrite }: { office: Office
     if (!window.confirm(t('Remove {name} from this property? The person stays in your contacts.', { name: people[p.person_id]?.full_name ?? '' }))) return;
     const { error } = await supabase.from('property_parties').delete()
       .eq('property_id', property.id).eq('person_id', p.person_id).eq('role', p.role);
-    if (error) setError(error.message); else load();
+    if (error) setError(friendly(error)); else load();
   };
 
   return (
