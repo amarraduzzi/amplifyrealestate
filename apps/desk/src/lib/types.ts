@@ -123,3 +123,22 @@ export type LeaseRow = {
   created_at: string;
   updated_at: string;
 };
+
+export type SplitKind = 'co_agent' | 'referrer' | 'other';
+export type SplitStatus = 'agreed' | 'paid';
+
+/** A share of the commission of a deal that goes to another agent (or a referrer). */
+export type SplitRow = {
+  id: string;
+  org_id: string;
+  deal_id: string;
+  person_id: string;
+  agency_name: string | null;
+  kind: SplitKind;
+  share_pct: number;
+  status: SplitStatus;
+  paid_on: string | null;
+  paid_cents: number | null;
+  agreement_note: string | null;
+  created_at: string;
+};

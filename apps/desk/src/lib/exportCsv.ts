@@ -1,6 +1,7 @@
 import { t } from './i18n';
 import { dealStageLabel, leadStatusLabel, purposeLabel, statusLabel, typeLabel } from './labels';
 import type { DealView } from './deals';
+import { ourShareCents, sharedPct } from './splits';
 import type { LeadRow, PersonRow, PropertyRow } from './types';
 
 /** A phone number: written so that Excel keeps the leading 0 (only digits, + and spaces are let through). */
@@ -25,11 +26,12 @@ function toCsv(head: string[], lines: Cell[][]): string {
 
 export function dealsCsv(rows: DealView[]): string {
   return toCsv(
-    [t('Date'), t('Reference'), t('Property'), t('Client'), t('Stage'), t('Price'), t('Commission %'), t('Commission'), t('Signed on'), t('Paid on'), t('Notes')],
-    rows.map(({ d, person, property }) => [
+    [t('Date'), t('Reference'), t('Property'), t('Client'), t('Stage'), t('Price'), t('Commission %'), t('Commission'), t('Signed on'), t('Paid on'), t('Notes'), t('Shared %'), t('Your share')],
+    rows.map(({ d, person, property, splits }) => [
       day(d.stage_changed_at), property?.reference, property?.title, person?.full_name, dealStageLabel(d.stage),
       money(d.price_cents), d.commission_pct === null ? '' : String(d.commission_pct).replace('.', ','), money(d.commission_cents),
       day(d.signed_at), day(d.paid_at), d.notes,
+      splits.length === 0 ? '' : String(sharedPct(splits)).replace('.', ','), splits.length === 0 ? '' : money(ourShareCents(d, splits)),
     ]));
 }
 

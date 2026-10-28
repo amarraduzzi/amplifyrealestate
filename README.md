@@ -2,7 +2,7 @@
 
 Platform voor de Marokkaanse vastgoedsector: panden, personen, mandaten en (later) leads, transacties, beheer en samenwerking tussen bemiddelaars.
 
-Stand: **etappe 1 is afgerond** (1a t/m 1l); etappe 2 is begonnen met **2a** (deals met commissie) **2b** (WhatsApp-herinnering voor de klant en dagoverzicht voor het team) **2c** (rapport voor de eigenaar per pand) en **2d** (deals exporteren naar Excel) **2e** (leads en panden exporteren), **2f** (eigenaarsupdate via WhatsApp) en **2g** (databasetest voor deals) **2h** (documenten bij een deal) en **3a** (huurovereenkomsten), **3b** (huurbetalingen), **3c** (onderhoud) en **3d** (achterstand op Today); **4a** (eigenaarsrapport met huur en reparaties). Een vastgoedkantoor kan nu werken met panden, personen, mandaten, leads, bezichtigingen, taken en team, in het Frans, Arabisch en Engels; panden online zetten en delen via WhatsApp; en heeft een plan (30 dagen proef, daarna betaald of alleen-lezen).
+Stand: **etappe 1 is afgerond** (1a t/m 1l); etappe 2 is begonnen met **2a** (deals met commissie) **2b** (WhatsApp-herinnering voor de klant en dagoverzicht voor het team) **2c** (rapport voor de eigenaar per pand) en **2d** (deals exporteren naar Excel) **2e** (leads en panden exporteren), **2f** (eigenaarsupdate via WhatsApp) en **2g** (databasetest voor deals) **2h** (documenten bij een deal) en **3a** (huurovereenkomsten), **3b** (huurbetalingen), **3c** (onderhoud) en **3d** (achterstand op Today); **4a** (eigenaarsrapport met huur en reparaties) en **4b** (commissie delen met een andere makelaar). Een vastgoedkantoor kan nu werken met panden, personen, mandaten, leads, bezichtigingen, taken en team, in het Frans, Arabisch en Engels; panden online zetten en delen via WhatsApp; en heeft een plan (30 dagen proef, daarna betaald of alleen-lezen).
 
 Gebouwd per onderdeel: **1a** databasekern, **1b** desk-app (panden, personen, mandaten, leads, bezichtigingen, team, taken, Today), **1c** publieke pandpagina's, **1d** foto's, **1e** Frans en Arabisch, **1f** panden naar een lead sturen via WhatsApp, **1g** contacten importeren, **1h** eigen adresnaam, **1i** Overview, **1j** eerste stappen, **1k** automatische taak bij aflopende mandaten, **1l** plan per kantoor.
 
@@ -43,6 +43,7 @@ Gebouwd per onderdeel: **1a** databasekern, **1b** desk-app (panden, personen, m
 | Onderhoud (3c): meldingen per pand met urgentie, melder, reparateur, kosten en wie betaalt; status open / in progress / done / cancelled; bericht naar de reparateur via WhatsApp (database + desk) | klaar (3c) |
 | Achterstallige huur en reparaties die aandacht nodig hebben op Today, in de briefing en in Overview, geen SQL | klaar (3d) |
 | Eigenaarsrapport met huurinkomsten, reparatiekosten en betaald, ook als maandupdate via WhatsApp, geen SQL | klaar (4a) |
+| Commissie delen (4b): per deal een percentage van de commissie voor een andere makelaar of tipgever (samen maximaal 100%), afspraak vastleggen, "Confirm in writing" via WhatsApp in FR/AR/EN, betaald markeren (bedrag wordt dan vastgezet); totalen in Deals tonen wat bij het eigen kantoor blijft (database + desk) | klaar (4b) |
 | Desk-app: pagina aan/uit per pand, deellink, kantoorgegevens voor de publieke pagina | klaar (1c) |
 
 Gebruikershandleiding voor het team (Frans, één pagina): `docs/guide-fr.md`.
@@ -86,6 +87,7 @@ Samenwerking tussen kantoren (Amplify Network), automatische betaling, en automa
 16. Etappe 3d: geen SQL, alleen de app.
 
 17. Etappe 4a: geen SQL, alleen de app.
+18. Etappe 4b: plak `supabase/migrations/20261027001500_commission_splits.sql` en klik Run. Doe dit vóór je de app uploadt of meteen erna; zonder de SQL werkt Deals gewoon, maar het blok "Commission split" geeft een foutmelding.
 
 ### Een kantoor op betaald zetten of verlengen
 

@@ -1,5 +1,5 @@
 import type { DealPurpose, DealStage, LeadStatus, MandateBasis, MandateStatus, OrgRole, PartyRole, PropertyStatus, PropertyType, TaskStatus, ViewingOutcome, ViewingStatus } from '@vastgoed/shared';
-import type { LeaseStatus } from './types';
+import type { LeaseStatus, SplitKind, SplitStatus } from './types';
 import { t } from './i18n';
 
 export const PURPOSES: DealPurpose[] = ['sale', 'rent_long', 'rent_short'];
@@ -135,3 +135,8 @@ export const leaseStatusCls: Record<LeaseStatus, string> = {
   active: 'bg-ok/10 text-ok',
   ended: 'bg-surface-3 text-muted',
 };
+
+export const SPLIT_KINDS: SplitKind[] = ['co_agent', 'referrer', 'other'];
+export const splitKindLabel = (k: SplitKind) =>
+  t(({ co_agent: 'Other agent', referrer: 'Referrer', other: 'Other' } as const)[k]);
+export const splitStatusLabel = (s: SplitStatus) => t(({ agreed: 'To pay', paid: 'Paid' } as const)[s]);

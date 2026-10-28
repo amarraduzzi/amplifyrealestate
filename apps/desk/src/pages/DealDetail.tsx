@@ -12,6 +12,7 @@ import { planError } from '../lib/plan';
 import { Btn, Modal, inputCls } from '../components/ui';
 import { ContactLinks } from '../components/ContactLinks';
 import { DealDocuments } from '../components/DealDocuments';
+import { DealSplits } from '../components/DealSplits';
 import { DealForm } from './DealForm';
 
 /** One deal: price, commission, how far it is, and the buttons to move it forward. */
@@ -102,6 +103,8 @@ export function DealDetail({ office, item, onChanged, onClose }: {
             </div>
           </div>
         )}
+
+        <DealSplits office={office} item={item} onChanged={onChanged} />
 
         {canWrite && <DealDocuments office={office} dealId={d.id} />}
 

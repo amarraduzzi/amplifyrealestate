@@ -10,10 +10,12 @@ import { Btn, Card, inputCls } from '../components/ui';
 import { DealForm } from './DealForm';
 import { DealDetail } from './DealDetail';
 import { dealsCsv, downloadCsv } from '../lib/exportCsv';
+import { ourShareCents } from '../lib/splits';
 
 type Filter = 'all' | DealStage;
 
-const sum = (xs: DealView[]) => xs.reduce((n, x) => n + (x.d.commission_cents ?? 0), 0);
+// Totals are what stays with the office: the commission minus the shares for other agents.
+const sum = (xs: DealView[]) => xs.reduce((n, x) => n + (ourShareCents(x.d, x.splits) ?? 0), 0);
 
 function Total({ label, cents, hint }: { label: string; cents: number; hint: string }) {
   return (
@@ -94,6 +96,7 @@ export function Deals({ office }: { office: Office }) {
             <Total label={t('To collect')} cents={totals.toCollect} hint={t('Signed, not paid yet')} />
             <Total label={t('Earned')} cents={totals.earned} hint={t('Paid')} />
           </div>
+          {(rows ?? []).some(r => r.splits.length > 0) && <p className="mt-2 text-xs text-muted">{t('Totals show what stays with your office, after the shares for other agents.')}</p>}
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
             <div role="tablist" className="flex flex-wrap gap-1.5">
@@ -114,7 +117,7 @@ export function Deals({ office }: { office: Office }) {
             ? <p className="mt-10 text-center text-muted">{t('Nothing matches.')}</p>
             : (
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                {shown.map(({ d, person, property }) => (
+                {shown.map(({ d, person, property, splits }) => (
                   <li key={d.id} role="button" tabIndex={0} aria-label={person?.full_name ?? ''}
                     onClick={() => setOpenId(d.id)}
                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(d.id); } }}
@@ -125,7 +128,8 @@ export function Deals({ office }: { office: Office }) {
                     </div>
                     <h3 className="font-display mt-2 truncate text-lg font-semibold">{person?.full_name ?? '…'}</h3>
                     <p className="truncate text-sm text-muted">{property ? `${property.title} · ${property.reference}` : '…'}</p>
-                    <p className="mt-2 text-xs font-semibold text-muted">{t('Commission')}: <span className="tabular">{d.commission_cents === null ? '—' : formatMad(d.commission_cents)}</span></p>
+                    <p className="mt-2 text-xs font-semibold text-muted">{t('Commission')}: <span className="tabular">{d.commission_cents === null ? '—' : formatMad(d.commission_cents)}</span>
+                      {splits.length > 0 && d.commission_cents !== null && <> · {t('Your share')}: <span className="tabular">{formatMad(ourShareCents(d, splits) ?? 0)}</span></>}</p>
                   </li>
                 ))}
               </ul>
