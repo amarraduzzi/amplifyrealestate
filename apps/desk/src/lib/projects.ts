@@ -5,7 +5,7 @@ export type ProjectStatus = 'planning' | 'selling' | 'construction' | 'delivered
 export type UnitKind = 'apartment' | 'villa' | 'duplex' | 'studio' | 'shop' | 'office' | 'parking' | 'storage' | 'plot' | 'other';
 export type UnitStatus = 'available' | 'option' | 'reserved' | 'sold' | 'blocked';
 
-export type Project = { id: string; org_id: string; name: string; city: string | null; address: string | null; description: string | null; status: ProjectStatus; delivery_date: string | null; archived: boolean } & Milestones;
+export type Project = { id: string; org_id: string; name: string; city: string | null; address: string | null; description: string | null; status: ProjectStatus; delivery_date: string | null; archived: boolean; slug?: string | null; published?: boolean; show_prices?: boolean } & Milestones;
 export type Tranche = { id: string; org_id: string; project_id: string; name: string; position: number; delivery_date: string | null } & Partial<Milestones>;
 export type Unit = {
   id: string; org_id: string; project_id: string; tranche_id: string | null; reference: string; kind: UnitKind; building: string | null; floor: number | null;

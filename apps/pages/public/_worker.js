@@ -18,6 +18,7 @@ const WORDS = {
     suffix: { rent_long: ' / mois', rent_short: ' / nuit' },
     status: { reserved: 'Réservé', rented: 'Loué', sold: 'Vendu' },
     office: (name, city) => `Biens disponibles chez ${name}${city ? ` à ${city}` : ''}`,
+    project: n => `Programme neuf · ${n} lots disponibles`, from: 'à partir de',
   },
   en: {
     types: { apartment: 'Apartment', villa: 'Villa', riad: 'Riad', house: 'House', land: 'Land', shop: 'Shop', office: 'Office', building: 'Building', other: 'Property' },
@@ -25,6 +26,7 @@ const WORDS = {
     suffix: { rent_long: ' / month', rent_short: ' / night' },
     status: { reserved: 'Reserved', rented: 'Rented', sold: 'Sold' },
     office: (name, city) => `Available properties from ${name}${city ? ` in ${city}` : ''}`,
+    project: n => `New build · ${n} units available`, from: 'from',
   },
   ar: {
     types: { apartment: 'شقة', villa: 'فيلا', riad: 'رياض', house: 'منزل', land: 'أرض', shop: 'محل تجاري', office: 'مكتب', building: 'عمارة', other: 'عقار' },
@@ -32,6 +34,7 @@ const WORDS = {
     suffix: { rent_long: ' / الشهر', rent_short: ' / الليلة' },
     status: { reserved: 'محجوز', rented: 'مكترى', sold: 'مباع' },
     office: (name, city) => `العقارات المتوفرة لدى ${name}${city ? ` في ${city}` : ''}`,
+    project: n => `مشروع جديد · ${n} وحدة متوفرة`, from: 'ابتداء من',
   },
 };
 
@@ -74,6 +77,17 @@ async function metaFor(parts, lang, env) {
       .filter(Boolean).join(' · ');
     const image = p.photos && p.photos[0] ? `${String(env.VITE_SUPABASE_URL).replace(/\/+$/, '')}/storage/v1/object/public/property-photos/${p.photos[0]}_t.jpg` : null;
     return { found: true, title, description, image };
+  }
+  if (parts.length === 3 && parts[1] === 'projet') {
+    const project = (parts[2] || '').toLowerCase();
+    if (!SLUG.test(project)) return { found: false };
+    const d = await rpc(env, 'public_project_page', { p_slug: slug, p_project: project });
+    if (!d) return { found: false };
+    const p = d.project;
+    const from = (d.units || []).map(u => u.price_cents).filter(x => x !== null && x !== undefined);
+    const description = [w.project(p.available_units), from.length ? `${w.from} ${price(Math.min(...from), 'sale', w)}` : null, p.city, d.office.name].filter(Boolean).join(' · ');
+    const image = p.photos && p.photos[0] ? `${String(env.VITE_SUPABASE_URL).replace(/\/+$/, '')}/storage/v1/object/public/property-photos/${p.photos[0]}_t.jpg` : null;
+    return { found: true, title: p.name, description, image };
   }
   return { found: false };
 }
@@ -121,11 +135,12 @@ export default {
         return new Response(r.body, { status: 200, headers: h });
       } catch { return env.ASSETS.fetch(request); }
     }
-    const looksLikePage = request.method === 'GET' && parts.length <= 2 && !(parts.length && parts[parts.length - 1].includes('.'));
+    const isProject = (parts.length === 3 && parts[1] === 'projet') || (parts.length === 2 && parts[0] === 'projet');
+    const looksLikePage = request.method === 'GET' && (parts.length <= 2 || isProject) && !(parts.length && parts[parts.length - 1].includes('.'));
     if (!looksLikePage) return env.ASSETS.fetch(request);
     const own = await domainSlug(url.hostname, env);
-    if (own) parts = parts.length === 0 ? [own] : parts.length === 1 ? [own, parts[0]] : [];
-    const isPage = parts.length >= 1 && parts.length <= 2;
+    if (own) parts = parts.length === 0 ? [own] : parts.length === 2 && parts[0] === 'projet' ? [own, 'projet', parts[1]] : parts.length === 1 ? [own, parts[0]] : [];
+    const isPage = (parts.length >= 1 && parts.length <= 2 && parts[0] !== 'projet') || (parts.length === 3 && parts[1] === 'projet');
     if (!isPage) return env.ASSETS.fetch(request);
 
     let shell;

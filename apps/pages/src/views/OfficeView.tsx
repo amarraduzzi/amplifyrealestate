@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CheckCircle2, Mail, MapPin, MessageCircle, Phone, Search } from 'lucide-react';
 import type { DealPurpose, PropertyType } from '@vastgoed/shared';
-import { loadOffice, logEvent } from '../lib/api';
+import { loadOffice, loadOfficeProjects, logEvent, photoUrl, type ProjectCard } from '../lib/api';
+import { Link, projectPath } from '../lib/router';
+import { projectStatus } from './ProjectView';
+import { formatMad } from '@vastgoed/shared';
+import { HardHat } from 'lucide-react';
 import { useFetch } from '../lib/useFetch';
 import { purposeLabel, typeLabel } from '../lib/format';
 import { t } from '../lib/i18n';
@@ -28,6 +32,8 @@ export function OfficeView({ slug }: { slug: string }) {
     document.title = data ? `${data.office.name}${data.site?.tagline ? ` · ${data.site.tagline}` : ''}` : 'Amplify Real Estate';
   }, [data]);
   useEffect(() => { if (data) logEvent(data.office.slug, null, 'view'); }, [data]);
+  const [projects, setProjects] = useState<ProjectCard[]>([]);
+  useEffect(() => { loadOfficeProjects(slug).then(setProjects); }, [slug]);
 
   const present = useMemo(() => PURPOSES.filter(p => data?.listings.some(l => l.purpose === p)), [data]);
   const types = useMemo(() => Array.from(new Set((data?.listings ?? []).map(l => l.property_type))), [data]);
@@ -85,6 +91,25 @@ export function OfficeView({ slug }: { slug: string }) {
         </section>
 
         {/* Properties */}
+        {projects.length > 0 && (
+          <section id="projets" className="scroll-mt-4">
+            <h2 className="font-display text-2xl font-bold">{t('New-build projects')}</h2>
+            <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+              {projects.map(pr => (
+                <li key={pr.slug} className="rise"><Link to={projectPath(office.slug, pr.slug)} className="card block overflow-hidden rounded-3xl transition hover:ring-2 hover:ring-brand/25">
+                  {pr.cover ? <img src={photoUrl(pr.cover, true)} alt="" className="h-40 w-full bg-surface-3 object-cover" loading="lazy" />
+                    : <span className="night grid h-40 place-items-center"><HardHat className="h-10 w-10 text-white/80" /></span>}
+                  <span className="block p-4">
+                    <span className="block font-display text-lg font-bold">{pr.name}</span>
+                    <span className="block text-xs text-muted">{[pr.city, projectStatus(pr.status)].filter(Boolean).join(' · ')}</span>
+                    <span className="mt-1 block text-sm">{t('{n} available', { n: pr.available_units })}{pr.price_from !== null ? ` · ${t('from {price}', { price: formatMad(pr.price_from) })}` : ''}</span>
+                  </span>
+                </Link></li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <section id="biens" className="scroll-mt-4">
           <h2 className="font-display text-2xl font-bold">{t('Available properties')}</h2>
           {listings.length > 0 && (

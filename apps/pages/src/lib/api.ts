@@ -127,3 +127,39 @@ export async function loadResidentPortal(token: string): Promise<ResidentPortalD
   if (!/^[0-9a-f]{64}$/.test(token)) return null;
   return rpc<ResidentPortalData>('public_resident_portal', { p_token: token });
 }
+
+export type DevUnitKind = 'apartment' | 'villa' | 'duplex' | 'studio' | 'shop' | 'office' | 'parking' | 'storage' | 'plot' | 'other';
+export type PublicUnit = { reference: string; kind: DevUnitKind; building: string | null; floor: number | null; bedrooms: number | null; area_m2: number | null; terrace_m2: number | null; price_cents: number | null };
+export type PublicProject = {
+  name: string; slug: string; city: string | null; address: string | null; description: string | null; status: 'planning' | 'selling' | 'construction' | 'delivered';
+  delivery_date: string | null; show_prices: boolean; photos: string[]; total_units: number; available_units: number;
+};
+export type ProjectPage = { office: PublicOffice; project: PublicProject; units: PublicUnit[] };
+export type ProjectCard = { name: string; slug: string; city: string | null; status: PublicProject['status']; delivery_date: string | null; cover: string | null; available_units: number; price_from: number | null };
+
+/** A new-build project of an office. null = not online (anymore). */
+export async function loadProjectPage(slug: string, project: string): Promise<ProjectPage | null> {
+  if (!SLUG.test(slug) || !SLUG.test(project)) return null;
+  return rpc<ProjectPage>('public_project_page', { p_slug: slug, p_project: project });
+}
+
+/** The projects of an office for its website. Empty when etappe 10c is not installed. */
+export async function loadOfficeProjects(slug: string): Promise<ProjectCard[]> {
+  if (!SLUG.test(slug)) return [];
+  try { return (await rpc<ProjectCard[]>('public_office_projects', { p_slug: slug })) ?? []; } catch { return []; }
+}
+
+export async function submitProjectInquiry(o: { slug: string; project: string; unit: string | null; name: string; phone: string; message: string; trap: string }): Promise<InquiryResult> {
+  try {
+    const r = await fetch(`${BASE}/rest/v1/rpc/submit_project_inquiry`, {
+      method: 'POST',
+      headers: { apikey: KEY, 'content-type': 'application/json' },
+      body: JSON.stringify({ p_slug: o.slug, p_project: o.project, p_name: o.name, p_phone: o.phone, p_message: o.message, p_unit: o.unit, p_trap: o.trap }),
+    });
+    if (r.ok) return 'ok';
+    const text = await r.text();
+    if (text.includes('inquiry_invalid')) return 'invalid';
+    if (text.includes('inquiry_busy')) return 'busy';
+    return 'error';
+  } catch { return 'error'; }
+}

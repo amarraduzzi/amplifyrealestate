@@ -8,7 +8,8 @@ export type Route =
   | { kind: 'office'; slug: string }
   | { kind: 'property'; slug: string; reference: string }
   | { kind: 'owner'; token: string }
-  | { kind: 'resident'; token: string };
+  | { kind: 'resident'; token: string }
+  | { kind: 'project'; slug: string; project: string };
 
 // On an office's own domain (www.atlas-immo.ma) the office is the whole site: / is the office, /P-AB12 a property.
 let domainSlug: string | null = null;
@@ -17,6 +18,7 @@ export const getDomainSlug = () => domainSlug;
 
 /** Address of an office page and of a property page, the short way on the office's own domain. */
 export const officePath = (slug: string) => (domainSlug === slug ? '/' : `/${slug}`);
+export const projectPath = (slug: string, project: string) => (domainSlug === slug ? `/projet/${project}` : `/${slug}/projet/${project}`);
 export const propertyPath = (slug: string, reference: string) =>
   domainSlug === slug ? `/${encodeURIComponent(reference)}` : `/${slug}/${encodeURIComponent(reference)}`;
 
@@ -26,6 +28,9 @@ export function parse(pathname: string): Route {
   if (parts[0] === 'o' && parts.length === 2) return { kind: 'owner', token: parts[1] };
   // /r/<code>: the co-owner page of a residence managed by a syndic
   if (parts[0] === 'r' && parts.length === 2) return { kind: 'resident', token: parts[1] };
+  // /<office>/projet/<project> (or /projet/<project> on the office's own domain): a new-build project
+  if (domainSlug && parts.length === 2 && parts[0] === 'projet') return { kind: 'project', slug: domainSlug, project: parts[1].toLowerCase() };
+  if (!domainSlug && parts.length === 3 && parts[1] === 'projet') return { kind: 'project', slug: parts[0].toLowerCase(), project: parts[2].toLowerCase() };
   if (domainSlug) {
     if (parts.length === 0) return { kind: 'office', slug: domainSlug };
     return { kind: 'property', slug: domainSlug, reference: parts.join('/') };

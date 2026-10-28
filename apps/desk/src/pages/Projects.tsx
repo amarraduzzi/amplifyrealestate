@@ -11,6 +11,7 @@ import {
 import { planError } from '../lib/plan';
 import { downloadCsv, toCsv } from '../lib/exportCsv';
 import { Btn, Card, Field, Modal, inputCls } from '../components/ui';
+import { ProjectMarketing } from './ProjectMarketing';
 import { SaleForm, SaleView, SalesTab, WorksPanel, type SaleData } from './DevSales';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
@@ -312,7 +313,7 @@ function Tranches({ office, project, tranches, units, onChanged }: { office: Off
 function ProjectView({ office, project, onBack, onChanged }: { office: Office; project: Project; onBack: () => void; onChanged: () => void }) {
   const canWrite = office.role !== 'viewer';
   const [data, setData] = useState<{ tranches: Tranche[]; units: Unit[]; buyers: Map<string, Buyer> } | null>(null);
-  const [tab, setTab] = useState<'grid' | 'list' | 'sales' | 'tranches'>('grid');
+  const [tab, setTab] = useState<'grid' | 'list' | 'sales' | 'marketing' | 'tranches'>('grid');
   const [sales, setSales] = useState<SaleData | null>(null);
   const [saleFor, setSaleFor] = useState<Unit | null>(null);
   const [openSale, setOpenSale] = useState<string | null>(null);
@@ -383,9 +384,9 @@ function ProjectView({ office, project, onBack, onChanged }: { office: Office; p
       )}
 
       <div className="mt-5 flex flex-wrap items-center gap-1.5" role="tablist">
-        {(['grid', 'list', 'sales', 'tranches'] as const).filter(x => x !== 'sales' || sales).map(x => (
+        {(['grid', 'list', 'sales', 'marketing', 'tranches'] as const).filter(x => x !== 'sales' || sales).map(x => (
           <button key={x} type="button" role="tab" aria-selected={tab === x} onClick={() => setTab(x)} className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${tab === x ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
-            {({ grid: t('Stock grid'), list: t('Price list'), sales: t('Sales and payments'), tranches: t('Works and tranches') })[x]}
+            {({ grid: t('Stock grid'), list: t('Price list'), sales: t('Sales and payments'), marketing: t('Page, team and leads'), tranches: t('Works and tranches') })[x]}
           </button>
         ))}
         {(tab === 'grid' || tab === 'list') && <span className="ms-auto flex flex-wrap gap-2">
@@ -447,6 +448,7 @@ function ProjectView({ office, project, onBack, onChanged }: { office: Office; p
           </table>
         </div>
       )}
+      {data && tab === 'marketing' && <ProjectMarketing office={office} project={proj} onChanged={load} />}
       {data && tab === 'sales' && sales && <SalesTab ctx={ctx!} data={sales} onOpen={x => setOpenSale(x.id)} />}
       {data && tab === 'tranches' && sales && <WorksPanel ctx={ctx!} data={sales} onChanged={load} />}
       {data && tab === 'tranches' && <Tranches office={office} project={project} tranches={data.tranches} units={units} onChanged={load} />}
