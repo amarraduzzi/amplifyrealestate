@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
+import { formatMad } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import type { Office } from '../lib/types';
@@ -86,13 +87,16 @@ export function Overview({ office, onGo }: { office: Office; onGo: (v: View) => 
 
   const load = useCallback(async () => {
     try {
-      const [properties, mandates, leads, viewings] = await Promise.all([
+      const [properties, mandates, leads, viewings, payments, repairs] = await Promise.all([
         fetchAll<OverviewInput['properties'][number]>('properties', 'id, title, reference, status, is_published', office.id),
         fetchAll<OverviewInput['mandates'][number]>('property_mandates', 'id, property_id, status, valid_until', office.id),
         fetchAll<OverviewInput['leads'][number]>('leads', 'id, status, created_at', office.id),
         fetchAll<OverviewInput['viewings'][number]>('viewings', 'id, status, outcome, scheduled_at', office.id),
+        // Not installed yet (etappe 3b and 3c): the overview then simply shows zeros.
+        fetchAll<NonNullable<OverviewInput['payments']>[number]>('rent_payments', 'id, status, due_date, amount_cents', office.id).catch(() => []),
+        fetchAll<NonNullable<OverviewInput['repairs']>[number]>('maintenance_requests', 'id, status, priority', office.id).catch(() => []),
       ]);
-      setData({ properties, mandates, leads, viewings });
+      setData({ properties, mandates, leads, viewings, payments, repairs });
       setError(null);
     } catch (e) { setError(e instanceof Error ? e.message : t('Something went wrong.')); }
   }, [office.id]);
@@ -150,6 +154,17 @@ export function Overview({ office, onGo }: { office: Office; onGo: (v: View) => 
             <div className="flex flex-wrap gap-2">
               {VIEWING_OUTCOMES.map(x => <Chip key={x} cls={outcomeCls[x]} label={outcomeLabel(x)} n={o.viewings.outcomes[x]} />)}
             </div>
+          </Section>
+
+          <Section title={t('Rent and repairs')} to="leases" onGo={onGo}>
+            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+              <Stat label={t('Unpaid months')} value={o.rent.overdueCount} tone="warn" hint={o.rent.overdueCount > 0 ? t('{amount} in total', { amount: formatMad(o.rent.overdueCents) }) : t('Nothing overdue')} />
+              <Stat label={t('Open repairs')} value={o.repairs.open} hint={t('Open or in progress')} />
+              <Stat label={t('Urgent')} value={o.repairs.urgent} tone="warn" hint={t('Open and marked urgent')} />
+            </div>
+            <button type="button" onClick={() => onGo('maintenance')} className="mt-3 inline-flex items-center gap-0.5 text-sm font-semibold text-muted hover:text-ink">
+              {t('Maintenance')}<ChevronRight className="h-4 w-4 rtl:rotate-180" />
+            </button>
           </Section>
 
           <Section title={t('Mandates')} to="properties" onGo={onGo}>

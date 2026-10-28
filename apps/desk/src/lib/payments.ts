@@ -1,6 +1,7 @@
 import { formatMad } from '@vastgoed/shared';
 import { supabase } from './supabase';
 import type { ShareLang } from './publicSite';
+import { daysTo, loadLeases } from './leases';
 
 export type PaymentStatus = 'due' | 'paid' | 'cancelled';
 export type PaymentRow = {
@@ -69,4 +70,19 @@ export function reminderMessage(o: { lang: ShareLang; name: string; property: st
   const w = W[o.lang];
   const f = isOverdue(o.payment) ? w.late : w.soon;
   return `${f(o.name, formatMad(o.payment.amount_cents), o.property, dateIn(o.lang, o.payment.due_date))}\n— ${o.office}`;
+}
+
+export type RentAlert = { id: string; leaseId: string; name: string; property: string; cents: number; days: number };
+
+/** Unpaid rent that is past its due date, with tenant and property, longest overdue first. Empty when the tables are not installed yet. */
+export async function loadRentAlerts(orgId: string, generate: boolean): Promise<RentAlert[]> {
+  try {
+    if (generate) await ensureRentDue(orgId);
+    const late = (await loadOpenPayments(orgId)).filter(p => isOverdue(p));
+    if (late.length === 0) return [];
+    const byLease = new Map((await loadLeases(orgId)).map(v => [v.l.id, v]));
+    return late
+      .map(p => { const v = byLease.get(p.lease_id); return { id: p.id, leaseId: p.lease_id, name: v?.person?.full_name ?? '…', property: v?.property?.title ?? '…', cents: p.amount_cents, days: -daysTo(p.due_date) }; })
+      .sort((a, b) => b.days - a.days);
+  } catch { return []; }
 }

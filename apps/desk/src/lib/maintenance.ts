@@ -3,6 +3,7 @@ import { supabase } from './supabase';
 import { t } from './i18n';
 import type { PersonRow } from './types';
 import type { ShareLang } from './publicSite';
+import { daysTo } from './leases';
 
 export type MaintStatus = 'open' | 'in_progress' | 'done' | 'cancelled';
 export type MaintPriority = 'low' | 'normal' | 'urgent';
@@ -81,3 +82,17 @@ export function repairMessage(o: { lang: ShareLang; name: string; property: stri
 }
 
 export const costText = (m: MaintRow) => (m.cost_cents === null ? '—' : formatMad(m.cost_cents));
+
+export type RepairAlert = { id: string; title: string; property: string; urgent: boolean; days: number };
+const STALE_DAYS = 7;
+
+/** Open requests that are urgent or have been waiting a week or more, urgent first. Empty when the table is not installed yet. */
+export async function loadRepairAlerts(orgId: string): Promise<RepairAlert[]> {
+  try {
+    return (await loadMaintenance(orgId))
+      .filter(r => isOpen(r.m.status))
+      .map(r => ({ id: r.m.id, title: r.m.title, property: r.property?.title ?? '…', urgent: r.m.priority === 'urgent', days: Math.max(0, -daysTo(r.m.reported_on)) }))
+      .filter(r => r.urgent || r.days >= STALE_DAYS)
+      .sort((a, b) => Number(b.urgent) - Number(a.urgent) || b.days - a.days);
+  } catch { return []; }
+}

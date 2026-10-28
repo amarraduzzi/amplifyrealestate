@@ -13,11 +13,13 @@ const section = (title: string, lines: string[]) => {
 };
 
 /** A short text for the team on WhatsApp: tasks due, viewings this week, and how many leads wait for a call. */
-export function briefingText(opts: { office: string; date: string; due: TaskView[]; viewings: ViewingView[]; leadsToCall: number }): string {
+export function briefingText(opts: { office: string; date: string; due: TaskView[]; viewings: ViewingView[]; leadsToCall: number; rent?: string[]; repairs?: string[] }): string {
   const parts = [
     `*${opts.office}* — ${opts.date}`,
     section(t('Tasks due'), opts.due.map(x => x.task.title)),
     section(t('Viewings this week'), opts.viewings.map(x => `${whenText(x.v.scheduled_at)} — ${x.person?.full_name ?? '…'} · ${x.property?.title ?? '…'}`)),
+    section(t('Rent overdue'), opts.rent ?? []),
+    section(t('Repairs that need attention'), opts.repairs ?? []),
     opts.leadsToCall > 0 ? `\n${t('Leads to call back')}: ${opts.leadsToCall}` : '',
   ];
   return parts.filter(Boolean).join('\n');

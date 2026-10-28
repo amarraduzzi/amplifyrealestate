@@ -587,4 +587,12 @@ export const AR: Record<string, string> = {
   'The person who fixes it, for example a plumber.': 'الشخص الذي سيصلحه، مثلا سباك.',
   'Urgent': 'مستعجل',
   'What is the problem?': 'ما هو المشكل؟',
+  'Open for 1 day': 'مفتوح منذ يوم واحد',
+  'Open for {n} days': 'مفتوح منذ {n} أيام',
+  'Open repairs': 'إصلاحات مفتوحة',
+  'Rent and repairs': 'الكراء والإصلاحات',
+  'Repairs that need attention': 'إصلاحات تحتاج إلى متابعة',
+  'Unpaid months': 'أشهر غير مؤداة',
+  '{amount} in total': '{amount} في المجموع',
+  '{n} days ago': 'منذ {n} أيام',
 };

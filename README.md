@@ -79,6 +79,8 @@ Samenwerking tussen kantoren (Amplify Network), automatische betaling, en automa
 
 15. Etappe 3c: plak `supabase/migrations/20261027001400_maintenance.sql` en klik Run.
 
+16. Etappe 3d: geen SQL, alleen de app.
+
 ### Een kantoor op betaald zetten of verlengen
 
 Plak in de SQL-editor (slug van het kantoor, laatste dag, en optioneel max. leden en max. panden):

@@ -6,7 +6,10 @@ export type OvMandate = { property_id: string; status: MandateStatus; valid_unti
 export type OvLead = { status: LeadStatus; created_at: string };
 export type OvViewing = { status: ViewingStatus; outcome: ViewingOutcome | null; scheduled_at: string };
 
-export type OverviewInput = { properties: OvProperty[]; mandates: OvMandate[]; leads: OvLead[]; viewings: OvViewing[] };
+export type OvPayment = { status: 'due' | 'paid' | 'cancelled'; due_date: string; amount_cents: number };
+export type OvRepair = { status: 'open' | 'in_progress' | 'done' | 'cancelled'; priority: 'low' | 'normal' | 'urgent' };
+
+export type OverviewInput = { properties: OvProperty[]; mandates: OvMandate[]; leads: OvLead[]; viewings: OvViewing[]; payments?: OvPayment[]; repairs?: OvRepair[] };
 
 /** A property in the list of mandates that need attention. `days` is days since the end (expired) or until the end (expiring). */
 export type MandateAlert = { id: string; title: string; reference: string; days: number };
@@ -16,6 +19,8 @@ export type Overview = {
   leads: { byStatus: Record<LeadStatus, number>; open: number; newWeek: number; newMonth: number };
   viewings: { upcoming: number; pastOpen: number; done30: number; noShow30: number; outcomes: Record<ViewingOutcome, number> };
   mandates: { expired: MandateAlert[]; missing: MandateAlert[]; expiring: MandateAlert[] };
+  rent: { overdueCount: number; overdueCents: number };
+  repairs: { open: number; urgent: number };
 };
 
 export const EXPIRING_DAYS = 30;
@@ -113,5 +118,17 @@ export function computeOverview(input: OverviewInput, now: Date = new Date()): O
     leads: { byStatus: lByStatus, open: lByStatus.new + lByStatus.active + lByStatus.viewing, newWeek, newMonth },
     viewings: { upcoming, pastOpen, done30, noShow30, outcomes },
     mandates: { expired, missing, expiring },
+    rent: overdueRent(input.payments ?? [], today),
+    repairs: openRepairs(input.repairs ?? []),
   };
+}
+
+function overdueRent(payments: OvPayment[], today: string) {
+  const late = payments.filter(p => p.status === 'due' && p.due_date < today);
+  return { overdueCount: late.length, overdueCents: late.reduce((n, p) => n + p.amount_cents, 0) };
+}
+
+function openRepairs(repairs: OvRepair[]) {
+  const open = repairs.filter(r => r.status === 'open' || r.status === 'in_progress');
+  return { open: open.length, urgent: open.filter(r => r.priority === 'urgent').length };
 }

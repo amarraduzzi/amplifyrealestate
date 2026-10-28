@@ -79,6 +79,14 @@ Stel in Cloudflare (en in `.env.local`) ook `VITE_PUBLIC_SITE_URL` in: het adres
 - Viewers kunnen kijken, niet wijzigen; na afloop van het plan is alles alleen-lezen
 - Voor 3c is `supabase/migrations/20261027001400_maintenance.sql` nodig
 
+## Etappe 3d: achterstand en reparaties op Today en in het overzicht
+
+- **Today** toont nu ook **Rent overdue** (onbetaalde huur na de vervaldatum: huurder, pand, bedrag en aantal dagen te laat) en **Repairs that need attention** (open meldingen die urgent zijn of al een week of langer wachten, urgent eerst). Elk blok linkt naar Rentals of Maintenance
+- De WhatsApp-briefing (**Share briefing**) bevat deze twee lijsten ook
+- **Overview** (eigenaar en manager) heeft een blok **Rent and repairs**: aantal onbetaalde maanden met het totaalbedrag, open reparaties en urgente reparaties
+- Zijn de tabellen van 3b of 3c nog niet geïnstalleerd, dan blijven deze blokken leeg en werkt de rest zoals voorheen
+- Geen SQL nodig
+
 ## Talen
 
 De desk is er in Engels, Frans en Arabisch (rechts naar links). Rechtsboven (en op het inlogscherm) staat een keuze **FR / AR / EN**; de keuze wordt op dat apparaat onthouden. Testen kan ook met `?lang=fr` of `?lang=ar`.

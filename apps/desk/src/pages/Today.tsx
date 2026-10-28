@@ -5,6 +5,9 @@ import { getLang, t } from '../lib/i18n';
 import type { LeadRow, Office, PersonRow } from '../lib/types';
 import { loadTasks, sortTasks, toggleTask, type TaskView } from '../lib/tasks';
 import { loadViewings, type ViewingView } from '../lib/viewings';
+import { loadRentAlerts, type RentAlert } from '../lib/payments';
+import { loadRepairAlerts, type RepairAlert } from '../lib/maintenance';
+import { formatMad } from '@vastgoed/shared';
 import { OPEN_LEAD_STATUSES, daysSince, leadStatusCls, leadStatusLabel, viewingStatusCls, viewingStatusLabel } from '../lib/labels';
 import { daysUntil, toInputValue, todayStr, whenText } from '../lib/dates';
 import { Card } from '../components/ui';
@@ -45,6 +48,8 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
   const [viewings, setViewings] = useState<ViewingView[] | null>(null);
   const [leads, setLeads] = useState<StaleLead[] | null>(null);
   const [props, setProps] = useState<StaleProp[] | null>(null);
+  const [rent, setRent] = useState<RentAlert[] | null>(null);
+  const [repairs, setRepairs] = useState<RepairAlert[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
@@ -52,12 +57,14 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
 
   const load = useCallback(async () => {
     try {
-      const [tk, vw, l, p, pr] = await Promise.all([
+      const [tk, vw, l, p, pr, ra, rp] = await Promise.all([
         loadTasks(office.id),
         loadViewings(office.id),
         supabase.from('leads').select('*').eq('org_id', office.id).in('status', OPEN_LEAD_STATUSES),
         supabase.from('people').select('id, full_name').eq('org_id', office.id),
         supabase.from('properties').select('id, title, reference, info_confirmed_at').eq('org_id', office.id).eq('status', 'available'),
+        loadRentAlerts(office.id, canWrite),
+        loadRepairAlerts(office.id),
       ]);
       const err = l.error ?? p.error ?? pr.error;
       if (err) throw new Error(err.message);
@@ -70,9 +77,10 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
       setProps(((pr.data ?? []) as { id: string; title: string; reference: string; info_confirmed_at: string | null }[])
         .map(x => ({ id: x.id, title: x.title, reference: x.reference, days: daysSince(x.info_confirmed_at) ?? 0 }))
         .filter(x => x.days > PROP_DAYS).sort((a, b) => b.days - a.days));
+      setRent(ra); setRepairs(rp);
       setError(null);
     } catch (e) { setError(e instanceof Error ? e.message : t('Something went wrong.')); }
-  }, [office.id]);
+  }, [office.id, canWrite]);
   // Once per visit: make a task for every mandate that ends soon or has ended (idempotent). Never blocks the screen:
   // when the database function is not installed yet, or fails, Today simply loads as before.
   useEffect(() => {
@@ -100,9 +108,9 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
     .sort((a, b) => a.v.scheduled_at.localeCompare(b.v.scheduled_at));
   const editing = tasks?.find(x => x.task.id === editId)?.task;
   const viewing = viewings?.find(x => x.v.id === viewId);
-  const loading = tasks === null || viewings === null || leads === null || props === null;
+  const loading = tasks === null || viewings === null || leads === null || props === null || rent === null || repairs === null;
   const dateLine = new Intl.DateTimeFormat(LOCALES[getLang()], { dateStyle: 'full' }).format(new Date());
-  const quiet = !loading && due.length === 0 && upcoming.length === 0 && leads.length === 0 && props.length === 0;
+  const quiet = !loading && due.length === 0 && upcoming.length === 0 && leads.length === 0 && props.length === 0 && rent.length === 0 && repairs.length === 0;
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
@@ -112,7 +120,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
           <p className="text-sm text-muted">{dateLine}</p>
         </div>
         {!loading && !quiet && (
-          <button type="button" onClick={() => window.open(whatsappShareUrl(briefingText({ office: office.name, date: dateLine, due, viewings: upcoming, leadsToCall: leads?.length ?? 0 })), '_blank', 'noopener')}
+          <button type="button" onClick={() => window.open(whatsappShareUrl(briefingText({ office: office.name, date: dateLine, due, viewings: upcoming, leadsToCall: leads?.length ?? 0, rent: (rent ?? []).map(x => `${x.name} · ${x.property} — ${formatMad(x.cents)}`), repairs: (repairs ?? []).map(x => `${x.title} · ${x.property}`) })), '_blank', 'noopener')}
             className="inline-flex items-center gap-2 rounded-xl border border-line/[0.12] bg-surface px-3.5 py-2 text-sm font-semibold text-ink transition hover:bg-surface-2">
             <MessageCircle className="h-4 w-4 text-ok" /> {t('Share briefing')}
           </button>
@@ -157,6 +165,39 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
                   );
                 })}
               </ul>
+            </Block>
+          )}
+
+          {rent.length > 0 && (
+            <Block title={t('Rent overdue')} count={rent.length} to="leases" onGo={onGo}>
+              <ul className="space-y-2">
+                {rent.slice(0, 6).map(x => (
+                  <li key={x.id} className="flex items-center justify-between gap-3 rounded-2xl bg-surface-2 px-3.5 py-3">
+                    <p className="min-w-0 truncate text-sm font-semibold">{x.name} <span className="font-normal text-muted">· {x.property}</span></p>
+                    <span className="flex shrink-0 flex-col items-end text-xs font-semibold text-danger">
+                      <span className="tabular">{formatMad(x.cents)}</span>
+                      <span>{x.days === 1 ? t('Overdue by 1 day') : t('Overdue by {n} days', { n: x.days })}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {rent.length > 6 && <p className="mt-2 text-xs text-muted">{t('And {n} more.', { n: rent.length - 6 })}</p>}
+            </Block>
+          )}
+
+          {repairs.length > 0 && (
+            <Block title={t('Repairs that need attention')} count={repairs.length} to="maintenance" onGo={onGo}>
+              <ul className="space-y-2">
+                {repairs.slice(0, 6).map(x => (
+                  <li key={x.id} className="flex items-center justify-between gap-3 rounded-2xl bg-surface-2 px-3.5 py-3">
+                    <p className="min-w-0 truncate text-sm font-semibold">{x.title} <span className="font-normal text-muted">· {x.property}</span></p>
+                    <span className={`shrink-0 text-xs font-semibold ${x.urgent ? 'text-danger' : 'text-warn'}`}>
+                      {x.urgent ? t('Urgent') : x.days === 1 ? t('Open for 1 day') : t('Open for {n} days', { n: x.days })}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {repairs.length > 6 && <p className="mt-2 text-xs text-muted">{t('And {n} more.', { n: repairs.length - 6 })}</p>}
             </Block>
           )}
 

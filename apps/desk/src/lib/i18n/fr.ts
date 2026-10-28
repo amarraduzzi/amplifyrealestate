@@ -587,4 +587,12 @@ export const FR: Record<string, string> = {
   'The person who fixes it, for example a plumber.': 'La personne qui le répare, par exemple un plombier.',
   'Urgent': 'Urgente',
   'What is the problem?': 'Quel est le problème ?',
+  'Open for 1 day': 'Ouverte depuis 1 jour',
+  'Open for {n} days': 'Ouverte depuis {n} jours',
+  'Open repairs': 'Réparations ouvertes',
+  'Rent and repairs': 'Loyers et réparations',
+  'Repairs that need attention': 'Réparations à suivre',
+  'Unpaid months': 'Mois impayés',
+  '{amount} in total': '{amount} au total',
+  '{n} days ago': 'Il y a {n} jours',
 };
