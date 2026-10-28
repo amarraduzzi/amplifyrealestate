@@ -15,6 +15,7 @@ import { TaskItem } from '../components/TaskItem';
 import { briefingText } from '../lib/briefing';
 import { whatsappShareUrl } from '../lib/publicSite';
 import { GettingStarted } from '../components/GettingStarted';
+import { NewMatches } from '../components/NewMatches';
 import { TaskForm } from './TaskForm';
 import { ViewingDetail } from './ViewingDetail';
 import type { View } from '../components/Shell';
@@ -55,6 +56,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
   const [busyId, setBusyId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [viewId, setViewId] = useState<string | null>(null);
+  const [matchCount, setMatchCount] = useState(0);
 
   const load = useCallback(async () => {
     try {
@@ -111,7 +113,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
   const viewing = viewings?.find(x => x.v.id === viewId);
   const loading = tasks === null || viewings === null || leads === null || props === null || rent === null || repairs === null;
   const dateLine = new Intl.DateTimeFormat(LOCALES[getLang()], { dateStyle: 'full' }).format(new Date());
-  const quiet = !loading && due.length === 0 && upcoming.length === 0 && leads.length === 0 && props.length === 0 && rent.length === 0 && repairs.length === 0;
+  const quiet = !loading && matchCount === 0 && due.length === 0 && upcoming.length === 0 && leads.length === 0 && props.length === 0 && rent.length === 0 && repairs.length === 0;
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
@@ -137,6 +139,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
 
       {!loading && (
         <div className="mt-6 space-y-8">
+          <NewMatches office={office} onGo={onGo} onCount={setMatchCount} />
           {due.length > 0 && (
             <Block title={t('Tasks due')} count={due.length} to="tasks" onGo={onGo}>
               <ul className="space-y-2">

@@ -709,4 +709,11 @@ export const FR: Record<string, string> = {
   '{n} items': '{n} éléments',
   'Your agenda is empty': 'Votre agenda est vide',
   'Viewings, tasks with a deadline, mandates and leases that end, and rent that is due appear here by themselves.': 'Les visites, les tâches avec une échéance, les mandats et baux qui se terminent et les loyers à payer apparaissent ici automatiquement.',
+  // Nieuwe matches (6c)
+  'New matches': 'Nouvelles correspondances',
+  'Send': 'Envoyer',
+  'Skip': 'Ignorer',
+  '1 new property': '1 nouveau bien',
+  '{n} new properties': '{n} nouveaux biens',
+  'New properties of the last 14 days that fit what these leads are looking for.': 'Les biens des 14 derniers jours qui correspondent à ce que ces prospects recherchent.',
 };

@@ -709,4 +709,11 @@ export const AR: Record<string, string> = {
   '{n} items': '{n} عناصر',
   'Your agenda is empty': 'أجندتك فارغة',
   'Viewings, tasks with a deadline, mandates and leases that end, and rent that is due appear here by themselves.': 'تظهر هنا تلقائيا المعاينات، والمهام ذات الأجل، والتفويضات وعقود الكراء التي تنتهي، والكراء المستحق.',
+  // Nieuwe matches (6c)
+  'New matches': 'تطابقات جديدة',
+  'Send': 'إرسال',
+  'Skip': 'تجاهل',
+  '1 new property': 'عقار جديد واحد',
+  '{n} new properties': '{n} عقارات جديدة',
+  'New properties of the last 14 days that fit what these leads are looking for.': 'عقارات آخر 14 يوما التي تناسب ما يبحث عنه هؤلاء العملاء.',
 };
