@@ -13,6 +13,7 @@ import { PropertyMandates } from './PropertyMandates';
 import { PropertyLeads } from './PropertyLeads';
 import { PhotosSection } from './PhotosSection';
 import { PublishSection } from './PublishSection';
+import { NetworkShare } from '../components/NetworkShare';
 import { OwnerReport } from './OwnerReport';
 import { ViewingsSection } from './ViewingsSection';
 import { TasksSection } from './TasksSection';
@@ -152,6 +153,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
         <PropertyMandates office={office} property={row} canWrite={canWrite} />
         <PhotosSection office={office} property={row} canWrite={canWrite} onChanged={onChanged} />
         <PublishSection office={office} property={row} canWrite={canWrite} onChanged={() => { onChanged(); loadHistory(); }} />
+        <NetworkShare office={office} property={row} canWrite={canWrite} />
         <PropertyLeads office={office} property={row} />
         <ViewingsSection office={office} property={row} />
         <TasksSection office={office} userId={userId} property={row} />

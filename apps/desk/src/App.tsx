@@ -15,6 +15,7 @@ import { Team } from './pages/Team';
 import { Tasks } from './pages/Tasks';
 import { Today } from './pages/Today';
 import { Overview } from './pages/Overview';
+import { Network } from './pages/Network';
 import { Plan } from './pages/Plan';
 import { Deals } from './pages/Deals';
 import { Leases } from './pages/Leases';
@@ -88,6 +89,7 @@ function Workspace({ session }: { session: Session }) {
         : shown === 'tasks' ? <Tasks key={office.id} office={work} userId={session.user.id} />
         : shown === 'deals' ? <Deals key={office.id} office={work} />
         : shown === 'leases' ? <Leases key={office.id} office={work} />
+        : shown === 'network' ? <Network key={office.id} office={work} />
         : shown === 'maintenance' ? <Maintenance key={office.id} office={work} />
         : shown === 'viewings' ? <Viewings key={office.id} office={work} />
         : shown === 'plan' ? <Plan key={office.id} office={office} />
