@@ -2,7 +2,7 @@
 
 Platform voor de Marokkaanse vastgoedsector: panden, personen, mandaten en (later) leads, transacties, beheer en samenwerking tussen bemiddelaars.
 
-Stand: **etappe 1 is afgerond** (1a t/m 1l); etappe 2 is begonnen met **2a** (deals met commissie) **2b** (WhatsApp-herinnering voor de klant en dagoverzicht voor het team) **2c** (rapport voor de eigenaar per pand) en **2d** (deals exporteren naar Excel) **2e** (leads en panden exporteren), **2f** (eigenaarsupdate via WhatsApp) en **2g** (databasetest voor deals) **2h** (documenten bij een deal) en **3a** (huurovereenkomsten, begin van etappe 3). Een vastgoedkantoor kan nu werken met panden, personen, mandaten, leads, bezichtigingen, taken en team, in het Frans, Arabisch en Engels; panden online zetten en delen via WhatsApp; en heeft een plan (30 dagen proef, daarna betaald of alleen-lezen).
+Stand: **etappe 1 is afgerond** (1a t/m 1l); etappe 2 is begonnen met **2a** (deals met commissie) **2b** (WhatsApp-herinnering voor de klant en dagoverzicht voor het team) **2c** (rapport voor de eigenaar per pand) en **2d** (deals exporteren naar Excel) **2e** (leads en panden exporteren), **2f** (eigenaarsupdate via WhatsApp) en **2g** (databasetest voor deals) **2h** (documenten bij een deal) en **3a** (huurovereenkomsten), **3b** (huurbetalingen), **3c** (onderhoud) en **3d** (achterstand op Today); **4a** (eigenaarsrapport met huur en reparaties). Een vastgoedkantoor kan nu werken met panden, personen, mandaten, leads, bezichtigingen, taken en team, in het Frans, Arabisch en Engels; panden online zetten en delen via WhatsApp; en heeft een plan (30 dagen proef, daarna betaald of alleen-lezen).
 
 Gebouwd per onderdeel: **1a** databasekern, **1b** desk-app (panden, personen, mandaten, leads, bezichtigingen, team, taken, Today), **1c** publieke pandpagina's, **1d** foto's, **1e** Frans en Arabisch, **1f** panden naar een lead sturen via WhatsApp, **1g** contacten importeren, **1h** eigen adresnaam, **1i** Overview, **1j** eerste stappen, **1k** automatische taak bij aflopende mandaten, **1l** plan per kantoor.
 
@@ -39,6 +39,10 @@ Gebouwd per onderdeel: **1a** databasekern, **1b** desk-app (panden, personen, m
 | Databasetest voor deals (fasen, gevolgen voor pand en lead, rechten, alleen-lezen na afloop plan) | klaar (2g) |
 | Documenten bij een deal (contract, mandaat, betaalbewijs; PDF of afbeelding tot 10 MB, max. 20): prive opslag, alleen eigenaar, manager en agent zien ze, verwijderen alleen eigenaar en manager, geen id-kaarten (database + desk) | klaar (2h) |
 | Huurovereenkomsten (etappe 3a): huurder, pand, maandhuur, borg, start- en einddatum, betaaldag; tabblad Rentals met totalen en waarschuwing bij bijna afgelopen; een lopende overeenkomst zet het pand op verhuurd, beeindigen zet het weer beschikbaar (database + desk) | klaar (3a) |
+| Huurbetalingen (3b): per maand een regel op de betaaldag (te betalen, te laat, betaald), "Mark as paid", WhatsApp-herinnering aan de huurder (FR/AR/EN), totaal achterstand in Rentals (database + desk) | klaar (3b) |
+| Onderhoud (3c): meldingen per pand met urgentie, melder, reparateur, kosten en wie betaalt; status open / in progress / done / cancelled; bericht naar de reparateur via WhatsApp (database + desk) | klaar (3c) |
+| Achterstallige huur en reparaties die aandacht nodig hebben op Today, in de briefing en in Overview, geen SQL | klaar (3d) |
+| Eigenaarsrapport met huurinkomsten, reparatiekosten en betaald, ook als maandupdate via WhatsApp, geen SQL | klaar (4a) |
 | Desk-app: pagina aan/uit per pand, deellink, kantoorgegevens voor de publieke pagina | klaar (1c) |
 
 Gebruikershandleiding voor het team (Frans, één pagina): `docs/guide-fr.md`.

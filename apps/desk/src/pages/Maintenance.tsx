@@ -4,7 +4,7 @@ import { formatMad } from '@vastgoed/shared';
 import { t } from '../lib/i18n';
 import type { Office } from '../lib/types';
 import { dateText } from '../lib/leases';
-import { MAINT_STATUSES, isOpen, loadMaintenance, maintStatusCls, maintStatusLabel, priorityCls, priorityLabel, type MaintStatus, type MaintView } from '../lib/maintenance';
+import { isOpen, loadMaintenance, maintStatusCls, maintStatusLabel, priorityCls, priorityLabel, type MaintStatus, type MaintView } from '../lib/maintenance';
 import { Btn, Card, inputCls } from '../components/ui';
 import { MaintenanceForm } from './MaintenanceForm';
 import { MaintenanceDetail } from './MaintenanceDetail';
