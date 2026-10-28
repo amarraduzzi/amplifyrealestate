@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { applyLang, getLang, LANGS, saveLang, t, type Lang } from '../lib/i18n';
 import { AmplifyLogo, AmplifyMark } from './Brand';
-import { Link } from '../lib/router';
+import { Link, officePath } from '../lib/router';
 
 function LangSwitch() {
   const choose = (l: Lang) => {
@@ -33,7 +33,7 @@ export function Layout({ office, stickyBar, children }: {
       <header className="night px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3">
           {office ? (
-            <Link to={`/${office.slug}`} className="flex min-w-0 items-center gap-2.5">
+            <Link to={officePath(office.slug)} className="flex min-w-0 items-center gap-2.5">
               <AmplifyMark className="h-6 w-9 shrink-0" />
               <span className="min-w-0">
                 <span className="block truncate font-display text-base font-bold leading-tight">{office.name}</span>

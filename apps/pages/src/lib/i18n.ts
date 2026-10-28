@@ -104,6 +104,20 @@ const FR: Record<string, string> = {
   'Sending failed. Check your connection and try again.': 'L’envoi a échoué. Vérifiez votre connexion et réessayez.',
   'Thank you, we will call you back': 'Merci, nous vous rappelons',
   'Your request has been sent to the agency.': 'Votre demande a bien été envoyée à l’agence.',
+  // Kantoorwebsite (6g)
+  'See our properties': 'Voir nos biens',
+  'In figures': 'En chiffres',
+  'Properties online': 'Biens en ligne',
+  'For rent': 'À louer',
+  'Sold or rented': 'Vendus ou loués',
+  'Type': 'Type',
+  'All types': 'Tous les types',
+  'Neighborhood, city...': 'Quartier, ville...',
+  'Search': 'Rechercher',
+  'No property matches your search. Leave your number below and we will look for you.': 'Aucun bien ne correspond à votre recherche. Laissez votre numéro ci-dessous, nous cherchons pour vous.',
+  'About us': 'Qui sommes-nous',
+  'Our services': 'Nos services',
+  'Contact': 'Contact',
 };
 
 const AR: Record<string, string> = {
@@ -170,6 +184,20 @@ const AR: Record<string, string> = {
   'Sending failed. Check your connection and try again.': 'فشل الإرسال. تحقق من الاتصال وحاول مرة أخرى.',
   'Thank you, we will call you back': 'شكرا، سنتصل بك',
   'Your request has been sent to the agency.': 'تم إرسال طلبك إلى الوكالة.',
+  // Kantoorwebsite (6g)
+  'See our properties': 'شاهد عقاراتنا',
+  'In figures': 'بالأرقام',
+  'Properties online': 'عقارات معروضة',
+  'For rent': 'للكراء',
+  'Sold or rented': 'مباعة أو مكتراة',
+  'Type': 'النوع',
+  'All types': 'كل الأنواع',
+  'Neighborhood, city...': 'الحي، المدينة...',
+  'Search': 'بحث',
+  'No property matches your search. Leave your number below and we will look for you.': 'لا يوجد عقار يطابق بحثك. اترك رقمك أسفله وسنبحث لك.',
+  'About us': 'من نحن',
+  'Our services': 'خدماتنا',
+  'Contact': 'اتصل بنا',
 };
 
 export function t(en: string, vars?: Record<string, string | number>): string {

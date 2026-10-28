@@ -5,7 +5,7 @@ import { loadProperty, logEvent } from '../lib/api';
 import { useFetch } from '../lib/useFetch';
 import { confirmedText, placeText, priceSuffix, purposeLabel, statusCls, statusLabel, typeLabel } from '../lib/format';
 import { t } from '../lib/i18n';
-import { Link } from '../lib/router';
+import { Link, officePath } from '../lib/router';
 import { Layout } from '../components/Layout';
 import { ContactBar } from '../components/ContactBar';
 import { Gallery } from '../components/Gallery';
@@ -104,7 +104,7 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
         <InquiryForm slug={office.slug} reference={p.reference} />
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link to={`/${office.slug}`} className="text-sm font-semibold text-brand hover:underline">{t('More properties from {office}', { office: office.name })}</Link>
+          <Link to={officePath(office.slug)} className="text-sm font-semibold text-brand hover:underline">{t('More properties from {office}', { office: office.name })}</Link>
           <a href={`https://wa.me/?text=${encodeURIComponent(`${p.title}\n${link}`)}`} target="_blank" rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-xl border border-line/[0.12] bg-surface px-3.5 py-2 text-sm font-semibold text-ink transition hover:bg-surface-2">
             <MessageCircle className="h-4 w-4" />{t('Share on WhatsApp')}

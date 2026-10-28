@@ -78,11 +78,28 @@ async function metaFor(parts, lang, env) {
   return { found: false };
 }
 
+// On an office's own domain (www.atlas-immo.ma), / is the office page and /P-AB12 a property.
+const PLATFORM = /(^localhost$)|(^127\.)|(\.pages\.dev$)|(\.workers\.dev$)/;
+const domains = new Map(); // host -> office code (or null), kept for 5 minutes per worker
+async function domainSlug(host, env) {
+  if (PLATFORM.test(host) || !env.VITE_SUPABASE_URL || !env.VITE_SUPABASE_ANON_KEY) return null;
+  const hit = domains.get(host);
+  if (hit && hit.until > Date.now()) return hit.slug;
+  let slug = null;
+  try { slug = await rpc(env, 'public_office_by_domain', { p_host: host }); } catch { return null; }
+  domains.set(host, { slug, until: Date.now() + 300_000 });
+  return slug;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    const parts = url.pathname.split('/').filter(Boolean);
-    const isPage = request.method === 'GET' && parts.length >= 1 && parts.length <= 2 && !parts[parts.length - 1].includes('.');
+    let parts = url.pathname.split('/').filter(Boolean);
+    const looksLikePage = request.method === 'GET' && parts.length <= 2 && !(parts.length && parts[parts.length - 1].includes('.'));
+    if (!looksLikePage) return env.ASSETS.fetch(request);
+    const own = await domainSlug(url.hostname, env);
+    if (own) parts = parts.length === 0 ? [own] : parts.length === 1 ? [own, parts[0]] : [];
+    const isPage = parts.length >= 1 && parts.length <= 2;
     if (!isPage) return env.ASSETS.fetch(request);
 
     let shell;

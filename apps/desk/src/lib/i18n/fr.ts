@@ -827,4 +827,18 @@ export const FR: Record<string, string> = {
   '{n} invoices': '{n} factures',
   '{n} past due date': '{n} échues',
   '1 invoice': '1 facture',
+  // Website (6g)
+  'Enter a domain name like www.your-agency.ma (without http).': 'Indiquez un nom de domaine comme www.votre-agence.ma (sans http).',
+  'This domain name is already used by another office.': 'Ce nom de domaine est déjà utilisé par une autre agence.',
+  'Website': 'Site web',
+  'Open the website': 'Ouvrir le site',
+  'Your office page becomes a full website: your properties online with search, who you are, your services and a contact form. Write the texts in French: that is what most visitors read.': 'Votre page devient un vrai site : vos biens en ligne avec recherche, qui vous êtes, vos services et un formulaire de contact. Écrivez les textes en français : c’est ce que lisent la plupart des visiteurs.',
+  'Slogan': 'Slogan',
+  'One short sentence under your name.': 'Une phrase courte sous votre nom.',
+  'Neighborhoods where you work': 'Quartiers où vous travaillez',
+  'About us': 'Qui sommes-nous',
+  'Services': 'Services',
+  'One per line.': 'Un par ligne.',
+  'Own domain name (optional)': 'Nom de domaine propre (facultatif)',
+  'Ask Amplify to connect the domain first; then fill it in here.': 'Demandez d’abord à Amplify de connecter le domaine, puis indiquez-le ici.',
 };

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { BillingSettings } from '../components/BillingSettings';
+import { WebsiteSettings } from '../components/WebsiteSettings';
 import { LogOut, UserMinus, UserPlus } from 'lucide-react';
 import type { OrgRole } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
@@ -126,6 +127,7 @@ export function Team({ office, userId, onSelfChanged }: { office: Office; userId
       )}
 
       <PublicProfile office={office} canManage={canManage} onSlugChanged={onSelfChanged} />
+      <WebsiteSettings office={office} canManage={canManage} />
       {office.role !== 'viewer' && <BillingSettings office={office} canManage={canManage} />}
 
       {canManage ? (

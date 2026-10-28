@@ -3,7 +3,7 @@ import type { DealPurpose, PropertyStatus, PropertyType } from '@vastgoed/shared
 // The public pages read through two database functions (public_office_page, public_property_page).
 // Visitors have no access to any table. Only the public anon key is used here.
 
-export type PublicOffice = { name: string; slug: string; city: string | null; whatsapp: string | null; phone: string | null; email: string | null };
+export type PublicOffice = { name: string; slug: string; city: string | null; whatsapp: string | null; phone: string | null; email: string | null; domain?: string | null };
 
 export type PublicCard = {
   reference: string; title: string; property_type: PropertyType; purpose: DealPurpose; status: PropertyStatus;
@@ -13,7 +13,8 @@ export type PublicCard = {
 };
 export type PublicProperty = PublicCard & { furnished: boolean | null; description: string | null; info_confirmed_at: string | null; published_at: string | null; photos?: string[] };
 
-export type OfficePage = { office: PublicOffice; listings: PublicCard[] };
+export type OfficeSite = { tagline: string | null; about: string | null; services: string | null; areas: string | null; done: number };
+export type OfficePage = { office: PublicOffice; site?: OfficeSite; listings: PublicCard[] };
 export type PropertyPage = { office: PublicOffice; property: PublicProperty };
 
 const BASE = ((import.meta.env.VITE_SUPABASE_URL as string | undefined) ?? '').replace(/\/+$/, '');
@@ -79,4 +80,13 @@ export async function submitInquiry(o: { slug: string; reference: string | null;
     if (text.includes('inquiry_busy')) return 'busy';
     return 'error';
   } catch { return 'error'; }
+}
+
+/** Hosts that are never an office domain: the Amplify address itself, previews and local testing. */
+const PLATFORM = /(^localhost$)|(^127\.)|(\.pages\.dev$)|(\.workers\.dev$)/;
+
+/** On an office's own domain: its office code. Null on the normal Amplify address (or when it cannot be checked). */
+export async function resolveDomain(host: string): Promise<string | null> {
+  if (!apiConfigured || PLATFORM.test(host)) return null;
+  try { return await rpc<string>('public_office_by_domain', { p_host: host }); } catch { return null; }
 }

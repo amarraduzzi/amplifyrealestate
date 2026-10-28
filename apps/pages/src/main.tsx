@@ -2,7 +2,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import { applyLang, detectLang } from './lib/i18n';
-import { apiConfigured } from './lib/api';
+import { apiConfigured, resolveDomain } from './lib/api';
+import { setDomainSlug } from './lib/router';
 import App from './App';
 
 // language before the first render, so an Arabic page never flashes in French
@@ -17,5 +18,9 @@ if (!apiConfigured) {
     </div>,
   );
 } else {
-  root.render(<StrictMode><App /></StrictMode>);
+  // First find out whether this is an office's own domain, then draw the page.
+  resolveDomain(window.location.hostname).then(slug => {
+    setDomainSlug(slug);
+    root.render(<StrictMode><App /></StrictMode>);
+  });
 }

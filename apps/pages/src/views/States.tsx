@@ -1,6 +1,7 @@
 import { SearchX } from 'lucide-react';
 import { t } from '../lib/i18n';
 import { Link } from '../lib/router';
+import { officePath } from '../lib/router';
 import { Layout } from '../components/Layout';
 
 export function Loading() {
@@ -34,7 +35,7 @@ export function NotFound({ text, officeSlug, officeName }: { text: string; offic
         <h1 className="mt-4 font-display text-2xl font-bold">{t('Page not found')}</h1>
         <p className="mt-2 text-sm text-muted">{text}</p>
         {officeSlug && officeName && (
-          <Link to={`/${officeSlug}`} className="mt-5 inline-block text-sm font-semibold text-brand hover:underline">{t('More properties from {office}', { office: officeName })}</Link>
+          <Link to={officePath(officeSlug)} className="mt-5 inline-block text-sm font-semibold text-brand hover:underline">{t('More properties from {office}', { office: officeName })}</Link>
         )}
       </div>
     </Layout>

@@ -8,8 +8,22 @@ export type Route =
   | { kind: 'office'; slug: string }
   | { kind: 'property'; slug: string; reference: string };
 
+// On an office's own domain (www.atlas-immo.ma) the office is the whole site: / is the office, /P-AB12 a property.
+let domainSlug: string | null = null;
+export const setDomainSlug = (s: string | null) => { domainSlug = s; };
+export const getDomainSlug = () => domainSlug;
+
+/** Address of an office page and of a property page, the short way on the office's own domain. */
+export const officePath = (slug: string) => (domainSlug === slug ? '/' : `/${slug}`);
+export const propertyPath = (slug: string, reference: string) =>
+  domainSlug === slug ? `/${encodeURIComponent(reference)}` : `/${slug}/${encodeURIComponent(reference)}`;
+
 export function parse(pathname: string): Route {
   const parts = pathname.split('/').filter(Boolean).map(p => { try { return decodeURIComponent(p); } catch { return p; } });
+  if (domainSlug) {
+    if (parts.length === 0) return { kind: 'office', slug: domainSlug };
+    return { kind: 'property', slug: domainSlug, reference: parts.join('/') };
+  }
   if (parts.length === 0) return { kind: 'home' };
   if (parts.length === 1) return { kind: 'office', slug: parts[0].toLowerCase() };
   // anything deeper is not a page we know: treat it as a property with an impossible reference, so it shows "not found"

@@ -827,4 +827,18 @@ export const AR: Record<string, string> = {
   '{n} invoices': '{n} فواتير',
   '{n} past due date': '{n} متأخرة',
   '1 invoice': 'فاتورة واحدة',
+  // Website (6g)
+  'Enter a domain name like www.your-agency.ma (without http).': 'أدخل اسم نطاق مثل www.votre-agence.ma (بدون http).',
+  'This domain name is already used by another office.': 'اسم النطاق هذا مستعمل من طرف وكالة أخرى.',
+  'Website': 'الموقع الإلكتروني',
+  'Open the website': 'فتح الموقع',
+  'Your office page becomes a full website: your properties online with search, who you are, your services and a contact form. Write the texts in French: that is what most visitors read.': 'تصبح صفحتك موقعا كاملا: عقاراتك مع البحث، من أنتم، خدماتكم ونموذج اتصال. اكتب النصوص بالفرنسية: هي ما يقرؤه أغلب الزوار.',
+  'Slogan': 'الشعار',
+  'One short sentence under your name.': 'جملة قصيرة تحت اسمك.',
+  'Neighborhoods where you work': 'الأحياء التي تعملون بها',
+  'About us': 'من نحن',
+  'Services': 'الخدمات',
+  'One per line.': 'واحد في كل سطر.',
+  'Own domain name (optional)': 'اسم نطاق خاص (اختياري)',
+  'Ask Amplify to connect the domain first; then fill it in here.': 'اطلب أولا من Amplify ربط النطاق، ثم أدخله هنا.',
 };

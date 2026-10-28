@@ -2,14 +2,14 @@ import { Bath, BedDouble, MapPin, Ruler } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { photoUrl, type PublicCard } from '../lib/api';
 import { placeText, priceSuffix, purposeLabel, statusCls, statusLabel, typeLabel } from '../lib/format';
-import { Link } from '../lib/router';
+import { Link, propertyPath } from '../lib/router';
 import { t } from '../lib/i18n';
 import { PropertyIcon } from './PropertyIcon';
 
 export function PropertyCard({ slug, p }: { slug: string; p: PublicCard }) {
   const place = placeText(p);
   return (
-    <Link to={`/${slug}/${encodeURIComponent(p.reference)}`}
+    <Link to={propertyPath(slug, p.reference)}
       className="card group flex gap-3.5 rounded-2xl p-3.5 transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand sm:p-4">
       {p.cover
         ? <img src={photoUrl(p.cover, true)} alt="" loading="lazy" width={80} height={80} className="h-16 w-16 shrink-0 rounded-xl bg-surface-3 object-cover sm:h-20 sm:w-20" />
