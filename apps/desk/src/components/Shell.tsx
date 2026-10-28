@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react';
-import { BarChart3, Building2, CalendarClock, CreditCard, Handshake, KeyRound, ListChecks, LogOut, Network, Sun, UserCog, Users, Wrench } from 'lucide-react';
+import { BarChart3, Building2, CalendarClock, CalendarDays, CreditCard, Handshake, KeyRound, ListChecks, LogOut, Network, Sun, UserCog, Users, Wrench } from 'lucide-react';
 import { AmplifyLogo } from './Brand';
 import { LangSwitch } from './LangSwitch';
 import { t } from '../lib/i18n';
 import type { Office } from '../lib/types';
 
-export type View = 'today' | 'overview' | 'properties' | 'leads' | 'viewings' | 'deals' | 'leases' | 'maintenance' | 'network' | 'tasks' | 'team' | 'plan';
+export type View = 'today' | 'agenda' | 'overview' | 'properties' | 'leads' | 'viewings' | 'deals' | 'leases' | 'maintenance' | 'network' | 'tasks' | 'team' | 'plan';
 
 /** The overview with the numbers is for the owner and managers. */
 export const canSeeOverview = (role: Office['role']) => role === 'owner' || role === 'manager';
@@ -15,6 +15,7 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
 }) {
   const tabs: { id: View; label: string; icon: ReactNode }[] = [
     { id: 'today', label: t('Today'), icon: <Sun className="h-4 w-4" /> },
+    { id: 'agenda', label: t('Agenda'), icon: <CalendarDays className="h-4 w-4" /> },
     ...(canSeeOverview(office.role) ? [{ id: 'overview' as View, label: t('Overview'), icon: <BarChart3 className="h-4 w-4" /> }] : []),
     { id: 'properties', label: t('Properties'), icon: <Building2 className="h-4 w-4" /> },
     { id: 'leads', label: t('Leads'), icon: <Users className="h-4 w-4" /> },

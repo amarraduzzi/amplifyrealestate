@@ -10,15 +10,15 @@ import { friendly } from '../lib/errors';
 type Opt = { id: string; label: string };
 
 /** Add a task, or change one. leadId / propertyId link a new task to the lead or property it is opened from. */
-export function TaskForm({ orgId, userId, task, leadId, propertyId, onClose, onSaved }: {
-  orgId: string; userId: string; task?: TaskRow; leadId?: string; propertyId?: string; onClose: () => void; onSaved: () => void;
+export function TaskForm({ orgId, userId, task, leadId, propertyId, defaultDue, onClose, onSaved }: {
+  orgId: string; userId: string; task?: TaskRow; leadId?: string; propertyId?: string; defaultDue?: string; onClose: () => void; onSaved: () => void;
 }) {
   const [members, setMembers] = useState<MemberRow[]>([]);
   const [leads, setLeads] = useState<Opt[]>([]);
   const [props, setProps] = useState<Opt[]>([]);
   const [ready, setReady] = useState(false);
   const [title, setTitle] = useState(task?.title ?? '');
-  const [due, setDue] = useState(task?.due_date ?? '');
+  const [due, setDue] = useState(task?.due_date ?? defaultDue ?? '');
   const [assignee, setAssignee] = useState(task ? (task.assigned_to ?? '') : userId);
   const [lead, setLead] = useState(task?.lead_id ?? leadId ?? '');
   const [property, setProperty] = useState(task?.property_id ?? propertyId ?? '');

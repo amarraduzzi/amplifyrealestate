@@ -14,6 +14,7 @@ import { Viewings } from './pages/Viewings';
 import { Team } from './pages/Team';
 import { Tasks } from './pages/Tasks';
 import { Today } from './pages/Today';
+import { Agenda } from './pages/Agenda';
 import { Overview } from './pages/Overview';
 import { Network } from './pages/Network';
 import { Plan } from './pages/Plan';
@@ -85,6 +86,7 @@ function Workspace({ session }: { session: Session }) {
     <Shell offices={offices} office={office} view={shown} onView={setView} onPick={pick} onSignOut={signOut}
       banner={<PlanBanner plan={info} canSee={canSeeOverview(office.role)} onGo={setView} />}>
       {shown === 'today' ? <Today key={office.id} office={work} userId={session.user.id} onGo={setView} />
+        : shown === 'agenda' ? <Agenda key={office.id} office={work} userId={session.user.id} onGo={setView} />
         : shown === 'overview' ? <Overview key={office.id} office={office} onGo={setView} />
         : shown === 'leads' ? <Leads key={office.id} office={work} userId={session.user.id} />
         : shown === 'tasks' ? <Tasks key={office.id} office={work} userId={session.user.id} />

@@ -14,15 +14,15 @@ type PropOpt = { id: string; title: string; reference: string };
  * Schedule a viewing (a lead looks at a property), or change the time and notes of an existing one.
  * leadId / propertyId lock one side when the form is opened from a lead or from a property.
  */
-export function ViewingForm({ orgId, viewing, leadId, propertyId, onClose, onSaved }: {
-  orgId: string; viewing?: ViewingRow; leadId?: string; propertyId?: string; onClose: () => void; onSaved: () => void;
+export function ViewingForm({ orgId, viewing, leadId, propertyId, defaultWhen, onClose, onSaved }: {
+  orgId: string; viewing?: ViewingRow; leadId?: string; propertyId?: string; defaultWhen?: string; onClose: () => void; onSaved: () => void;
 }) {
   const editing = !!viewing;
   const [leads, setLeads] = useState<LeadOpt[] | null>(editing ? [] : null);
   const [props, setProps] = useState<PropOpt[]>([]);
   const [lead, setLead] = useState(leadId ?? '');
   const [property, setProperty] = useState(propertyId ?? '');
-  const [when, setWhen] = useState(viewing ? toInputValue(new Date(viewing.scheduled_at)) : defaultViewingTime());
+  const [when, setWhen] = useState(viewing ? toInputValue(new Date(viewing.scheduled_at)) : (defaultWhen ?? defaultViewingTime()));
   const [notes, setNotes] = useState(viewing?.notes ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
