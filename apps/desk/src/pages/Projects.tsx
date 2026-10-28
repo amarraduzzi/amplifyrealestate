@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { ArrowLeft, Check, Download, HardHat, Layers, MessageCircle, MousePointerClick, Plus, Trash2, X } from 'lucide-react';
+import { ArrowLeft, BarChart3, Check, Download, HardHat, Layers, MessageCircle, MousePointerClick, Plus, Trash2, X } from 'lucide-react';
 import { formatMad, dirhamToCents } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { getLang, t } from '../lib/i18n';
@@ -12,6 +12,7 @@ import { planError } from '../lib/plan';
 import { downloadCsv, toCsv } from '../lib/exportCsv';
 import { Btn, Card, Field, Modal, inputCls } from '../components/ui';
 import { ProjectMarketing } from './ProjectMarketing';
+import { ProjectReport } from './ProjectReport';
 import { SaleForm, SaleView, SalesTab, WorksPanel, type SaleData } from './DevSales';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
@@ -471,7 +472,9 @@ export function Projects({ office }: { office: Office }) {
   const [units, setUnits] = useState<Unit[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
+  const [report, setReport] = useState(false);
   const canWrite = office.role !== 'viewer';
+  const boss = office.role === 'owner' || office.role === 'manager';
   const load = useCallback(async () => {
     const r = await loadProjects(office.id);
     setRows(r);
@@ -491,7 +494,10 @@ export function Projects({ office }: { office: Office }) {
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Projects')}</h1>
           <p className="text-sm text-muted">{t('New-build projects: tranches, units in stock, prices and what is sold.')}</p>
         </div>
-        {canWrite && rows && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('New project')}</Btn>}
+        <span className="flex flex-wrap gap-2">
+          {boss && rows && rows.length > 0 && <Btn tone="ghost" onClick={() => setReport(true)}><BarChart3 className="h-4 w-4" /> {t('Sales report')}</Btn>}
+          {canWrite && rows && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('New project')}</Btn>}
+        </span>
       </div>
       {rows === undefined && <p className="mt-10 text-center text-muted">…</p>}
       {rows === null && <p className="mt-6 rounded-xl bg-warn/10 px-3 py-2 text-sm font-semibold text-warn">{t('Run the SQL of etappe 10a first.')}</p>}
@@ -514,6 +520,7 @@ export function Projects({ office }: { office: Office }) {
             </button></li>); })}
         </ul>
       )}
+      {report && <ProjectReport office={office} onClose={() => setReport(false)} />}
       {adding && <ProjectForm office={office} onClose={() => setAdding(false)} onSaved={id => { setAdding(false); load().then(() => setOpenId(id)); }} />}
     </div>
   );

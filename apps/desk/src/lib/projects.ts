@@ -16,7 +16,7 @@ export type MilestoneKey = 'contract' | 'foundations' | 'structure' | 'finishing
 export type SaleKind = 'vefa' | 'reservation';
 export type SaleStatus = 'reserved' | 'signed' | 'delivered' | 'cancelled';
 export type Sale = { id: string; org_id: string; project_id: string; unit_id: string; buyer_person_id: string; kind: SaleKind; status: SaleStatus; price_cents: number;
-  reserved_on: string; signed_on: string | null; delivered_on: string | null; cancelled_on: string | null; notes: string | null };
+  reserved_on: string; signed_on: string | null; delivered_on: string | null; cancelled_on: string | null; notes: string | null; seller_user_id?: string | null };
 export type Installment = { id: string; org_id: string; sale_id: string; position: number; label: string; milestone: MilestoneKey; pct: number; amount_cents: number;
   due_date: string | null; paid_cents: number; paid_on: string | null; reminded_on: string | null };
 export type Buyer = { unit_id: string; buyer_person_id: string; buyer_name: string; buyer_phone: string | null };

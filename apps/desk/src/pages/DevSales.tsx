@@ -160,6 +160,9 @@ export function SaleView({ ctx, sale, data, onClose, onChanged, onEditUnit }: { 
   const [doc, setDoc] = useState<Installment | null>(null);
   const [error, setError] = useState<string | null>(null);
   const canManage = ctx.office.role === 'owner' || ctx.office.role === 'manager';
+  const [members, setMembers] = useState<{ user_id: string; email: string; role: string }[]>([]);
+  useEffect(() => { supabase.rpc('list_members', { p_org: ctx.office.id }).then(r => setMembers(((r.data ?? []) as { user_id: string; email: string; role: string }[]).filter(m => m.role !== 'viewer'))); }, [ctx.office.id]);
+  const setSeller = async (id: string) => { const r = await supabase.from('dev_sales').update({ seller_user_id: id || null }).eq('id', sale.id).select('id'); if (r.error) setError(err(r.error.message)); else onChanged(); };
   const open = sale.status === 'reserved' || sale.status === 'signed';
   const rpc = async (fn: string, args: Record<string, unknown>, confirm?: string) => {
     if (confirm && !window.confirm(confirm)) return;
@@ -225,6 +228,9 @@ export function SaleView({ ctx, sale, data, onClose, onChanged, onEditUnit }: { 
           );
         })}
       </ul>
+      <p className="mt-3 flex flex-wrap items-center gap-2 text-sm"><span className="text-muted">{t('Seller')}:</span>
+        {canManage ? <select className="rounded-lg bg-surface-2 px-2 py-1 text-sm" value={sale.seller_user_id ?? ''} onChange={e => setSeller(e.target.value)}><option value="">—</option>{members.map(m => <option key={m.user_id} value={m.user_id}>{m.email}</option>)}</select>
+          : <span className="font-semibold">{members.find(m => m.user_id === sale.seller_user_id)?.email ?? '—'}</span>}</p>
       {sale.notes && <p className="mt-3 whitespace-pre-line text-sm text-muted">{sale.notes}</p>}
       {error && <p className="mt-3 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
       {doc && <CallDoc ctx={ctx} sale={sale} inst={doc} buyer={buyer} unit={unit} onClose={() => setDoc(null)} />}
