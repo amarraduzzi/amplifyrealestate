@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { DealPurpose } from '@vastgoed/shared';
-import { loadOffice } from '../lib/api';
+import { loadOffice, logEvent } from '../lib/api';
 import { useFetch } from '../lib/useFetch';
 import { purposeLabel } from '../lib/format';
 import { t } from '../lib/i18n';
 import { Layout } from '../components/Layout';
 import { ContactBar } from '../components/ContactBar';
 import { PropertyCard } from '../components/PropertyCard';
+import { InquiryForm } from '../components/InquiryForm';
 import { Failed, Loading, NotFound } from './States';
 
 const PURPOSES: DealPurpose[] = ['sale', 'rent_long', 'rent_short'];
@@ -19,6 +20,7 @@ export function OfficeView({ slug }: { slug: string }) {
   const data = state.status === 'ready' ? state.data : null;
   useEffect(() => { document.title = data ? `${data.office.name} · Amplify Real Estate` : 'Amplify Real Estate'; }, [data]);
 
+  useEffect(() => { if (data) logEvent(data.office.slug, null, 'view'); }, [data]);
   const present = useMemo(() => PURPOSES.filter(p => data?.listings.some(l => l.purpose === p)), [data]);
   const shown = useMemo(() => (data?.listings ?? []).filter(l => purpose === 'all' || l.purpose === purpose), [data, purpose]);
 
@@ -47,6 +49,7 @@ export function OfficeView({ slug }: { slug: string }) {
         <ul className="mt-5 space-y-3">
           {shown.map(p => <li key={p.reference} className="rise"><PropertyCard slug={office.slug} p={p} /></li>)}
         </ul>
+        <div className="mt-6"><InquiryForm slug={office.slug} reference={null} askPurpose /></div>
       </div>
       <ContactBar office={office} message={t('Hello, I would like information about your properties.')} sticky />
     </Layout>

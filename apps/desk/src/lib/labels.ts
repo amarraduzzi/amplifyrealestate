@@ -1,5 +1,5 @@
 import type { DealPurpose, DealStage, LeadStatus, MandateBasis, MandateStatus, OrgRole, PartyRole, PropertyStatus, PropertyType, TaskStatus, ViewingOutcome, ViewingStatus } from '@vastgoed/shared';
-import type { LeaseStatus, SplitKind, SplitStatus } from './types';
+import type { LeadSource, LeaseStatus, SplitKind, SplitStatus } from './types';
 import { t } from './i18n';
 
 export const PURPOSES: DealPurpose[] = ['sale', 'rent_long', 'rent_short'];
@@ -140,3 +140,9 @@ export const SPLIT_KINDS: SplitKind[] = ['co_agent', 'referrer', 'other'];
 export const splitKindLabel = (k: SplitKind) =>
   t(({ co_agent: 'Other agent', referrer: 'Referrer', other: 'Other' } as const)[k]);
 export const splitStatusLabel = (s: SplitStatus) => t(({ agreed: 'To pay', paid: 'Paid' } as const)[s]);
+
+/** Where a lead came from. */
+export const SOURCES: LeadSource[] = ['whatsapp', 'phone', 'walk_in', 'public_page', 'mubawab', 'avito', 'sarouty', 'facebook', 'instagram', 'referral', 'network', 'other'];
+export const sourceLabel = (s: LeadSource) =>
+  ({ whatsapp: 'WhatsApp', phone: t('Phone call'), walk_in: t('Walk-in'), public_page: t('Public page'), mubawab: 'Mubawab', avito: 'Avito',
+     sarouty: 'Sarouty', facebook: 'Facebook', instagram: 'Instagram', referral: t('Referral'), network: 'Amplify Network', other: t('Other') } as const)[s];

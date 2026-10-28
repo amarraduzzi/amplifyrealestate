@@ -37,12 +37,15 @@ export type HistoryRow = {
 
 export type PersonRow = { id: string; full_name: string; phone: string | null; whatsapp: string | null; email: string | null };
 
+export type LeadSource = 'whatsapp' | 'phone' | 'walk_in' | 'public_page' | 'mubawab' | 'avito' | 'sarouty' | 'facebook' | 'instagram' | 'referral' | 'network' | 'other';
+
 export type LeadRow = {
   id: string;
   org_id: string;
   person_id: string;
   purpose: DealPurpose;
   status: LeadStatus;
+  source?: LeadSource | null;
   property_types: PropertyType[];
   city: string | null;
   neighborhoods: string[];

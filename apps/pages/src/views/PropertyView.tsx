@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { Bath, BedDouble, CheckCircle2, Info, MapPin, MessageCircle, Ruler, Sofa } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
-import { loadProperty } from '../lib/api';
+import { loadProperty, logEvent } from '../lib/api';
 import { useFetch } from '../lib/useFetch';
 import { confirmedText, placeText, priceSuffix, purposeLabel, statusCls, statusLabel, typeLabel } from '../lib/format';
 import { t } from '../lib/i18n';
@@ -9,6 +9,7 @@ import { Link } from '../lib/router';
 import { Layout } from '../components/Layout';
 import { ContactBar } from '../components/ContactBar';
 import { Gallery } from '../components/Gallery';
+import { InquiryForm } from '../components/InquiryForm';
 import { PropertyIcon } from '../components/PropertyIcon';
 import { Failed, Loading, NotFound } from './States';
 
@@ -18,6 +19,7 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
   useEffect(() => {
     document.title = data ? `${data.property.title} · ${data.office.name}` : 'Amplify Real Estate';
   }, [data]);
+  useEffect(() => { if (data) logEvent(data.office.slug, data.property.reference, 'view'); }, [data]);
 
   if (state.status === 'loading') return <Loading />;
   if (state.status === 'error') return <Failed onRetry={retry} />;
@@ -99,6 +101,8 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
           )}
         </section>
 
+        <InquiryForm slug={office.slug} reference={p.reference} />
+
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link to={`/${office.slug}`} className="text-sm font-semibold text-brand hover:underline">{t('More properties from {office}', { office: office.name })}</Link>
           <a href={`https://wa.me/?text=${encodeURIComponent(`${p.title}\n${link}`)}`} target="_blank" rel="noreferrer"
@@ -107,7 +111,7 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
           </a>
         </div>
       </div>
-      <ContactBar office={office} message={message} sticky />
+      <ContactBar office={office} message={message} reference={p.reference} sticky />
     </Layout>
   );
 }

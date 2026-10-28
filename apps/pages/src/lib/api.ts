@@ -46,3 +46,37 @@ export async function loadProperty(slug: string, reference: string): Promise<Pro
   if (!SLUG.test(slug) || reference.length > 40) return null;
   return rpc<PropertyPage>('public_property_page', { p_slug: slug, p_reference: reference });
 }
+
+/** Count a visit or a click (no personal data). Never blocks or breaks the page. Visits count once per session. */
+export function logEvent(slug: string, reference: string | null, kind: 'view' | 'whatsapp' | 'call'): void {
+  if (!apiConfigured || !SLUG.test(slug)) return;
+  const key = `ev:${kind}:${slug}:${reference ?? ''}`;
+  if (kind === 'view') {
+    try { if (sessionStorage.getItem(key)) return; sessionStorage.setItem(key, '1'); } catch { /* private mode */ }
+  }
+  try {
+    fetch(`${BASE}/rest/v1/rpc/log_page_event`, {
+      method: 'POST', keepalive: true,
+      headers: { apikey: KEY, 'content-type': 'application/json' },
+      body: JSON.stringify({ p_slug: slug, p_reference: reference ?? '', p_kind: kind }),
+    }).catch(() => { /* the page works without it */ });
+  } catch { /* ignore */ }
+}
+
+export type InquiryResult = 'ok' | 'invalid' | 'busy' | 'error';
+
+/** Leave name, number and a message for the office. The database makes the lead and a call-back task. */
+export async function submitInquiry(o: { slug: string; reference: string | null; name: string; phone: string; message: string; purpose?: string; trap: string }): Promise<InquiryResult> {
+  try {
+    const r = await fetch(`${BASE}/rest/v1/rpc/submit_inquiry`, {
+      method: 'POST',
+      headers: { apikey: KEY, 'content-type': 'application/json' },
+      body: JSON.stringify({ p_slug: o.slug, p_reference: o.reference ?? '', p_name: o.name, p_phone: o.phone, p_message: o.message, p_purpose: o.purpose ?? null, p_trap: o.trap }),
+    });
+    if (r.ok) return 'ok';
+    const text = await r.text();
+    if (text.includes('inquiry_invalid')) return 'invalid';
+    if (text.includes('inquiry_busy')) return 'busy';
+    return 'error';
+  } catch { return 'error'; }
+}

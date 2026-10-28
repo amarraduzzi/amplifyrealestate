@@ -4,7 +4,7 @@ import type { LeadStatus } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import type { LeadRow, Office, PersonRow } from '../lib/types';
-import { LEAD_STATUSES, leadStatusCls, leadStatusLabel, purposeLabel } from '../lib/labels';
+import { LEAD_STATUSES, leadStatusCls, leadStatusLabel, purposeLabel, sourceLabel } from '../lib/labels';
 import type { MatchProp } from '../lib/matching';
 import { Btn, Modal } from '../components/ui';
 import { ContactLinks } from '../components/ContactLinks';
@@ -56,6 +56,7 @@ export function LeadDetail({ office, userId, lead, person, matches, onChanged, o
           <div className="flex flex-wrap items-center gap-2">
             <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${leadStatusCls[lead.status]}`}>{leadStatusLabel(lead.status)}</span>
             <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-semibold text-muted">{purposeLabel(lead.purpose)}</span>
+            {lead.source && <span className="rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">{t('Via {source}', { source: sourceLabel(lead.source) })}</span>}
           </div>
           {person && <div className="mt-3"><ContactLinks c={person} /></div>}
         </div>

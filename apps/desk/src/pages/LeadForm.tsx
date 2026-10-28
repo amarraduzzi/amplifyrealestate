@@ -3,7 +3,7 @@ import { dirhamToCents, type DealPurpose, type PropertyType } from '@vastgoed/sh
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import type { LeadRow, PersonRow } from '../lib/types';
-import { PURPOSES, TYPES, purposeLabel, typeLabel } from '../lib/labels';
+import { PURPOSES, SOURCES, TYPES, purposeLabel, sourceLabel, typeLabel } from '../lib/labels';
 import { Btn, Field, Modal, inputCls } from '../components/ui';
 import { friendly } from '../lib/errors';
 
@@ -32,6 +32,7 @@ export function LeadForm({ orgId, lead, onClose, onSaved }: { orgId: string; lea
   const [area, setArea] = useState(lead?.min_area_m2 == null ? '' : str(Number(lead.min_area_m2)));
   const [furnished, setFurnished] = useState(lead?.furnished == null ? '' : lead.furnished ? 'yes' : 'no');
   const [notes, setNotes] = useState(lead?.notes ?? '');
+  const [source, setSource] = useState<string>(lead?.source ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,6 +64,7 @@ export function LeadForm({ orgId, lead, onClose, onSaved }: { orgId: string; lea
       min_area_m2: a === null || a === 0 ? null : a,
       furnished: furnished === '' ? null : furnished === 'yes',
       notes: notes.trim() || null,
+      ...(source || lead?.source ? { source: source || null } : {}),
     };
     setBusy(true); setError(null);
 
@@ -129,6 +131,12 @@ export function LeadForm({ orgId, lead, onClose, onSaved }: { orgId: string; lea
           <Field label={t('Looking for')}>
             <select className={inputCls} value={purpose} onChange={e => setPurpose(e.target.value as DealPurpose)}>
               {PURPOSES.map(x => <option key={x} value={x}>{purposeLabel(x)}</option>)}
+            </select>
+          </Field>
+          <Field label={t('Source')} hint={t('Where did this lead come from?')}>
+            <select className={inputCls} value={source} onChange={e => setSource(e.target.value)}>
+              <option value="">{t('Not specified')}</option>
+              {SOURCES.map(x => <option key={x} value={x}>{sourceLabel(x)}</option>)}
             </select>
           </Field>
           <Field label={t('Furnished')}>

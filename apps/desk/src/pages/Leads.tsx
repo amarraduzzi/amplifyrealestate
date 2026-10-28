@@ -3,7 +3,7 @@ import { Download, Plus, Search, Upload, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import type { LeadRow, Office, PersonRow } from '../lib/types';
-import { LEAD_STATUSES, OPEN_LEAD_STATUSES, leadStatusCls, leadStatusLabel, purposeLabel } from '../lib/labels';
+import { LEAD_STATUSES, OPEN_LEAD_STATUSES, leadStatusCls, leadStatusLabel, purposeLabel, sourceLabel } from '../lib/labels';
 import { MATCH_COLUMNS, matches, type MatchProp } from '../lib/matching';
 import { Btn, Card, inputCls } from '../components/ui';
 import { ContactAge } from '../components/ContactAge';
@@ -133,6 +133,7 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
                         <span className="ms-auto rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold text-muted">{purposeLabel(l.purpose)}</span>
                       </p>
                       <p className="mt-1.5 text-sm text-muted">{criteriaText(l)}</p>
+                      {l.source && <p className="mt-1 text-xs font-semibold text-muted">{t('Via {source}', { source: sourceLabel(l.source) })}</p>}
                       <div className="mt-3 flex items-center justify-between gap-3 border-t border-line/[0.07] pt-3">
                         <ContactAge iso={l.last_contact_at} stale={open} />
                         {open && (

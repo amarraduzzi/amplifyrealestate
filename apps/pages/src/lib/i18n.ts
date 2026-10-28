@@ -88,6 +88,22 @@ const FR: Record<string, string> = {
   'Previous': 'Précédent',
   'Next': 'Suivant',
   'Close': 'Fermer',
+  // Aanvraagformulier (6e)
+  'Be called back': 'Être rappelé',
+  'Leave your number, the agency will contact you.': 'Laissez votre numéro, l’agence vous contacte.',
+  'I am looking for': 'Je cherche',
+  'Your name': 'Votre nom',
+  'Phone or WhatsApp': 'Téléphone ou WhatsApp',
+  'Your message (optional)': 'Votre message (facultatif)',
+  'Send my request': 'Envoyer ma demande',
+  'Your details are only shared with this agency.': 'Vos coordonnées sont transmises uniquement à cette agence.',
+  'Please enter your name.': 'Merci d’indiquer votre nom.',
+  'Please enter a valid phone number.': 'Merci d’indiquer un numéro de téléphone valide.',
+  'Please check your name and phone number.': 'Merci de vérifier votre nom et votre numéro.',
+  'Too many requests right now. Please try again in a moment, or contact us on WhatsApp.': 'Trop de demandes en ce moment. Réessayez dans un instant, ou écrivez-nous sur WhatsApp.',
+  'Sending failed. Check your connection and try again.': 'L’envoi a échoué. Vérifiez votre connexion et réessayez.',
+  'Thank you, we will call you back': 'Merci, nous vous rappelons',
+  'Your request has been sent to the agency.': 'Votre demande a bien été envoyée à l’agence.',
 };
 
 const AR: Record<string, string> = {
@@ -138,6 +154,22 @@ const AR: Record<string, string> = {
   'Previous': 'السابق',
   'Next': 'التالي',
   'Close': 'إغلاق',
+  // Aanvraagformulier (6e)
+  'Be called back': 'اطلب اتصالا',
+  'Leave your number, the agency will contact you.': 'اترك رقمك وستتصل بك الوكالة.',
+  'I am looking for': 'أبحث عن',
+  'Your name': 'اسمك',
+  'Phone or WhatsApp': 'الهاتف أو واتساب',
+  'Your message (optional)': 'رسالتك (اختياري)',
+  'Send my request': 'أرسل طلبي',
+  'Your details are only shared with this agency.': 'معلوماتك تُرسل إلى هذه الوكالة فقط.',
+  'Please enter your name.': 'المرجو كتابة اسمك.',
+  'Please enter a valid phone number.': 'المرجو كتابة رقم هاتف صحيح.',
+  'Please check your name and phone number.': 'المرجو التحقق من اسمك ورقمك.',
+  'Too many requests right now. Please try again in a moment, or contact us on WhatsApp.': 'طلبات كثيرة حاليا. حاول بعد لحظة، أو راسلنا على واتساب.',
+  'Sending failed. Check your connection and try again.': 'فشل الإرسال. تحقق من الاتصال وحاول مرة أخرى.',
+  'Thank you, we will call you back': 'شكرا، سنتصل بك',
+  'Your request has been sent to the agency.': 'تم إرسال طلبك إلى الوكالة.',
 };
 
 export function t(en: string, vars?: Record<string, string | number>): string {

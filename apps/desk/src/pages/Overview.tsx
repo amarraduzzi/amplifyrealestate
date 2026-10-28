@@ -3,8 +3,8 @@ import { ChevronRight } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
-import type { Office } from '../lib/types';
-import { STATUSES, VIEWING_OUTCOMES, LEAD_STATUSES, leadStatusCls, leadStatusLabel, outcomeCls, outcomeLabel, statusCls, statusLabel } from '../lib/labels';
+import type { LeadSource, Office } from '../lib/types';
+import { SOURCES, sourceLabel, STATUSES, VIEWING_OUTCOMES, LEAD_STATUSES, leadStatusCls, leadStatusLabel, outcomeCls, outcomeLabel, statusCls, statusLabel } from '../lib/labels';
 import { computeOverview, type MandateAlert, type OverviewInput } from '../lib/overview';
 import { Card } from '../components/ui';
 import type { View } from '../components/Shell';
@@ -102,6 +102,17 @@ export function Overview({ office, onGo }: { office: Office; onGo: (v: View) => 
     } catch (e) { setError(friendly(e)); }
   }, [office.id]);
   useEffect(() => { load(); }, [load]);
+  // Where the leads of the last 30 days came from. Separate, so the overview still works before etappe 6e.
+  const [sources, setSources] = useState<{ s: LeadSource | null; n: number }[] | null>(null);
+  useEffect(() => {
+    const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
+    supabase.from('leads').select('source').eq('org_id', office.id).gte('created_at', since).then(({ data, error }) => {
+      if (error) { setSources(null); return; }
+      const c = new Map<LeadSource | null, number>();
+      for (const r of (data ?? []) as { source: LeadSource | null }[]) c.set(r.source, (c.get(r.source) ?? 0) + 1);
+      setSources([...SOURCES, null].map(s => ({ s, n: c.get(s) ?? 0 })).filter(x => x.n > 0).sort((a, b) => b.n - a.n));
+    });
+  }, [office.id]);
 
   const o = useMemo(() => (data ? computeOverview(data) : null), [data]);
   const m = o?.mandates;
@@ -142,6 +153,12 @@ export function Overview({ office, onGo }: { office: Office; onGo: (v: View) => 
             <div className="flex flex-wrap gap-2">
               {LEAD_STATUSES.map(s => <Chip key={s} cls={leadStatusCls[s]} label={leadStatusLabel(s)} n={o.leads.byStatus[s]} />)}
             </div>
+            {sources && sources.length > 0 && (<>
+              <p className="mb-2 mt-4 text-sm font-semibold">{t('Where new leads come from (30 days)')}</p>
+              <div className="flex flex-wrap gap-2">
+                {sources.map(x => <Chip key={x.s ?? 'none'} cls="bg-surface-2 text-ink" label={x.s ? sourceLabel(x.s) : t('Not specified')} n={x.n} />)}
+              </div>
+            </>)}
           </Section>
 
           <Section title={t('Viewings')} to="viewings" onGo={onGo}>

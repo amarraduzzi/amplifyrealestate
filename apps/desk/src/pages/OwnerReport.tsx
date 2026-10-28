@@ -17,6 +17,23 @@ import { Btn } from '../components/ui';
 import { waLink } from '../components/ContactLinks';
 import { PUBLIC_SITE, propertyUrl, whatsappShareUrl } from '../lib/publicSite';
 import { friendly } from '../lib/errors';
+import { siteName, type Site } from '../lib/postings';
+
+type Reach = { views: number; whatsapp: number; calls: number; forms: number; sites: Site[] };
+
+/** Visits and clicks on the public page, and where the property is advertised. Empty when 6d/6e are not installed. */
+async function loadReach(propertyId: string): Promise<Reach> {
+  const [s, p] = await Promise.all([
+    supabase.from('page_stats').select('views, whatsapp, calls, forms').eq('property_id', propertyId),
+    supabase.from('property_postings').select('site').eq('property_id', propertyId).eq('status', 'online'),
+  ]);
+  const r: Reach = { views: 0, whatsapp: 0, calls: 0, forms: 0, sites: [] };
+  for (const x of (s.error ? [] : s.data ?? []) as { views: number; whatsapp: number; calls: number; forms: number }[]) {
+    r.views += x.views; r.whatsapp += x.whatsapp; r.calls += x.calls; r.forms += x.forms;
+  }
+  r.sites = ((p.error ? [] : p.data ?? []) as { site: Site }[]).map(x => x.site);
+  return r;
+}
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 const fmt = (d: string | Date, style: 'medium' | 'long', utc = false) =>
@@ -32,6 +49,8 @@ type Mandate = { id: string; owner_person_id: string | null; basis: any; status:
 export function OwnerReport({ office, property, onClose }: { office: Office; property: PropertyRow; onClose: () => void }) {
   const [data, setData] = useState<{ viewings: ViewingView[]; deals: DealView[]; lease: LeaseView | null; payments: PaymentRow[]; repairs: MaintView[]; mandate: Mandate | null; owner: { name: string; number: string | null } | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reach, setReach] = useState<Reach | null>(null);
+  useEffect(() => { loadReach(property.id).then(setReach).catch(() => setReach(null)); }, [property.id]);
 
   useEffect(() => {
     let live = true;
@@ -73,6 +92,8 @@ export function OwnerReport({ office, property, onClose }: { office: Office; pro
     if (!data) return;
     const vars = { name: data.owner?.name ?? '', title: property.title, reference: property.reference, held, planned, interested, offers: data.deals.length };
     let text = t(data.owner ? 'Hello {name}, here is the update on {title} ({reference}): {held} viewings held, {planned} planned, {interested} interested, {offers} offers.' : 'Hello, here is the update on {title} ({reference}): {held} viewings held, {planned} planned, {interested} interested, {offers} offers.', vars);
+    if (reach && reach.views > 0) text += `\n${t('The online page was visited {views} times, with {clicks} contact clicks.', { views: reach.views, clicks: reach.whatsapp + reach.calls + reach.forms })}`;
+    if (reach && reach.sites.length > 0) text += `\n${t('Advertised on: {sites}', { sites: reach.sites.map(siteName).join(', ') })}`;
     if (property.is_published && PUBLIC_SITE) text += `\n${propertyUrl(office.slug, property.reference, getLang())}`;
     if (fin && data.lease) text += `\n${t('Rent in the last 12 months: collected {collected}, outstanding {outstanding}.', { collected: formatMad(fin.collected), outstanding: formatMad(fin.outstanding) })}`;
     if (fin && fin.repairCosts > 0) text += `\n${t('Repair costs in the last 12 months: {amount}.', { amount: formatMad(fin.repairCosts) })}`;
@@ -129,6 +150,17 @@ export function OwnerReport({ office, property, onClose }: { office: Office; pro
             <Tile n={interested} label={t('Interested')} />
             <Tile n={data.deals.length} label={t('Offers')} />
           </div>
+
+          {reach && (reach.views > 0 || reach.whatsapp > 0 || reach.calls > 0 || reach.forms > 0 || reach.sites.length > 0) && (<>
+            <H>{t('Online visibility')}</H>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <Tile n={reach.views} label={t('Page visits')} />
+              <Tile n={reach.whatsapp} label={t('WhatsApp clicks')} />
+              <Tile n={reach.calls} label={t('Call clicks')} />
+              <Tile n={reach.forms} label={t('Call-back requests')} />
+            </div>
+            {reach.sites.length > 0 && <p className="mt-2 text-sm">{t('Advertised on: {sites}', { sites: reach.sites.map(siteName).join(', ') })}</p>}
+          </>)}
 
           {(data.lease || data.repairs.length > 0) && fin && (<>
             <H>{t('Rental and repairs')}</H>
