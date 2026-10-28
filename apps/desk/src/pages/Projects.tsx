@@ -6,15 +6,16 @@ import { getLang, t } from '../lib/i18n';
 import type { Office } from '../lib/types';
 import {
   PROJECT_STATUSES, UNIT_CLS, UNIT_KINDS, UNIT_STATUSES, floorLabel, loadProject, loadProjects, projectError, projectStatusLabel, seriesRef,
-  unitKindLabel, unitStatusLabel, type Buyer, type Project, type ProjectStatus, type Tranche, type Unit, type UnitKind, type UnitStatus,
+  loadSales, saleError, unitKindLabel, unitStatusLabel, type Buyer, type Sale, type Project, type ProjectStatus, type Tranche, type Unit, type UnitKind, type UnitStatus,
 } from '../lib/projects';
 import { planError } from '../lib/plan';
 import { downloadCsv, toCsv } from '../lib/exportCsv';
 import { Btn, Card, Field, Modal, inputCls } from '../components/ui';
+import { SaleForm, SaleView, SalesTab, WorksPanel, type SaleData } from './DevSales';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 const day = (d: string) => new Intl.DateTimeFormat(LOCALES[getLang()], { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(`${d}T00:00:00Z`));
-const err = (m: string) => { const x = projectError(m); return x ? t(x) : planError(m); };
+const err = (m: string) => { const x = projectError(m) ?? saleError(m); return x ? t(x) : planError(m); };
 const num = (s: string) => { const v = Number(s.replace(/\s/g, '').replace(',', '.')); return Number.isFinite(v) && v > 0 ? v : null; };
 const int = (s: string) => { const v = Number.parseInt(s, 10); return Number.isFinite(v) ? v : null; };
 const perM2 = (u: Unit) => (u.price_cents && u.area_m2 ? Math.round(u.price_cents / u.area_m2) : null);
@@ -118,7 +119,7 @@ function SeriesForm({ project, tranches, onClose, onSaved }: { project: Project;
   );
 }
 
-function UnitForm({ office, project, tranches, unit, buyer, onClose, onSaved }: { office: Office; project: Project; tranches: Tranche[]; unit?: Unit; buyer?: Buyer; onClose: () => void; onSaved: () => void }) {
+function UnitForm({ office, project, tranches, unit, buyer, onClose, onSaved, onReserve }: { office: Office; project: Project; tranches: Tranche[]; unit?: Unit; buyer?: Buyer; onClose: () => void; onSaved: () => void; onReserve?: () => void }) {
   const [f, setF] = useState({
     reference: unit?.reference ?? '', kind: (unit?.kind ?? 'apartment') as UnitKind, building: unit?.building ?? '', floor: unit?.floor === null || unit?.floor === undefined ? '' : String(unit.floor),
     bedrooms: unit?.bedrooms === null || unit?.bedrooms === undefined ? '' : String(unit.bedrooms), area: unit?.area_m2 ? String(unit.area_m2) : '', terrace: unit?.terrace_m2 ? String(unit.terrace_m2) : '',
@@ -158,6 +159,9 @@ function UnitForm({ office, project, tranches, unit, buyer, onClose, onSaved }: 
     <Modal title={unit ? `${unit.reference} · ${project.name}` : t('New unit')} onClose={onClose}
       footer={<div className="flex justify-between gap-2">{unit ? <Btn tone="ghost" onClick={del}><Trash2 className="h-4 w-4" /></Btn> : <span />}<span className="flex gap-2"><Btn onClick={onClose}>{t('Cancel')}</Btn><Btn tone="brand" type="submit" form="unit-form">{t('Save')}</Btn></span></div>}>
       <form id="unit-form" onSubmit={save} className="space-y-3">
+        {onReserve && unit && (unit.status === 'available' || unit.status === 'option') && (
+          <div className="flex items-center justify-between gap-2 rounded-xl bg-brand/10 p-3"><p className="text-sm">{t('A buyer for this unit? Reserve it with a payment schedule.')}</p><Btn tone="brand" type="button" onClick={onReserve}>{t('Reserve')}</Btn></div>
+        )}
         <div className="flex flex-wrap gap-1.5">
           {UNIT_STATUSES.map(s => <button key={s} type="button" aria-pressed={f.status === s} onClick={() => setF({ ...f, status: s })} className={`rounded-full px-3 py-1 text-xs font-bold ring-1 ${f.status === s ? UNIT_CLS[s] : 'bg-surface text-muted ring-line/10'}`}>{unitStatusLabel(s)}</button>)}
         </div>
@@ -308,7 +312,10 @@ function Tranches({ office, project, tranches, units, onChanged }: { office: Off
 function ProjectView({ office, project, onBack, onChanged }: { office: Office; project: Project; onBack: () => void; onChanged: () => void }) {
   const canWrite = office.role !== 'viewer';
   const [data, setData] = useState<{ tranches: Tranche[]; units: Unit[]; buyers: Map<string, Buyer> } | null>(null);
-  const [tab, setTab] = useState<'grid' | 'list' | 'tranches'>('grid');
+  const [tab, setTab] = useState<'grid' | 'list' | 'sales' | 'tranches'>('grid');
+  const [sales, setSales] = useState<SaleData | null>(null);
+  const [saleFor, setSaleFor] = useState<Unit | null>(null);
+  const [openSale, setOpenSale] = useState<string | null>(null);
   const [fStatus, setFStatus] = useState<UnitStatus | ''>('');
   const [fTranche, setFTranche] = useState('');
   const [fKind, setFKind] = useState<UnitKind | ''>('');
@@ -318,15 +325,26 @@ function ProjectView({ office, project, onBack, onChanged }: { office: Office; p
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [note, setNote] = useState<string | null>(null);
-  const load = useCallback(async () => setData(await loadProject(project.id, office.role !== 'viewer')), [project.id, office.role]);
+  const [proj, setProj] = useState<Project>(project);
+  const load = useCallback(async () => {
+    const [d, sl, pr] = await Promise.all([loadProject(project.id, office.role !== 'viewer'), office.role !== 'viewer' ? loadSales(project.id) : Promise.resolve(null),
+      supabase.from('dev_projects').select('*').eq('id', project.id).single()]);
+    setData(d); setSales(sl); if (pr.data) setProj(pr.data as Project);
+  }, [project.id, office.role]);
   useEffect(() => { load(); }, [load]);
 
   const units = data?.units ?? [];
+  const ctx = data ? { office, project: proj, tranches: data.tranches, units, buyers: data.buyers } : null;
+  const openSaleRow: Sale | undefined = sales?.sales.find(x => x.id === openSale);
   const shown = units.filter(u => (!fStatus || u.status === fStatus) && (!fTranche || u.tranche_id === fTranche) && (!fKind || u.kind === fKind));
   const s = stats(units);
   const kinds = [...new Set(units.map(u => u.kind))];
   const tap = (u: Unit) => {
-    if (!selecting) { if (canWrite) setEdit({ unit: u }); return; }
+    if (!selecting) {
+      const sale = sales?.sales.find(x => x.unit_id === u.id && x.status !== 'cancelled');
+      if (sale) setOpenSale(sale.id); else if (canWrite) setEdit({ unit: u });
+      return;
+    }
     const n = new Set(selected); if (n.has(u.id)) n.delete(u.id); else n.add(u.id); setSelected(n);
   };
   const exportList = () => downloadCsv(`${project.name.replace(/[^\p{L}\p{N}]+/gu, '-')}-${new Date().toISOString().slice(0, 10)}.csv`, toCsv(
@@ -365,18 +383,18 @@ function ProjectView({ office, project, onBack, onChanged }: { office: Office; p
       )}
 
       <div className="mt-5 flex flex-wrap items-center gap-1.5" role="tablist">
-        {(['grid', 'list', 'tranches'] as const).map(x => (
+        {(['grid', 'list', 'sales', 'tranches'] as const).filter(x => x !== 'sales' || sales).map(x => (
           <button key={x} type="button" role="tab" aria-selected={tab === x} onClick={() => setTab(x)} className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${tab === x ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
-            {({ grid: t('Stock grid'), list: t('Price list'), tranches: t('Tranches') })[x]}
+            {({ grid: t('Stock grid'), list: t('Price list'), sales: t('Sales and payments'), tranches: t('Works and tranches') })[x]}
           </button>
         ))}
-        {tab !== 'tranches' && <span className="ms-auto flex flex-wrap gap-2">
+        {(tab === 'grid' || tab === 'list') && <span className="ms-auto flex flex-wrap gap-2">
           {canWrite && <Btn tone="brand" onClick={() => setSeries(true)}><Plus className="h-4 w-4" /> {t('Add units')}</Btn>}
           {canWrite && units.length > 0 && <Btn tone="ghost" onClick={() => setEdit({})}><Plus className="h-4 w-4" /> {t('One unit')}</Btn>}
         </span>}
       </div>
 
-      {tab !== 'tranches' && units.length > 0 && (
+      {(tab === 'grid' || tab === 'list') && units.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           <button type="button" aria-pressed={!fStatus} onClick={() => setFStatus('')} className={`rounded-full px-2.5 py-1 text-xs font-bold ring-1 ${!fStatus ? 'bg-ink text-bg ring-ink' : 'bg-surface text-muted ring-line/10'}`}>{t('All')} {units.length}</button>
           {UNIT_STATUSES.map(x => { const n = units.filter(u => u.status === x).length; return n ? (
@@ -385,7 +403,7 @@ function ProjectView({ office, project, onBack, onChanged }: { office: Office; p
           {kinds.length > 1 && <select className="rounded-full bg-surface px-2.5 py-1 text-xs font-semibold ring-1 ring-line/10" value={fKind} onChange={e => setFKind(e.target.value as UnitKind | '')}><option value="">{t('All types')}</option>{kinds.map(k => <option key={k} value={k}>{unitKindLabel(k)}</option>)}</select>}
         </div>
       )}
-      {tab !== 'tranches' && units.length > 0 && (
+      {(tab === 'grid' || tab === 'list') && units.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-2 [&>button]:whitespace-nowrap">
             {canWrite && tab === 'grid' && <Btn tone="ghost" onClick={() => { setSelecting(!selecting); setSelected(new Set()); }}><MousePointerClick className="h-4 w-4" /> {selecting ? t('Stop selecting') : t('Select')}</Btn>}
             {s.available > 0 && <Btn tone="ghost" onClick={shareAvailable}><MessageCircle className="h-4 w-4" /> {t('Share availability')}</Btn>}
@@ -395,7 +413,7 @@ function ProjectView({ office, project, onBack, onChanged }: { office: Office; p
       {note && <p className="mt-3 rounded-xl bg-warn/10 px-3 py-2 text-sm font-semibold text-warn">{note}</p>}
       {!data && <p className="mt-8 text-center text-muted">…</p>}
 
-      {data && units.length === 0 && tab !== 'tranches' && (
+      {data && units.length === 0 && (tab === 'grid' || tab === 'list') && (
         <Card className="mt-6 text-center">
           <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><Layers className="h-6 w-6" /></span>
           <h2 className="font-display mt-3 text-xl font-bold">{t('No units yet')}</h2>
@@ -414,7 +432,7 @@ function ProjectView({ office, project, onBack, onChanged }: { office: Office; p
             <thead><tr className="border-b border-line/10 text-start text-xs text-muted">{[t('Reference'), t('Floor'), t('Type'), t('Area (m²)'), t('Price'), t('Price per m²'), t('Status'), ...(canWrite ? [t('Buyer')] : [])].map(h => <th key={h} className="px-3 py-2 text-start font-semibold">{h}</th>)}</tr></thead>
             <tbody>
               {shown.map(u => (
-                <tr key={u.id} onClick={() => canWrite && setEdit({ unit: u })} className="cursor-pointer border-b border-line/[0.06] hover:bg-surface-2">
+                <tr key={u.id} onClick={() => tap(u)} className="cursor-pointer border-b border-line/[0.06] hover:bg-surface-2">
                   <td className="px-3 py-2 font-semibold">{u.reference}</td>
                   <td className="px-3 py-2 text-muted">{floorLabel(u.floor)}</td>
                   <td className="px-3 py-2">{unitKindLabel(u.kind)}{u.bedrooms ? ` · ${t('{n} bd.', { n: u.bedrooms })}` : ''}</td>
@@ -429,12 +447,18 @@ function ProjectView({ office, project, onBack, onChanged }: { office: Office; p
           </table>
         </div>
       )}
+      {data && tab === 'sales' && sales && <SalesTab ctx={ctx!} data={sales} onOpen={x => setOpenSale(x.id)} />}
+      {data && tab === 'tranches' && sales && <WorksPanel ctx={ctx!} data={sales} onChanged={load} />}
       {data && tab === 'tranches' && <Tranches office={office} project={project} tranches={data.tranches} units={units} onChanged={load} />}
+      {saleFor && ctx && <SaleForm ctx={ctx} unit={saleFor} onClose={() => setSaleFor(null)} onSaved={() => { setSaleFor(null); load(); }} />}
+      {openSaleRow && ctx && sales && <SaleView ctx={ctx} sale={openSaleRow} data={sales} onClose={() => setOpenSale(null)} onChanged={load}
+        onEditUnit={() => { const u = units.find(x => x.id === openSaleRow.unit_id); setOpenSale(null); if (u) setEdit({ unit: u }); }} />}
 
       {selecting && <BulkBar units={units.filter(u => selected.has(u.id))} tranches={data?.tranches ?? []} onCancel={() => { setSelecting(false); setSelected(new Set()); }}
         onDone={m => { setNote(m); setSelecting(false); setSelected(new Set()); load(); }} />}
       {series && data && <SeriesForm project={project} tranches={data.tranches} onClose={() => setSeries(false)} onSaved={() => { setSeries(false); load(); }} />}
-      {edit && data && <UnitForm office={office} project={project} tranches={data.tranches} unit={edit.unit} buyer={edit.unit ? data.buyers.get(edit.unit.id) : undefined} onClose={() => setEdit(null)} onSaved={() => { setEdit(null); load(); }} />}
+      {edit && data && <UnitForm office={office} project={project} tranches={data.tranches} unit={edit.unit} buyer={edit.unit ? data.buyers.get(edit.unit.id) : undefined} onClose={() => setEdit(null)} onSaved={() => { setEdit(null); load(); }}
+        onReserve={sales ? () => { const u = edit.unit!; setEdit(null); setSaleFor(u); } : undefined} />}
       {editProject && <ProjectForm office={office} project={project} onClose={() => setEditProject(false)} onSaved={id => { setEditProject(false); if (!id) onBack(); else onChanged(); }} />}
     </div>
   );
