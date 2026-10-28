@@ -12,6 +12,8 @@ Ce guide est pour les agents et les managers du bureau. Il tient sur une page. L
 | **Prospects** | Les personnes qui cherchent un bien, avec ce qu’elles veulent. |
 | **Visites** | Les rendez-vous entre un prospect et un bien, avec le résultat. |
 | **Transactions** | Offres, accords, signatures, paiements, et la commission. |
+| **Locations** | Les baux : locataire, loyer, dépôt de garantie, dates et jour de paiement. Les totaux montrent les loyers du mois et les loyers en retard. |
+| **Entretien** | Les réparations par bien : urgence, réparateur, coût et qui paie. |
 | **Tâches** | Les choses à faire, avec une date limite et un responsable. |
 | **Équipe** | Les membres du bureau et leurs rôles. |
 | **Abonnement** | La durée de l’essai ou du plan payé (propriétaire et managers). |
@@ -39,6 +41,18 @@ Ce guide est pour les agents et les managers du bureau. Il tient sur une page. L
 - **Transaction** : démarrez-la depuis une visite avec le résultat « offre faite », ou depuis l’onglet Transactions. Le bien et le prospect suivent automatiquement.
 - **Mandats qui expirent** : une tâche « Renouveler le mandat » apparaît 30 jours avant la fin. Si le mandat expire, la page publique se ferme toute seule.
 
+## 4 bis. Locations, loyers et réparations
+
+- **Créer un bail** (Locations → Créer un bail) : choisissez le bien et le locataire, indiquez le loyer, le dépôt, la date de début et le jour de paiement. Le bien passe automatiquement à « loué ». Quand vous mettez fin au bail, il redevient disponible.
+- **Loyers** : une ligne par mois apparaît à la date de paiement. Cliquez sur « Marquer comme payé » quand le locataire a payé. « Envoyer un rappel » ouvre WhatsApp avec le message, dans la langue du locataire. Les loyers en retard apparaissent dans Aujourd’hui et dans l’Aperçu.
+- **Bail qui a commencé avant l’application** : dans le bail, cliquez sur « Ajouter les mois précédents », choisissez la date de départ et indiquez si ces mois ont déjà été payés ou non. Les mois qui existent déjà ne changent pas. L’application ne sait pas ce qui a été payé : c’est vous qui l’indiquez.
+- **Réparations** (Entretien) : notez la demande, l’urgence, le réparateur et le coût. Un bouton prépare le message WhatsApp pour le réparateur.
+- **Rapport propriétaire** : il contient aussi les loyers encaissés et les frais de réparation. Vous pouvez l’envoyer chaque mois sur WhatsApp.
+
+## 4 ter. Partager la commission
+
+Dans une transaction, le bloc **Répartition de la commission** permet de reverser une partie de votre commission à un autre agent ou à un apporteur d’affaires. Indiquez son pourcentage (le total ne dépasse jamais 100 %) et comment vous l’avez convenu. « Confirmer par écrit » prépare un message WhatsApp pour avoir une trace écrite. « Marquer comme payé » fixe le montant payé. Les totaux des Transactions montrent ce qui reste pour votre bureau. C’est une administration, pas un contrat : l’accord doit exister par écrit ailleurs.
+
 ## 5. Rapport pour le propriétaire
 
 Dans la fiche du bien, cliquez sur **Rapport pour le propriétaire** : le bien, le mandat, les visites et les offres sur une page.
@@ -49,7 +63,7 @@ Le rapport n’affiche ni les noms des personnes intéressées ni la commission.
 
 ## 6. Exporter vers Excel
 
-Les onglets **Biens**, **Prospects** et **Transactions** ont un bouton **Exporter vers Excel**. Le fichier suit le filtre et la recherche en cours. Attention : un export de prospects contient des noms et des numéros de clients, ne le partagez qu’en interne.
+Les onglets **Biens**, **Prospects**, **Transactions** et **Locations** ont un bouton **Exporter vers Excel**. Le fichier suit le filtre et la recherche en cours. Attention : un export de prospects contient des noms et des numéros de clients, ne le partagez qu’en interne.
 
 ## 7. En cas de problème
 
