@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import {
-  BarChart3, Building2, CalendarClock, CalendarDays, Handshake, KeyRound, LayoutGrid, LogOut, Network, Receipt, Settings, Sun, Users, Wrench, X,
+  BarChart3, BedDouble, Building2, CalendarClock, CalendarDays, Handshake, KeyRound, LayoutGrid, LogOut, Network, Receipt, Settings, Sun, Users, Wrench, X,
 } from 'lucide-react';
 import { AmplifyLogo, AmplifyMark } from './Brand';
 import { LangSwitch } from './LangSwitch';
@@ -9,7 +9,7 @@ import type { Office } from '../lib/types';
 
 // 'tasks', 'team' and 'plan' are no longer separate tabs (tasks live in the Agenda, team and plan in Settings),
 // but other screens may still send the user there: App opens the right place.
-export type View = 'today' | 'agenda' | 'overview' | 'properties' | 'leads' | 'viewings' | 'deals' | 'invoices' | 'leases' | 'maintenance'
+export type View = 'today' | 'agenda' | 'overview' | 'properties' | 'leads' | 'viewings' | 'deals' | 'invoices' | 'leases' | 'stays' | 'maintenance'
   | 'network' | 'settings' | 'tasks' | 'team' | 'plan' | 'site' | 'billing';
 
 /** The overview with the numbers is for the owner and managers. */
@@ -31,7 +31,7 @@ function groups(role: Office['role']): Group[] {
       i('viewings', t('Viewings'), <CalendarClock className={ic} />), i('deals', t('Deals'), <Handshake className={ic} />),
       i('network', t('Network'), <Network className={ic} />),
     ] },
-    { title: t('Rentals and management'), items: [i('leases', t('Rentals'), <KeyRound className={ic} />), i('maintenance', t('Maintenance'), <Wrench className={ic} />)] },
+    { title: t('Rentals and management'), items: [i('leases', t('Rentals'), <KeyRound className={ic} />), i('stays', t('Short stays'), <BedDouble className={ic} />), i('maintenance', t('Maintenance'), <Wrench className={ic} />)] },
     { title: t('Money'), items: [
       ...(role !== 'viewer' ? [i('invoices', t('Invoices'), <Receipt className={ic} />)] : []),
       ...(canSeeOverview(role) ? [i('overview', t('Overview'), <BarChart3 className={ic} />)] : []),

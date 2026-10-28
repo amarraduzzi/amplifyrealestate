@@ -91,10 +91,27 @@ async function domainSlug(host, env) {
   return slug;
 }
 
+const icsDate = d => String(d).replace(/-/g, '');
+async function ical(token, env) {
+  if (!/^[0-9a-f]{64}$/.test(token) || !env.VITE_SUPABASE_URL) return new Response('Not found', { status: 404 });
+  let d = null;
+  try { d = await rpc(env, 'public_ical', { p_token: token }); } catch { return new Response('Unavailable', { status: 503 }); }
+  if (!d) return new Response('Not found', { status: 404 });
+  const now = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
+  const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Amplify Real Estate//Stays//FR', 'CALSCALE:GREGORIAN', `X-WR-CALNAME:${String(d.title).replace(/[\r\n,;]/g, ' ')}`];
+  for (const b of d.busy) {
+    lines.push('BEGIN:VEVENT', `UID:${b.id}@amplify-real-estate`, `DTSTAMP:${now}`, `DTSTART;VALUE=DATE:${icsDate(b.start)}`, `DTEND;VALUE=DATE:${icsDate(b.end)}`, 'SUMMARY:Réservé', 'END:VEVENT');
+  }
+  lines.push('END:VCALENDAR');
+  return new Response(lines.join('\r\n') + '\r\n', { headers: { 'content-type': 'text/calendar; charset=utf-8', 'cache-control': 'public, max-age=300' } });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     let parts = url.pathname.split('/').filter(Boolean);
+    // /ical/<code>.ics: the busy dates of a short-term rental, for Airbnb, Booking or Google Calendar
+    if (parts[0] === 'ical' && parts.length === 2 && request.method === 'GET') return ical(parts[1].replace(/\.ics$/, ''), env);
     // /o/<code>: the private owner portal. Plain page, never cached, never in search engines.
     if (parts[0] === 'o' && parts.length === 2 && request.method === 'GET') {
       try {

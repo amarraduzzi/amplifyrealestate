@@ -18,6 +18,7 @@ import { Network } from './pages/Network';
 import { Settings } from './pages/Settings';
 import { Deals } from './pages/Deals';
 import { Invoices } from './pages/Invoices';
+import { Stays } from './pages/Stays';
 import { Leases } from './pages/Leases';
 import { Maintenance } from './pages/Maintenance';
 import { PlanBanner } from './components/PlanBanner';
@@ -91,6 +92,7 @@ function Workspace({ session }: { session: Session }) {
         : shown === 'tasks' ? <Agenda key={`${office.id}-tasks`} office={work} userId={session.user.id} onGo={setView} initialTab="tasks" />
         : shown === 'invoices' ? <Invoices key={office.id} office={work} />
         : shown === 'deals' ? <Deals key={office.id} office={work} />
+        : shown === 'stays' ? <Stays key={office.id} office={work} />
         : shown === 'leases' ? <Leases key={office.id} office={work} />
         : shown === 'network' ? <Network key={office.id} office={work} />
         : shown === 'maintenance' ? <Maintenance key={office.id} office={work} />
