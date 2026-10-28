@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
+import { BillingSettings } from '../components/BillingSettings';
 import { LogOut, UserMinus, UserPlus } from 'lucide-react';
 import type { OrgRole } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
@@ -125,6 +126,7 @@ export function Team({ office, userId, onSelfChanged }: { office: Office; userId
       )}
 
       <PublicProfile office={office} canManage={canManage} onSlugChanged={onSelfChanged} />
+      {office.role !== 'viewer' && <BillingSettings office={office} canManage={canManage} />}
 
       {canManage ? (
         <Card className="mt-6">

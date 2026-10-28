@@ -13,6 +13,7 @@ import { Btn, Modal, inputCls } from '../components/ui';
 import { ContactLinks } from '../components/ContactLinks';
 import { DealDocuments } from '../components/DealDocuments';
 import { DealSplits } from '../components/DealSplits';
+import { DealInvoices } from '../components/DealInvoices';
 import { DealForm } from './DealForm';
 
 /** One deal: price, commission, how far it is, and the buttons to move it forward. */
@@ -105,6 +106,8 @@ export function DealDetail({ office, item, onChanged, onClose }: {
         )}
 
         <DealSplits office={office} item={item} onChanged={onChanged} />
+
+        <DealInvoices office={office} item={item} />
 
         {canWrite && <DealDocuments office={office} dealId={d.id} />}
 

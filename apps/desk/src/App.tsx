@@ -19,6 +19,7 @@ import { Overview } from './pages/Overview';
 import { Network } from './pages/Network';
 import { Plan } from './pages/Plan';
 import { Deals } from './pages/Deals';
+import { Invoices } from './pages/Invoices';
 import { Leases } from './pages/Leases';
 import { Maintenance } from './pages/Maintenance';
 import { PlanBanner } from './components/PlanBanner';
@@ -77,7 +78,7 @@ function Workspace({ session }: { session: Session }) {
 
   const office = offices.find(o => o.id === orgId) ?? offices[0];
   // Switching to an office where you may not see the overview: go back to Today.
-  const shown: View = (view === 'overview' || view === 'plan') && !canSeeOverview(office.role) ? 'today' : view;
+  const shown: View = ((view === 'overview' || view === 'plan') && !canSeeOverview(office.role)) || (view === 'invoices' && office.role === 'viewer') ? 'today' : view;
   // After the last day of the plan the office is read only: the work screens see a viewer, so nothing offers a change.
   // Team, Overview and Plan keep the real role (the owner can still remove members and see the plan).
   const info = plan && plan.orgId === office.id ? plan.info : null;
@@ -90,6 +91,7 @@ function Workspace({ session }: { session: Session }) {
         : shown === 'overview' ? <Overview key={office.id} office={office} onGo={setView} />
         : shown === 'leads' ? <Leads key={office.id} office={work} userId={session.user.id} />
         : shown === 'tasks' ? <Tasks key={office.id} office={work} userId={session.user.id} />
+        : shown === 'invoices' ? <Invoices key={office.id} office={work} />
         : shown === 'deals' ? <Deals key={office.id} office={work} />
         : shown === 'leases' ? <Leases key={office.id} office={work} />
         : shown === 'network' ? <Network key={office.id} office={work} />
