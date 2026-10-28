@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { autoEnhance } from './photoTools';
 
 export const BUCKET = 'property-photos';
 export const MAX_PHOTOS = 20;
@@ -9,7 +10,7 @@ export const photoUrl = (base: string, small = false) =>
   `${BASE}/storage/v1/object/public/${BUCKET}/${base}${small ? '_t' : ''}.jpg`;
 
 /** Shrink an image in the browser (long side `max` px) and return it as JPEG. Phone photos are 5 to 10 MB; this makes them 200 to 400 KB. */
-export async function shrink(file: File, max: number, quality: number): Promise<Blob> {
+export async function shrink(file: File, max: number, quality: number, improve = false): Promise<Blob> {
   const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' });
   const scale = Math.min(1, max / Math.max(bmp.width, bmp.height));
   const w = Math.max(1, Math.round(bmp.width * scale));
@@ -21,14 +22,15 @@ export async function shrink(file: File, max: number, quality: number): Promise<
   ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
   ctx.drawImage(bmp, 0, 0, w, h);
   bmp.close();
+  if (improve) autoEnhance(ctx, w, h);
   return new Promise((res, rej) => canvas.toBlob(b => (b ? res(b) : rej(new Error('encode'))), 'image/jpeg', quality));
 }
 
 /** Upload one photo (large + small) and register it. Throws a readable message on failure. */
-export async function uploadPhoto(orgId: string, propertyId: string, file: File): Promise<void> {
+export async function uploadPhoto(orgId: string, propertyId: string, file: File, improve = false): Promise<void> {
   const id = crypto.randomUUID();
   const base = `${orgId}/${propertyId}/${id}`;
-  const [big, small] = await Promise.all([shrink(file, 1600, 0.82), shrink(file, 480, 0.78)]);
+  const [big, small] = await Promise.all([shrink(file, 1600, 0.82, improve), shrink(file, 480, 0.78, improve)]);
   const opts = { contentType: 'image/jpeg', cacheControl: '31536000' };
   const a = await supabase.storage.from(BUCKET).upload(`${base}.jpg`, big, opts);
   if (a.error) throw new Error(a.error.message);

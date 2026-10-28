@@ -17,6 +17,7 @@ import { whatsappShareUrl } from '../lib/publicSite';
 import { GettingStarted } from '../components/GettingStarted';
 import { NewMatches } from '../components/NewMatches';
 import { StaleAds } from '../components/StaleAds';
+import { WeakAds } from '../components/WeakAds';
 import { PayoutsDue } from '../components/PayoutsDue';
 import { TaskForm } from './TaskForm';
 import { ViewingDetail } from './ViewingDetail';
@@ -145,6 +146,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
         <div className="mt-6 space-y-8">
           <NewMatches office={office} onGo={onGo} onCount={setMatchCount} />
           <StaleAds office={office} onGo={onGo} onCount={setAdCount} />
+          <WeakAds office={office} onGo={onGo} />
           <PayoutsDue office={office} onGo={onGo} onCount={setPayCount} />
           {due.length > 0 && (
             <Block title={t('Tasks due')} count={due.length} to="tasks" onGo={onGo}>

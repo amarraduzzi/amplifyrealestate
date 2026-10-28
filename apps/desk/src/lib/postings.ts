@@ -21,11 +21,11 @@ export const SITES: { id: Site; name: string; social: boolean; newUrl?: string }
 ];
 export const siteName = (s: Site) => SITES.find(x => x.id === s)?.name ?? s;
 
-const TYPE: Record<AdLang, Record<PropertyType, string>> = {
+export const TYPE: Record<AdLang, Record<PropertyType, string>> = {
   fr: { apartment: 'Appartement', villa: 'Villa', riad: 'Riad', house: 'Maison', land: 'Terrain', shop: 'Local commercial', office: 'Bureau', building: 'Immeuble', other: 'Bien' },
   ar: { apartment: 'شقة', villa: 'فيلا', riad: 'رياض', house: 'منزل', land: 'أرض', shop: 'محل تجاري', office: 'مكتب', building: 'عمارة', other: 'عقار' },
 };
-const DEAL: Record<AdLang, Record<DealPurpose, string>> = {
+export const DEAL: Record<AdLang, Record<DealPurpose, string>> = {
   fr: { sale: 'à vendre', rent_long: 'à louer', rent_short: 'location courte durée' },
   ar: { sale: 'للبيع', rent_long: 'للكراء', rent_short: 'كراء لمدة قصيرة' },
 };
@@ -46,8 +46,8 @@ const W = {
 
 type Office = { name: string; slug: string; public_whatsapp?: string | null; public_phone?: string | null };
 
-const place = (p: PropertyRow) => [p.neighborhood, p.city].filter(Boolean).join(', ');
-const priceText = (p: PropertyRow, lang: AdLang) =>
+export const place = (p: PropertyRow) => [p.neighborhood, p.city].filter(Boolean).join(', ');
+export const priceText = (p: PropertyRow, lang: AdLang) =>
   p.price_cents === null ? '' : `${formatMad(p.price_cents)}${p.purpose === 'rent_long' ? W[lang].month : p.purpose === 'rent_short' ? W[lang].night : ''}`;
 
 /** A short title: "Appartement 3 chambres 115 m² à vendre à Agdal, Rabat". Kept under 70 characters. */

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Camera, Star, Trash2 } from 'lucide-react';
+import { Camera, Sparkles, Star, Trash2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import type { Office, PropertyRow } from '../lib/types';
@@ -24,6 +24,7 @@ export function PhotosSection({ office, property, canWrite, onChanged }: {
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [improve, setImprove] = useState(true);
   const input = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
@@ -46,7 +47,7 @@ export function PhotosSection({ office, property, canWrite, onChanged }: {
     let failed: string | null = null;
     for (let i = 0; i < todo.length; i++) {
       setProgress(t('Uploading {i} of {n}…', { i: i + 1, n: todo.length }));
-      try { await uploadPhoto(office.id, property.id, todo[i]); }
+      try { await uploadPhoto(office.id, property.id, todo[i], improve); }
       catch (e) { failed = photoError(e instanceof Error ? e.message : String(e)); break; }
     }
     if (!failed && list.length > room) failed = t('Only the first {n} were added: a property can have at most {max} photos.', { n: room, max: MAX_PHOTOS });
@@ -110,6 +111,10 @@ export function PhotosSection({ office, property, canWrite, onChanged }: {
             <Btn tone="ghost" onClick={() => input.current?.click()} disabled={busy || (photos?.length ?? 0) >= MAX_PHOTOS}>
               <Camera className="h-4 w-4" /> {progress ?? t('Add photos')}
             </Btn>
+            <label className="flex items-center gap-2 text-xs font-semibold">
+              <input type="checkbox" checked={improve} onChange={e => setImprove(e.target.checked)} className="h-4 w-4" />
+              <Sparkles className="h-3.5 w-3.5" /> {t('Brighten dark photos and improve contrast')}
+            </label>
             <p className="text-xs text-muted">{t('Photos are made smaller automatically. They only appear on the public page when that page is online.')}</p>
           </>
         )}

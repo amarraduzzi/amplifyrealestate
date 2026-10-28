@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Check, Copy, Download, ExternalLink, Megaphone } from 'lucide-react';
+import { Check, Copy, ExternalLink, Megaphone } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getLang, t } from '../lib/i18n';
 import type { Office, PropertyRow } from '../lib/types';
 import { SITES, adFields, adText, adTitle, loadPostings, setOnline, setRemoved, siteName, type AdLang, type PostingRow, type Site } from '../lib/postings';
-import { photoUrl } from '../lib/photos';
 import { planError } from '../lib/plan';
 import { Btn, inputCls } from '../components/ui';
+import { AdImages } from '../components/AdImages';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 const dateText = (d: string) => new Intl.DateTimeFormat(LOCALES[getLang()], { dateStyle: 'medium' }).format(new Date(`${d}T00:00:00`));
@@ -32,7 +32,6 @@ export function PostingSection({ office, property, canWrite }: { office: Office;
   const [url, setUrl] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [dl, setDl] = useState<string | null>(null);
 
   const load = useCallback(async () => setRows(await loadPostings(property.id)), [property.id]);
   useEffect(() => { load(); }, [load]);
@@ -79,23 +78,6 @@ export function PostingSection({ office, property, canWrite }: { office: Office;
     const err = await setRemoved(current);
     setBusy(false);
     if (err) setError(planError(err)); else load();
-  };
-
-  // One file after the other: browsers allow several downloads from one tap after the first one.
-  const download = async () => {
-    if (dl) return;
-    for (let i = 0; i < photos.length; i++) {
-      setDl(t('Downloading {i} of {n}…', { i: i + 1, n: photos.length }));
-      try {
-        const blob = await (await fetch(photoUrl(photos[i]))).blob();
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `${property.reference}-${i + 1}.jpg`;
-        document.body.appendChild(a); a.click(); a.remove();
-        window.setTimeout(() => URL.revokeObjectURL(a.href), 5000);
-      } catch { setError(t('A photo could not be downloaded. Try again.')); break; }
-    }
-    setDl(null);
   };
 
   return (
@@ -173,11 +155,7 @@ export function PostingSection({ office, property, canWrite }: { office: Office;
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Btn tone="ghost" disabled={photos.length === 0 || dl !== null} onClick={download}>
-              <Download className="h-4 w-4" /> {dl ?? (photos.length ? t('Download {n} photos', { n: photos.length }) : t('No photos yet'))}
-            </Btn>
-          </div>
+          <AdImages property={property} site={site} social={info.social} lang={lang} photos={photos} office={{ name: office.name, phone: contact.public_whatsapp || contact.public_phone }} />
 
           <div className="border-t border-line/10 pt-3">
             {tableMissing ? (

@@ -14,6 +14,7 @@ import { PropertyLeads } from './PropertyLeads';
 import { PhotosSection } from './PhotosSection';
 import { PublishSection } from './PublishSection';
 import { PostingSection } from './PostingSection';
+import { AdQuality } from '../components/AdQuality';
 import { OwnerPortalSection } from '../components/OwnerPortalSection';
 import { ManagementSection } from '../components/ManagementSection';
 import { NetworkShare } from '../components/NetworkShare';
@@ -52,6 +53,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
   const canWrite = office.role !== 'viewer';
   const [history, setHistory] = useState<HistoryRow[] | null>(null);
   const [busy, setBusy] = useState(false);
+  const [photoTick, setPhotoTick] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [report, setReport] = useState(false);
@@ -157,7 +159,8 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
         <OwnerPortalSection office={office} property={row} canWrite={canWrite} />
         <ManagementSection office={office} property={row} canWrite={canWrite} />
         <PropertyMandates office={office} property={row} canWrite={canWrite} />
-        <PhotosSection office={office} property={row} canWrite={canWrite} onChanged={onChanged} />
+        <AdQuality office={office} property={row} tick={photoTick} />
+        <PhotosSection office={office} property={row} canWrite={canWrite} onChanged={() => { onChanged(); setPhotoTick(x => x + 1); }} />
         <PublishSection office={office} property={row} canWrite={canWrite} onChanged={() => { onChanged(); loadHistory(); }} />
         <PostingSection office={office} property={row} canWrite={canWrite} />
         <NetworkShare office={office} property={row} canWrite={canWrite} />

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { dirhamToCents, type DealPurpose, type PropertyStatus, type PropertyType } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
@@ -7,6 +7,7 @@ import { PURPOSES, TYPES, purposeLabel, statusLabel, typeLabel } from '../lib/la
 import { Btn, Field, Modal, inputCls } from '../components/ui';
 import { planError } from '../lib/plan';
 import { friendly } from '../lib/errors';
+import { findDuplicates, type DupRow } from '../lib/duplicates';
 
 const num = (s: string) => (s.trim() === '' ? null : Number(s));
 const str = (x: number | null | undefined) => (x === null || x === undefined ? '' : String(x));
@@ -30,6 +31,21 @@ export function PropertyForm({ orgId, property, onClose, onSaved }: {
   const [desc, setDesc] = useState(property?.description ?? '');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dups, setDups] = useState<DupRow[]>([]);
+
+  // While adding: warn when the same property seems to be in the list already.
+  useEffect(() => {
+    if (editing) return;
+    const a = num(area), pr = num(price);
+    const id = window.setTimeout(async () => {
+      setDups(await findDuplicates(orgId, {
+        purpose, property_type: type, city: city.trim() || null, neighborhood: hood.trim() || null,
+        area_m2: a === null || !Number.isFinite(a) || a === 0 ? null : a,
+        price_cents: pr === null || !Number.isFinite(pr) ? null : dirhamToCents(pr),
+      }));
+    }, 600);
+    return () => window.clearTimeout(id);
+  }, [editing, orgId, purpose, type, city, hood, area, price]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -113,6 +129,9 @@ export function PropertyForm({ orgId, property, onClose, onSaved }: {
         <Field label={t('Description')}>
           <textarea className={inputCls} rows={3} value={desc} onChange={e => setDesc(e.target.value)} />
         </Field>
+        {!editing && dups.length > 0 && (
+          <p className="rounded-xl bg-warn/10 px-3 py-2 text-sm"><span className="font-semibold">{t('This may be a duplicate')}:</span> {dups.map(d => `${d.reference} · ${d.title}`).join(' | ')}</p>
+        )}
         {editing && <p className="text-xs text-muted">{t('Changing the price is recorded in the history and counts as a new confirmation.')}</p>}
         {error && <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
       </form>
