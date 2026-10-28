@@ -120,12 +120,37 @@ async function ical(token, env) {
   return new Response(lines.join('\r\n') + '\r\n', { headers: { 'content-type': 'text/calendar; charset=utf-8', 'cache-control': 'public, max-age=300' } });
 }
 
+const xmlEsc = v => String(v ?? '').replace(/[<>&'"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;' }[c])).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+const tag = (n, v) => (v === null || v === undefined || v === '' ? '' : `<${n}>${xmlEsc(v)}</${n}>`);
+/** The available properties of one office as XML, for portals that agreed to pick them up. */
+async function feed(token, url, env) {
+  if (!/^[0-9a-f]{64}$/.test(token) || !env.VITE_SUPABASE_URL) return new Response('Not found', { status: 404 });
+  let d = null;
+  try { d = await rpc(env, 'public_listing_feed', { p_token: token }); } catch { return new Response('Unavailable', { status: 503 }); }
+  if (!d) return new Response('Not found', { status: 404 });
+  const base = `${String(env.VITE_SUPABASE_URL).replace(/\/+$/, '')}/storage/v1/object/public/property-photos/`;
+  const o = d.office;
+  const items = (d.properties || []).map(p => [
+    '<property>', tag('reference', p.reference), tag('title', p.title), tag('type', p.property_type), tag('transaction', p.purpose),
+    tag('price', p.price_cents === null ? null : Math.round(p.price_cents / 100)), '<currency>MAD</currency>',
+    tag('city', p.city), tag('neighborhood', p.neighborhood), tag('bedrooms', p.bedrooms), tag('bathrooms', p.bathrooms),
+    tag('area_m2', p.area_m2), tag('furnished', p.furnished === null ? null : p.furnished ? 'yes' : 'no'), tag('description', p.description),
+    tag('url', `${url.origin}/${o.slug}/${encodeURIComponent(p.reference)}`), tag('updated_at', p.updated_at),
+    '<photos>', ...(p.photos || []).map(x => tag('photo', `${base}${x}.jpg`)), '</photos>', '</property>',
+  ].join('')).join('\n');
+  const body = `<?xml version="1.0" encoding="UTF-8"?>\n<listings generated_at="${new Date().toISOString()}" count="${(d.properties || []).length}">\n`
+    + `<agency>${tag('name', o.name)}${tag('city', o.city)}${tag('phone', o.phone)}${tag('whatsapp', o.whatsapp)}${tag('email', o.email)}${tag('url', `${url.origin}/${o.slug}`)}</agency>\n${items}\n</listings>\n`;
+  return new Response(body, { headers: { 'content-type': 'application/xml; charset=utf-8', 'cache-control': 'public, max-age=300', 'x-robots-tag': 'noindex' } });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     let parts = url.pathname.split('/').filter(Boolean);
     // /ical/<code>.ics: the busy dates of a short-term rental, for Airbnb, Booking or Google Calendar
     if (parts[0] === 'ical' && parts.length === 2 && request.method === 'GET') return ical(parts[1].replace(/\.ics$/, ''), env);
+    // /feed/<code>.xml: the available properties of an office, for portals
+    if (parts[0] === 'feed' && parts.length === 2 && request.method === 'GET') return feed(parts[1].replace(/\.xml$/, ''), url, env);
     // /o/<code> (owner) and /r/<code> (co-owner): private pages. Plain page, never cached, never in search engines.
     if ((parts[0] === 'o' || parts[0] === 'r') && parts.length === 2 && request.method === 'GET') {
       try {

@@ -1317,4 +1317,10 @@ export const FR: Record<string, string> = {
   'shown after accepting': 'visible après acceptation',
   'to {office}': 'à {office}',
   'viewing {date}': 'visite le {date}',
+  'Feed for portals': 'Flux pour les portails',
+  'One private link with all your published, available properties (photos, price, details), in a standard XML format. Give it only to a portal that agreed to pick up your listings automatically. Addresses, owners and mandates are never in it.': 'Un lien privé avec tous vos biens publiés et disponibles (photos, prix, caractéristiques), au format XML standard. Donnez-le uniquement à un portail qui a accepté de reprendre vos annonces automatiquement. Les adresses, propriétaires et mandats n’y figurent jamais.',
+  'Make a new link? Portals using the old link must get the new one.': 'Créer un nouveau lien ? Les portails qui utilisent l’ancien devront recevoir le nouveau.',
+  'Stop the link? Portals can no longer pick up your properties.': 'Désactiver le lien ? Les portails ne pourront plus reprendre vos biens.',
+  'New link': 'Nouveau lien',
+  'Make the link': 'Créer le lien',
 };

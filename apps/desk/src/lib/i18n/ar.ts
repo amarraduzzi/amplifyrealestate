@@ -1318,4 +1318,10 @@ export const AR: Record<string, string> = {
   'shown after accepting': 'يظهر بعد القبول',
   'to {office}': 'إلى {office}',
   'viewing {date}': 'زيارة {date}',
+  'Feed for portals': 'رابط للبوابات',
+  'One private link with all your published, available properties (photos, price, details), in a standard XML format. Give it only to a portal that agreed to pick up your listings automatically. Addresses, owners and mandates are never in it.': 'رابط خاص بكل عقاراتك المنشورة والمتوفرة (صور، ثمن، مواصفات) بصيغة XML معيارية. أعطه فقط لبوابة وافقت على جلب إعلاناتك تلقائيا. لا يتضمن أبدا العناوين أو الملاك أو الوكالات.',
+  'Make a new link? Portals using the old link must get the new one.': 'إنشاء رابط جديد؟ يجب إعطاء الرابط الجديد للبوابات التي تستعمل القديم.',
+  'Stop the link? Portals can no longer pick up your properties.': 'إيقاف الرابط؟ لن تتمكن البوابات من جلب عقاراتك.',
+  'New link': 'رابط جديد',
+  'Make the link': 'إنشاء الرابط',
 };

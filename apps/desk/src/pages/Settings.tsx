@@ -6,6 +6,7 @@ import { Team } from './Team';
 import { Plan } from './Plan';
 import { PublicProfile } from './PublicProfile';
 import { WebsiteSettings } from '../components/WebsiteSettings';
+import { FeedSettings } from '../components/FeedSettings';
 import { BillingSettings } from '../components/BillingSettings';
 
 export type SettingsTab = 'team' | 'site' | 'billing' | 'plan';
@@ -38,6 +39,7 @@ export function Settings({ office, userId, onSelfChanged, initialTab = 'team' }:
         {tab === 'site' && (<>
           <PublicProfile office={office} canManage={canManage} onSlugChanged={onSelfChanged} />
           <WebsiteSettings office={office} canManage={canManage} />
+          <FeedSettings office={office} canManage={canManage} />
         </>)}
         {tab === 'billing' && <BillingSettings office={office} canManage={canManage} />}
         {tab === 'plan' && <Plan office={office} embedded />}
