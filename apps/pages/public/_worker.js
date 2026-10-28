@@ -95,6 +95,15 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
     let parts = url.pathname.split('/').filter(Boolean);
+    // /o/<code>: the private owner portal. Plain page, never cached, never in search engines.
+    if (parts[0] === 'o' && parts.length === 2 && request.method === 'GET') {
+      try {
+        const r = await env.ASSETS.fetch(new Request(new URL('/', url), { headers: request.headers }));
+        const h = new Headers(r.headers);
+        h.set('x-robots-tag', 'noindex, nofollow'); h.set('cache-control', 'no-store'); h.set('referrer-policy', 'no-referrer');
+        return new Response(r.body, { status: 200, headers: h });
+      } catch { return env.ASSETS.fetch(request); }
+    }
     const looksLikePage = request.method === 'GET' && parts.length <= 2 && !(parts.length && parts[parts.length - 1].includes('.'));
     if (!looksLikePage) return env.ASSETS.fetch(request);
     const own = await domainSlug(url.hostname, env);

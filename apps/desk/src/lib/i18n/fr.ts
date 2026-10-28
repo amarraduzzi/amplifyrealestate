@@ -841,4 +841,14 @@ export const FR: Record<string, string> = {
   'One per line.': 'Un par ligne.',
   'Own domain name (optional)': 'Nom de domaine propre (facultatif)',
   'Ask Amplify to connect the domain first; then fill it in here.': 'Demandez d’abord à Amplify de connecter le domaine, puis indiquez-le ici.',
+  // Eigenaarsportaal (7a)
+  'Stop this link? The owner can no longer open the page until you send a new link.': 'Désactiver ce lien ? Le propriétaire ne pourra plus ouvrir la page tant que vous n’envoyez pas un nouveau lien.',
+  'Owner portal': 'Espace propriétaire',
+  'A personal page for the owner, without an account: activity, rent and repairs of all their properties with you. Ideal for owners abroad.': 'Une page personnelle pour le propriétaire, sans compte : l’activité, les loyers et les réparations de tous ses biens chez vous. Idéal pour les propriétaires à l’étranger.',
+  'Opened {n} times, last on {date}': 'Ouvert {n} fois, la dernière le {date}',
+  'Not opened yet': 'Pas encore ouvert',
+  'Send on WhatsApp': 'Envoyer sur WhatsApp',
+  'Stop link': 'Désactiver le lien',
+  'Language of the owner': 'Langue du propriétaire',
+  'Make a portal link': 'Créer le lien',
 };

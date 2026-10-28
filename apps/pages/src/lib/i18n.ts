@@ -6,14 +6,17 @@
 // Arabic and French here are a careful first version: have a native speaker read them once before
 // you send the links to many clients.
 
-export type Lang = 'fr' | 'ar' | 'en';
+export type Lang = 'fr' | 'ar' | 'en' | 'nl';
 export const LANGS: { id: Lang; name: string }[] = [
   { id: 'fr', name: 'Français' },
   { id: 'ar', name: 'العربية' },
   { id: 'en', name: 'English' },
 ];
+/** The owner portal also speaks Dutch (owners living in the Netherlands and Belgium). */
+export const PORTAL_LANGS: { id: Lang; name: string }[] = [...LANGS, { id: 'nl', name: 'Nederlands' }];
+export const LOCALE: Record<Lang, string> = { fr: 'fr-FR', ar: 'ar-MA', en: 'en-GB', nl: 'nl-NL' };
 
-const isLang = (x: unknown): x is Lang => x === 'fr' || x === 'ar' || x === 'en';
+const isLang = (x: unknown): x is Lang => x === 'fr' || x === 'ar' || x === 'en' || x === 'nl';
 const KEY = 'pages-lang';
 let current: Lang = 'fr';
 export const getLang = () => current;
@@ -118,6 +121,41 @@ const FR: Record<string, string> = {
   'About us': 'Qui sommes-nous',
   'Our services': 'Nos services',
   'Contact': 'Contact',
+  // Eigenaarsportaal (7a)
+  'Online': 'En ligne',
+  'Activity': 'Activité',
+  'Viewings held': 'Visites effectuées',
+  'Viewings planned': 'Visites prévues',
+  'Interested': 'Intéressés',
+  'Offers': 'Offres',
+  'Page visits': 'Visites de la page',
+  'Contact requests': 'Prises de contact',
+  'Advertised on: {sites}': 'Diffusé sur : {sites}',
+  'Mandate valid until {date}': 'Mandat valable jusqu’au {date}',
+  'See the page as buyers see it': 'Voir la page comme les acheteurs',
+  'Rental': 'Location',
+  'Tenant': 'Locataire',
+  'Since {date}': 'Depuis le {date}',
+  'until {date}': 'jusqu’au {date}',
+  'Rent received (12 months)': 'Loyers reçus (12 mois)',
+  'Overdue rent': 'Loyers en retard',
+  'Paid': 'Payé',
+  'Late': 'En retard',
+  'To be paid': 'À payer',
+  'Repairs (12 months)': 'Réparations (12 mois)',
+  'Paid by you: {amount}': 'À votre charge : {amount}',
+  'Done': 'Terminé',
+  'In progress': 'En cours',
+  'Reported': 'Signalé',
+  'you': 'vous',
+  'tenant': 'locataire',
+  'agency': 'agence',
+  'This link is no longer valid. Ask your agency for a new one.': 'Ce lien n’est plus valable. Demandez-en un nouveau à votre agence.',
+  'Hello, this is {name}, owner of {title}.': 'Bonjour, ici {name}, propriétaire de {title}.',
+  'Hello {name}': 'Bonjour {name}',
+  'Your properties with {office}. Updated {date}.': 'Vos biens chez {office}. Mis à jour le {date}.',
+  'No properties to show right now.': 'Aucun bien à afficher pour le moment.',
+  'This page is personal. Do not share the link.': 'Cette page est personnelle. Ne partagez pas le lien.',
 };
 
 const AR: Record<string, string> = {
@@ -198,10 +236,113 @@ const AR: Record<string, string> = {
   'About us': 'من نحن',
   'Our services': 'خدماتنا',
   'Contact': 'اتصل بنا',
+  // Eigenaarsportaal (7a)
+  'Online': 'منشور',
+  'Activity': 'النشاط',
+  'Viewings held': 'معاينات تمت',
+  'Viewings planned': 'معاينات مبرمجة',
+  'Interested': 'مهتمون',
+  'Offers': 'عروض',
+  'Page visits': 'زيارات الصفحة',
+  'Contact requests': 'طلبات التواصل',
+  'Advertised on: {sites}': 'منشور على: {sites}',
+  'Mandate valid until {date}': 'التفويض ساري إلى غاية {date}',
+  'See the page as buyers see it': 'شاهد الصفحة كما يراها المشترون',
+  'Rental': 'الكراء',
+  'Tenant': 'المكتري',
+  'Since {date}': 'منذ {date}',
+  'until {date}': 'إلى غاية {date}',
+  'Rent received (12 months)': 'الكراء المحصل (12 شهرا)',
+  'Overdue rent': 'كراء متأخر',
+  'Paid': 'مؤدى',
+  'Late': 'متأخر',
+  'To be paid': 'للأداء',
+  'Repairs (12 months)': 'الإصلاحات (12 شهرا)',
+  'Paid by you: {amount}': 'على حسابكم: {amount}',
+  'Done': 'تم',
+  'In progress': 'قيد الإنجاز',
+  'Reported': 'مبلغ عنه',
+  'you': 'أنتم',
+  'tenant': 'المكتري',
+  'agency': 'الوكالة',
+  'This link is no longer valid. Ask your agency for a new one.': 'هذا الرابط لم يعد صالحا. اطلب رابطا جديدا من وكالتك.',
+  'Hello, this is {name}, owner of {title}.': 'مرحبا، معكم {name}، مالك {title}.',
+  'Hello {name}': 'مرحبا {name}',
+  'Your properties with {office}. Updated {date}.': 'عقاراتكم لدى {office}. محين بتاريخ {date}.',
+  'No properties to show right now.': 'لا توجد عقارات للعرض حاليا.',
+  'This page is personal. Do not share the link.': 'هذه الصفحة شخصية. لا تشاركوا الرابط.',
+};
+
+// Dutch: only for the owner portal (owners in the Netherlands and Belgium). Other pages fall back to English.
+const NL: Record<string, string> = {
+  'For sale': 'Te koop',
+  'Long-term rent': 'Langdurige huur',
+  'Short-term rent': 'Kortetermijnhuur',
+  '/ month': '/ maand',
+  '/ night': '/ nacht',
+  'Apartment': 'Appartement',
+  'Villa': 'Villa',
+  'Riad': 'Riad',
+  'House': 'Huis',
+  'Land': 'Grond',
+  'Shop': 'Winkelruimte',
+  'Office': 'Kantoor',
+  'Building': 'Gebouw',
+  'Available': 'Beschikbaar',
+  'Reserved': 'Gereserveerd',
+  'Rented': 'Verhuurd',
+  'Sold': 'Verkocht',
+  'Contact on WhatsApp': 'Contact via WhatsApp',
+  'Call': 'Bellen',
+  'Email': 'E-mail',
+  'Powered by Amplify Real Estate': 'Mogelijk gemaakt door Amplify Real Estate',
+  'Language': 'Taal',
+  'Page not found': 'Pagina niet gevonden',
+  'Something went wrong. Please try again.': 'Er ging iets mis. Probeer het opnieuw.',
+  'Try again': 'Opnieuw proberen',
+  'Reference': 'Referentie',
+  'Bedrooms': 'Slaapkamers',
+  'Bathrooms': 'Badkamers',
+  'Area': 'Oppervlakte',
+  'Online': 'Online',
+  'Activity': 'Activiteit',
+  'Viewings held': 'Bezichtigingen gehouden',
+  'Viewings planned': 'Bezichtigingen gepland',
+  'Interested': 'Geïnteresseerden',
+  'Offers': 'Biedingen',
+  'Page visits': 'Bezoeken van de pagina',
+  'Contact requests': 'Contactaanvragen',
+  'Advertised on: {sites}': 'Geadverteerd op: {sites}',
+  'Mandate valid until {date}': 'Opdracht geldig tot {date}',
+  'See the page as buyers see it': 'Bekijk de pagina zoals kopers die zien',
+  'Rental': 'Verhuur',
+  'Tenant': 'Huurder',
+  'Since {date}': 'Sinds {date}',
+  'until {date}': 'tot {date}',
+  'Rent received (12 months)': 'Ontvangen huur (12 maanden)',
+  'Overdue rent': 'Achterstallige huur',
+  'Paid': 'Betaald',
+  'Late': 'Te laat',
+  'To be paid': 'Te betalen',
+  'Repairs (12 months)': 'Reparaties (12 maanden)',
+  'Paid by you: {amount}': 'Door u betaald: {amount}',
+  'Done': 'Klaar',
+  'In progress': 'Bezig',
+  'Reported': 'Gemeld',
+  'you': 'u',
+  'tenant': 'huurder',
+  'agency': 'kantoor',
+  'This link is no longer valid. Ask your agency for a new one.': 'Deze link is niet meer geldig. Vraag uw makelaar om een nieuwe.',
+  'Hello, this is {name}, owner of {title}.': 'Hallo, met {name}, eigenaar van {title}.',
+  'Hello {name}': 'Hallo {name}',
+  'Your properties with {office}. Updated {date}.': 'Uw panden bij {office}. Bijgewerkt op {date}.',
+  'No properties to show right now.': 'Er zijn nu geen panden om te tonen.',
+  'This page is personal. Do not share the link.': 'Deze pagina is persoonlijk. Deel de link niet.',
+  'Other': 'Andere',
 };
 
 export function t(en: string, vars?: Record<string, string | number>): string {
-  const dict = current === 'ar' ? AR : current === 'fr' ? FR : null;
+  const dict = current === 'ar' ? AR : current === 'fr' ? FR : current === 'nl' ? NL : null;
   let s = dict ? (dict[en] ?? en) : en;
   if (vars) s = s.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
   return s;

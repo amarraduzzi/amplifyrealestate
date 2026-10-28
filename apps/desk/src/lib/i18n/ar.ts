@@ -841,4 +841,14 @@ export const AR: Record<string, string> = {
   'One per line.': 'واحد في كل سطر.',
   'Own domain name (optional)': 'اسم نطاق خاص (اختياري)',
   'Ask Amplify to connect the domain first; then fill it in here.': 'اطلب أولا من Amplify ربط النطاق، ثم أدخله هنا.',
+  // Eigenaarsportaal (7a)
+  'Stop this link? The owner can no longer open the page until you send a new link.': 'إيقاف هذا الرابط؟ لن يتمكن المالك من فتح الصفحة حتى ترسل رابطا جديدا.',
+  'Owner portal': 'فضاء المالك',
+  'A personal page for the owner, without an account: activity, rent and repairs of all their properties with you. Ideal for owners abroad.': 'صفحة شخصية للمالك بدون حساب: النشاط والكراء والإصلاحات لكل عقاراته لديكم. مثالية للملاك المقيمين بالخارج.',
+  'Opened {n} times, last on {date}': 'فتح {n} مرات، آخرها بتاريخ {date}',
+  'Not opened yet': 'لم يفتح بعد',
+  'Send on WhatsApp': 'إرسال عبر واتساب',
+  'Stop link': 'إيقاف الرابط',
+  'Language of the owner': 'لغة المالك',
+  'Make a portal link': 'إنشاء الرابط',
 };

@@ -90,3 +90,21 @@ export async function resolveDomain(host: string): Promise<string | null> {
   if (!apiConfigured || PLATFORM.test(host)) return null;
   try { return await rpc<string>('public_office_by_domain', { p_host: host }); } catch { return null; }
 }
+
+export type PortalPayment = { due_date: string; amount_cents: number; status: 'due' | 'paid'; paid_on: string | null };
+export type PortalRepair = { title: string; status: 'open' | 'in_progress' | 'done'; reported_on: string; done_on: string | null; cost_cents: number | null; cost_borne_by: 'owner' | 'tenant' | 'agency' | null };
+export type PortalProperty = {
+  reference: string; title: string; property_type: PropertyType; purpose: DealPurpose; status: PropertyStatus; price_cents: number | null;
+  city: string | null; neighborhood: string | null; cover: string | null;
+  online: boolean; mandate_until: string | null; viewings_done: number; viewings_planned: number; interested: number; offers: number;
+  page_views: number; contacts: number; sites: string[];
+  lease: { tenant: string; rent_cents: number; start_date: string; end_date: string | null; payments: PortalPayment[] } | null;
+  repairs: PortalRepair[];
+};
+export type OwnerPortalData = { owner: { name: string }; lang: string; office: PublicOffice; properties: PortalProperty[]; generated_at: string };
+
+/** The owner portal behind a personal link. null = the link is not valid (anymore). */
+export async function loadOwnerPortal(token: string): Promise<OwnerPortalData | null> {
+  if (!/^[0-9a-f]{64}$/.test(token)) return null;
+  return rpc<OwnerPortalData>('public_owner_portal', { p_token: token });
+}

@@ -3,7 +3,7 @@ import { applyLang, getLang, LANGS, saveLang, t, type Lang } from '../lib/i18n';
 import { AmplifyLogo, AmplifyMark } from './Brand';
 import { Link, officePath } from '../lib/router';
 
-function LangSwitch() {
+function LangSwitch({ langs = LANGS }: { langs?: { id: Lang; name: string }[] }) {
   const choose = (l: Lang) => {
     if (l === getLang()) return;
     applyLang(l); saveLang(l);
@@ -14,10 +14,10 @@ function LangSwitch() {
   };
   return (
     <div className="flex shrink-0 gap-1" role="group" aria-label={t('Language')}>
-      {LANGS.map(l => (
-        <button key={l.id} type="button" onClick={() => choose(l.id)} aria-pressed={getLang() === l.id} lang={l.id}
+      {langs.map(l => (
+        <button key={l.id} type="button" onClick={() => choose(l.id)} aria-pressed={getLang() === l.id} lang={l.id} title={l.name}
           className={`rounded-full px-2.5 py-1 text-xs font-semibold transition ${getLang() === l.id ? 'bg-white text-night' : 'text-white/70 ring-1 ring-white/15 hover:text-white'}`}>
-          {l.name}
+          {langs.length > 3 ? l.id.toUpperCase() : l.name}
         </button>
       ))}
     </div>
@@ -25,8 +25,8 @@ function LangSwitch() {
 }
 
 /** Header (office name or the Amplify logo, language), the page, and a small footer. */
-export function Layout({ office, stickyBar, children }: {
-  office?: { name: string; slug: string; city: string | null }; stickyBar?: boolean; children: ReactNode;
+export function Layout({ office, stickyBar, children, langs }: {
+  office?: { name: string; slug: string; city: string | null }; stickyBar?: boolean; children: ReactNode; langs?: { id: Lang; name: string }[];
 }) {
   return (
     <div className="flex min-h-screen flex-col">
@@ -41,7 +41,7 @@ export function Layout({ office, stickyBar, children }: {
               </span>
             </Link>
           ) : <AmplifyLogo size="sm" />}
-          <LangSwitch />
+          <LangSwitch langs={langs} />
         </div>
       </header>
       <main className="flex-1 pb-6">{children}</main>
