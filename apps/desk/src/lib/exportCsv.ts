@@ -23,7 +23,7 @@ const money = (cents: number | null) => (cents === null ? '' : String(cents / 10
 const day = (iso: string | null) => (iso ? iso.slice(0, 10) : '');
 
 /** CSV text: separator ; and a byte order mark, so Excel (FR/AR/EN) opens it with the right columns and accents. */
-function toCsv(head: string[], lines: Cell[][]): string {
+export function toCsv(head: string[], lines: Cell[][]): string {
   return '\uFEFF' + [head, ...lines].map(r => r.map(cell).join(';')).join('\r\n') + '\r\n';
 }
 

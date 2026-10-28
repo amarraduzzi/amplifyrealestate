@@ -20,6 +20,7 @@ import { Deals } from './pages/Deals';
 import { Invoices } from './pages/Invoices';
 import { Stays } from './pages/Stays';
 import { Syndic } from './pages/Syndic';
+import { Projects } from './pages/Projects';
 import { Leases } from './pages/Leases';
 import { Maintenance } from './pages/Maintenance';
 import { PlanBanner } from './components/PlanBanner';
@@ -94,6 +95,7 @@ function Workspace({ session }: { session: Session }) {
         : shown === 'invoices' ? <Invoices key={office.id} office={work} />
         : shown === 'deals' ? <Deals key={office.id} office={work} />
         : shown === 'syndic' ? <Syndic key={office.id} office={work} />
+        : shown === 'projects' ? <Projects key={office.id} office={work} />
         : shown === 'stays' ? <Stays key={office.id} office={work} />
         : shown === 'leases' ? <Leases key={office.id} office={work} />
         : shown === 'network' ? <Network key={office.id} office={work} />
