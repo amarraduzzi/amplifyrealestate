@@ -7,6 +7,7 @@
 // you send the links to many clients.
 
 import { STAY_AR, STAY_FR, STAY_NL } from './i18nStay';
+import { BOOK_AR, BOOK_FR, BOOK_NL } from './i18nBooking';
 
 export type Lang = 'fr' | 'ar' | 'en' | 'nl';
 export const LANGS: { id: Lang; name: string }[] = [
@@ -497,7 +498,8 @@ const NL: Record<string, string> = {
 export function t(en: string, vars?: Record<string, string | number>): string {
   const dict = current === 'ar' ? AR : current === 'fr' ? FR : current === 'nl' ? NL : null;
   const extra = current === 'ar' ? STAY_AR : current === 'fr' ? STAY_FR : current === 'nl' ? STAY_NL : null;
-  let s = dict ? (dict[en] ?? extra?.[en] ?? en) : en;
+  const book = current === 'ar' ? BOOK_AR : current === 'fr' ? BOOK_FR : current === 'nl' ? BOOK_NL : null;
+  let s = dict ? (dict[en] ?? extra?.[en] ?? book?.[en] ?? en) : en;
   if (vars) s = s.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
   return s;
 }

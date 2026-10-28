@@ -9,6 +9,7 @@ import { PUBLIC_SITE } from '../lib/publicSite';
 import { Btn, Card } from '../components/ui';
 import { StayForm } from './StayForm';
 import { StayTools } from '../components/StayTools';
+import { StayRequests } from '../components/StayRequests';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 const monthStart = (d = new Date()) => new Date(Date.UTC(d.getFullYear(), d.getMonth(), 1));
@@ -146,6 +147,7 @@ export function Stays({ office }: { office: Office }) {
           <span>{t('Tap a free day to add a booking.')}</span>
         </p>
         {error && <p className="mt-3 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
+        <StayRequests office={office} props={props} onChanged={load} />
         {canWrite && <StayTools office={office} props={props} onSynced={load} />}
       </>)}
 

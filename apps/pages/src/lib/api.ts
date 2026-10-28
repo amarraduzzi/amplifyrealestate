@@ -196,3 +196,47 @@ export async function markCleaned(token: string, task: string, note: string, pho
     return r.ok && (await r.json()) === true;
   } catch { return false; }
 }
+
+// ---------------------------------------------------------------- 12c: request a short stay
+export type StayBooking = {
+  price_cents: number; weekend_price_cents: number | null; cleaning_cents: number; deposit_cents: number; advance_pct: number; min_nights: number;
+  max_guests: number | null; min_offer_pct: number | null; checkin_from: string | null; checkout_until: string | null; rules: string | null;
+  busy: { start: string; end: string }[];
+};
+export type StayRequestStatus = 'new' | 'accepted' | 'paid_claimed' | 'confirmed' | 'declined' | 'counter' | 'expired' | 'cancelled';
+export type StayRequestPage = {
+  lang: string; status: StayRequestStatus; office: PublicOffice; property: { title: string; reference: string; city: string | null };
+  request: { guest: string; check_in: string; check_out: string; nights: number; guests: number; quote_cents: number; offer_cents: number | null;
+    total_cents: number; advance_cents: number; deposit_cents: number; hold_until: string | null; host_note: string | null };
+  payment_info: string | null; contact: string | null; guide_token: string | null;
+};
+/** Prices and busy dates of a short-term rental. null = no requests for this property. */
+export async function loadStayBooking(slug: string, reference: string): Promise<StayBooking | null> {
+  if (!SLUG.test(slug)) return null;
+  try { return await rpc<StayBooking>('public_stay_booking', { p_slug: slug, p_reference: reference }); } catch { return null; }
+}
+export type RequestResult = { token: string } | { error: string };
+export async function submitStayRequest(o: { slug: string; reference: string; name: string; phone: string; guests: number; checkIn: string; checkOut: string;
+  arrival: string; message: string; offerCents: number | null; rulesOk: boolean; lang: string; trap: string }): Promise<RequestResult> {
+  try {
+    const r = await fetch(`${BASE}/rest/v1/rpc/submit_stay_request`, {
+      method: 'POST', headers: { apikey: KEY, 'content-type': 'application/json' },
+      body: JSON.stringify({ p_slug: o.slug, p_reference: o.reference, p_name: o.name, p_phone: o.phone, p_guests: o.guests, p_in: o.checkIn, p_out: o.checkOut,
+        p_arrival: o.arrival || null, p_message: o.message || null, p_offer_cents: o.offerCents, p_rules_ok: o.rulesOk, p_lang: o.lang, p_trap: o.trap || null }),
+    });
+    const text = await r.text();
+    if (r.ok) return { token: JSON.parse(text) as string };
+    const m = text.match(/request_[a-z_]+/);
+    return { error: m ? m[0] : 'error' };
+  } catch { return { error: 'error' }; }
+}
+export async function loadStayRequest(token: string): Promise<StayRequestPage | null> {
+  if (!/^[0-9a-f]{64}$/.test(token)) return null;
+  return rpc<StayRequestPage>('public_stay_request', { p_token: token });
+}
+export async function guestStayRequest(token: string, action: 'paid' | 'accept_counter' | 'cancel'): Promise<boolean> {
+  try {
+    const r = await fetch(`${BASE}/rest/v1/rpc/guest_stay_request`, { method: 'POST', headers: { apikey: KEY, 'content-type': 'application/json' }, body: JSON.stringify({ p_token: token, p_action: action }) });
+    return r.ok;
+  } catch { return false; }
+}

@@ -1,21 +1,23 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Bath, BedDouble, CheckCircle2, Info, MapPin, MessageCircle, Ruler, Sofa } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { loadProperty, logEvent } from '../lib/api';
 import { useFetch } from '../lib/useFetch';
 import { confirmedText, placeText, priceSuffix, purposeLabel, statusCls, statusLabel, typeLabel } from '../lib/format';
-import { t } from '../lib/i18n';
+import { getLang, t } from '../lib/i18n';
 import { Link, officePath } from '../lib/router';
 import { Layout } from '../components/Layout';
 import { ContactBar } from '../components/ContactBar';
 import { Gallery } from '../components/Gallery';
 import { InquiryForm } from '../components/InquiryForm';
+import { BookingBox } from '../components/BookingBox';
 import { PropertyIcon } from '../components/PropertyIcon';
 import { Failed, Loading, NotFound } from './States';
 
 export function PropertyView({ slug, reference }: { slug: string; reference: string }) {
   const [state, retry] = useFetch(() => loadProperty(slug, reference), `${slug}/${reference}`);
   const data = state.status === 'ready' ? state.data : null;
+  const [bookable, setBookable] = useState(false);
   useEffect(() => {
     document.title = data ? `${data.property.title} · ${data.office.name}` : 'Amplify Real Estate';
   }, [data]);
@@ -101,7 +103,8 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
           )}
         </section>
 
-        <InquiryForm slug={office.slug} reference={p.reference} />
+        {p.purpose === 'rent_short' && p.status === 'available' && <BookingBox slug={office.slug} reference={p.reference} onReady={setBookable} onBook={tk => { window.location.href = `/b/${tk}?lang=${getLang()}`; }} />}
+        {!bookable && <InquiryForm slug={office.slug} reference={p.reference} />}
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link to={officePath(office.slug)} className="text-sm font-semibold text-brand hover:underline">{t('More properties from {office}', { office: office.name })}</Link>

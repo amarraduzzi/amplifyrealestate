@@ -10,6 +10,7 @@ export type Route =
   | { kind: 'owner'; token: string }
   | { kind: 'resident'; token: string }
   | { kind: 'guest'; token: string }
+  | { kind: 'booking'; token: string }
   | { kind: 'cleaner'; token: string }
   | { kind: 'project'; slug: string; project: string };
 
@@ -31,6 +32,8 @@ export function parse(pathname: string): Route {
   // /r/<code>: the co-owner page of a residence managed by a syndic
   if (parts[0] === 'r' && parts.length === 2) return { kind: 'resident', token: parts[1] };
   // /g/<code>: the guest page of a short-term rental. /c/<code>: the cleaning list of a cleaner
+  // /b/<code>: the status of a booking request (12c)
+  if (parts[0] === 'b' && parts.length === 2) return { kind: 'booking', token: parts[1] };
   if (parts[0] === 'g' && parts.length === 2) return { kind: 'guest', token: parts[1] };
   if (parts[0] === 'c' && parts.length === 2) return { kind: 'cleaner', token: parts[1] };
   // /<office>/projet/<project> (or /projet/<project> on the office's own domain): a new-build project
