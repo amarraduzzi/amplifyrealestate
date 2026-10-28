@@ -112,8 +112,8 @@ export default {
     let parts = url.pathname.split('/').filter(Boolean);
     // /ical/<code>.ics: the busy dates of a short-term rental, for Airbnb, Booking or Google Calendar
     if (parts[0] === 'ical' && parts.length === 2 && request.method === 'GET') return ical(parts[1].replace(/\.ics$/, ''), env);
-    // /o/<code>: the private owner portal. Plain page, never cached, never in search engines.
-    if (parts[0] === 'o' && parts.length === 2 && request.method === 'GET') {
+    // /o/<code> (owner) and /r/<code> (co-owner): private pages. Plain page, never cached, never in search engines.
+    if ((parts[0] === 'o' || parts[0] === 'r') && parts.length === 2 && request.method === 'GET') {
       try {
         const r = await env.ASSETS.fetch(new Request(new URL('/', url), { headers: request.headers }));
         const h = new Headers(r.headers);

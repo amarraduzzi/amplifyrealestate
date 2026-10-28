@@ -4,6 +4,7 @@ import { Home } from './views/Home';
 import { OfficeView } from './views/OfficeView';
 import { PropertyView } from './views/PropertyView';
 import { OwnerPortal } from './views/OwnerPortal';
+import { ResidentPortal } from './views/ResidentPortal';
 
 export default function App() {
   const route = useRoute();
@@ -16,6 +17,7 @@ export default function App() {
   }, []);
 
   if (route.kind === 'owner') return <OwnerPortal key={route.token} token={route.token} />;
+  if (route.kind === 'resident') return <ResidentPortal key={route.token} token={route.token} />;
   if (route.kind === 'office') return <OfficeView key={route.slug} slug={route.slug} />;
   if (route.kind === 'property') return <PropertyView key={`${route.slug}/${route.reference}`} slug={route.slug} reference={route.reference} />;
   return <Home />;

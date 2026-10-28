@@ -7,7 +7,8 @@ export type Route =
   | { kind: 'home' }
   | { kind: 'office'; slug: string }
   | { kind: 'property'; slug: string; reference: string }
-  | { kind: 'owner'; token: string };
+  | { kind: 'owner'; token: string }
+  | { kind: 'resident'; token: string };
 
 // On an office's own domain (www.atlas-immo.ma) the office is the whole site: / is the office, /P-AB12 a property.
 let domainSlug: string | null = null;
@@ -23,6 +24,8 @@ export function parse(pathname: string): Route {
   const parts = pathname.split('/').filter(Boolean).map(p => { try { return decodeURIComponent(p); } catch { return p; } });
   // /o/<code>: the owner portal (no office can be called "o": office codes have at least 3 characters)
   if (parts[0] === 'o' && parts.length === 2) return { kind: 'owner', token: parts[1] };
+  // /r/<code>: the co-owner page of a residence managed by a syndic
+  if (parts[0] === 'r' && parts.length === 2) return { kind: 'resident', token: parts[1] };
   if (domainSlug) {
     if (parts.length === 0) return { kind: 'office', slug: domainSlug };
     return { kind: 'property', slug: domainSlug, reference: parts.join('/') };

@@ -11,6 +11,7 @@ import {
 import { planError } from '../lib/plan';
 import { waLink } from '../components/ContactLinks';
 import { Btn, Card, Field, Modal, inputCls } from '../components/ui';
+import { AnnouncementsTab, AssembliesTab, IncidentsTab, ResidentLink } from './SyndicExtras';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 const day = (d: string) => new Intl.DateTimeFormat(LOCALES[getLang()], { dateStyle: 'medium', timeZone: 'UTC' }).format(new Date(`${d}T00:00:00Z`));
@@ -57,7 +58,7 @@ function ResidenceForm({ office, residence, onClose, onSaved }: { office: Office
   );
 }
 
-function LotForm({ office, residenceId, lot, owner, onClose, onSaved }: { office: Office; residenceId: string; lot?: Lot; owner?: Owner; onClose: () => void; onSaved: () => void }) {
+function LotForm({ office, residence, residenceId, lot, owner, onClose, onSaved }: { office: Office; residence: Residence; residenceId: string; lot?: Lot; owner?: Owner; onClose: () => void; onSaved: () => void }) {
   const [f, setF] = useState({ label: lot?.label ?? '', kind: (lot?.kind ?? 'apartment') as LotKind, floor: lot?.floor ?? '', tantiemes: lot ? String(Number(lot.tantiemes)) : '', ownerName: owner?.full_name ?? '', phone: owner?.whatsapp || owner?.phone || '' });
   const [error, setError] = useState<string | null>(null);
   const save = async (e: FormEvent) => {
@@ -99,6 +100,7 @@ function LotForm({ office, residenceId, lot, owner, onClose, onSaved }: { office
         </div>
         {error && <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
       </form>
+      {lot && <ResidentLink office={office} residence={residence} lot={lot} owner={owner} />}
     </Modal>
   );
 }
@@ -142,7 +144,7 @@ function CallForm({ residenceId, lots, onClose, onSaved }: { residenceId: string
 function ResidenceView({ office, residence, onBack, onChanged }: { office: Office; residence: Residence; onBack: () => void; onChanged: () => void }) {
   const canWrite = office.role !== 'viewer';
   const [data, setData] = useState<{ lots: Lot[]; owners: Map<string, Owner>; calls: Call[]; items: Item[] } | null>(null);
-  const [tab, setTab] = useState<'lots' | 'calls' | 'arrears'>('lots');
+  const [tab, setTab] = useState<'lots' | 'calls' | 'arrears' | 'incidents' | 'news' | 'ag'>('lots');
   const [lotForm, setLotForm] = useState<{ lot?: Lot } | null>(null);
   const [callForm, setCallForm] = useState(false);
   const [editRes, setEditRes] = useState(false);
@@ -199,19 +201,22 @@ function ResidenceView({ office, residence, onBack, onChanged }: { office: Offic
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-1.5" role="tablist">
-        {(['lots', 'calls', 'arrears'] as const).filter(x => x === 'lots' || office.role !== 'viewer').map(x => (
+        {(['lots', 'calls', 'arrears', 'incidents', 'news', 'ag'] as const).filter(x => x === 'lots' || office.role !== 'viewer').map(x => (
           <button key={x} type="button" role="tab" aria-selected={tab === x} onClick={() => setTab(x)}
             className={`rounded-full px-3.5 py-1.5 text-sm font-semibold ${tab === x ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
-            {x === 'lots' ? t('Lots') : x === 'calls' ? t('Calls for funds') : t('Unpaid')}{x === 'arrears' && arrears.length ? ` ${arrears.length}` : ''}
+            {({ lots: t('Lots'), calls: t('Calls for funds'), arrears: t('Unpaid'), incidents: t('Incidents'), news: t('Announcements'), ag: t('General meetings') })[x]}{x === 'arrears' && arrears.length ? ` ${arrears.length}` : ''}
           </button>
         ))}
-        {tab !== 'lots' && (
+        {(tab === 'calls' || tab === 'arrears') && (
           <span className="ms-auto flex gap-1">{(['fr', 'ar'] as const).map(l => <button key={l} type="button" aria-pressed={lang === l} onClick={() => setLang(l)} className={`rounded-full px-2.5 py-1 text-xs font-bold uppercase ${lang === l ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10'}`}>{l}</button>)}</span>
         )}
       </div>
       {error && <p className="mt-3 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
       {!data && <p className="mt-8 text-center text-muted">…</p>}
 
+      {data && tab === 'incidents' && <IncidentsTab office={office} residence={residence} />}
+      {data && tab === 'news' && <AnnouncementsTab office={office} residence={residence} lots={data.lots} owners={data.owners} />}
+      {data && tab === 'ag' && <AssembliesTab office={office} residence={residence} lots={data.lots} owners={data.owners} />}
       {data && tab === 'lots' && (
         <div className="mt-4">
           {canWrite && <Btn tone="brand" onClick={() => setLotForm({})}><Plus className="h-4 w-4" /> {t('Add a lot')}</Btn>}
@@ -302,7 +307,7 @@ function ResidenceView({ office, residence, onBack, onChanged }: { office: Offic
         </div>
       )}
 
-      {lotForm && <LotForm office={office} residenceId={residence.id} lot={lotForm.lot} owner={lotForm.lot?.owner_person_id ? data?.owners.get(lotForm.lot.owner_person_id) : undefined} onClose={() => setLotForm(null)} onSaved={() => { setLotForm(null); load(); }} />}
+      {lotForm && <LotForm office={office} residence={residence} residenceId={residence.id} lot={lotForm.lot} owner={lotForm.lot?.owner_person_id ? data?.owners.get(lotForm.lot.owner_person_id) : undefined} onClose={() => setLotForm(null)} onSaved={() => { setLotForm(null); load(); }} />}
       {callForm && data && <CallForm residenceId={residence.id} lots={data.lots} onClose={() => setCallForm(false)} onSaved={() => { setCallForm(false); setTab('calls'); load(); }} />}
       {editRes && <ResidenceForm office={office} residence={residence} onClose={() => setEditRes(false)} onSaved={() => { setEditRes(false); onChanged(); }} />}
     </div>

@@ -109,3 +109,21 @@ export async function loadOwnerPortal(token: string): Promise<OwnerPortalData | 
   if (!/^[0-9a-f]{64}$/.test(token)) return null;
   return rpc<OwnerPortalData>('public_owner_portal', { p_token: token });
 }
+
+export type ResidentPortalData = {
+  lang: string; office: PublicOffice;
+  residence: { name: string; address: string | null; city: string | null; rib: string | null };
+  lot: { label: string; kind: string; floor: string | null; tantiemes: number; total_tantiemes: number; owner: string | null };
+  charges: { title: string; due_date: string; amount_cents: number; paid_cents: number; paid_on: string | null }[];
+  announcements: { title: string; body: string | null; date: string }[];
+  incidents: { title: string; location: string | null; status: 'open' | 'in_progress' | 'done'; reported_on: string; done_on: string | null }[];
+  assemblies: { title: string; held_at: string; place: string | null; status: 'planned' | 'held';
+    resolutions: { position: number; text: string; majority: 'simple' | 'absolute' | 'three_quarters'; for: number; against: number; abstain: number }[] }[];
+  generated_at: string;
+};
+
+/** The co-owner page behind a personal link from the syndic. null = the link is not valid (anymore). */
+export async function loadResidentPortal(token: string): Promise<ResidentPortalData | null> {
+  if (!/^[0-9a-f]{64}$/.test(token)) return null;
+  return rpc<ResidentPortalData>('public_resident_portal', { p_token: token });
+}
