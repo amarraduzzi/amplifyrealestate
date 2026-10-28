@@ -595,4 +595,13 @@ export const AR: Record<string, string> = {
   'Unpaid months': 'أشهر غير مؤداة',
   '{amount} in total': '{amount} في المجموع',
   '{n} days ago': 'منذ {n} أيام',
+  'Due': 'مستحق',
+  'Last 12 months': 'آخر 12 شهرا',
+  'Rent after repair costs': 'الكراء بعد الإصلاحات',
+  'Rent after repair costs is the collected rent minus the repairs paid by the owner, before any agency fees.': 'الكراء بعد الإصلاحات هو الكراء المحصل ناقص الإصلاحات التي أداها المالك، قبل أي أتعاب للوكالة.',
+  'Rent collected': 'الكراء المحصل',
+  'Rent in the last 12 months: collected {collected}, outstanding {outstanding}.': 'الكراء خلال آخر 12 شهرا: محصل {collected}، غير مؤدى {outstanding}.',
+  'Rent outstanding': 'الكراء غير المؤدى',
+  'Rental and repairs': 'الكراء والإصلاحات',
+  'Repair costs in the last 12 months: {amount}.': 'كلفة الإصلاحات خلال آخر 12 شهرا: {amount}.',
 };

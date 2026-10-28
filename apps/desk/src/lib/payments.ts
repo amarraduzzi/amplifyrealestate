@@ -86,3 +86,10 @@ export async function loadRentAlerts(orgId: string, generate: boolean): Promise<
       .sort((a, b) => b.days - a.days);
   } catch { return []; }
 }
+
+/** The rent lines of some leases from a date on, without cancelled ones. Empty when the table is not installed yet. */
+export async function loadPaymentsSince(leaseIds: string[], since: string): Promise<PaymentRow[]> {
+  if (leaseIds.length === 0) return [];
+  const r = await supabase.from('rent_payments').select(COLUMNS).in('lease_id', leaseIds).gte('due_date', since).neq('status', 'cancelled').order('due_date', { ascending: false });
+  return r.error ? [] : ((r.data ?? []) as PaymentRow[]);
+}

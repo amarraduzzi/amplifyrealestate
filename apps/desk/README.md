@@ -87,6 +87,13 @@ Stel in Cloudflare (en in `.env.local`) ook `VITE_PUBLIC_SITE_URL` in: het adres
 - Zijn de tabellen van 3b of 3c nog niet geïnstalleerd, dan blijven deze blokken leeg en werkt de rest zoals voorheen
 - Geen SQL nodig
 
+## Etappe 4a: huur en reparaties in het eigenaarsrapport
+
+- Het eigenaarsrapport van een pand (print of PDF, of een WhatsApp-update) heeft een nieuw deel **Rental and repairs** als het pand een huurovereenkomst of reparaties heeft: de huurder (alleen de naam), de maandhuur en de data, en voor de laatste 12 maanden: **Rent collected**, **Rent outstanding**, **Repair costs** en **Rent after repair costs** (ontvangen huur min de reparaties die de eigenaar betaalt, voor eventuele kosten van het kantoor, die nog nergens vastgelegd worden)
+- Daaronder de maandelijkse huurregels (betaald, te laat of nog te betalen) en de reparaties met status, kosten en wie betaalt
+- De WhatsApp-update noemt ook de ontvangen en openstaande huur en de reparatiekosten
+- Zonder de tabellen van 3a tot 3c blijft het rapport zoals voorheen. Geen SQL nodig
+
 ## Talen
 
 De desk is er in Engels, Frans en Arabisch (rechts naar links). Rechtsboven (en op het inlogscherm) staat een keuze **FR / AR / EN**; de keuze wordt op dat apparaat onthouden. Testen kan ook met `?lang=fr` of `?lang=ar`.

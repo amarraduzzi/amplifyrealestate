@@ -81,6 +81,8 @@ Samenwerking tussen kantoren (Amplify Network), automatische betaling, en automa
 
 16. Etappe 3d: geen SQL, alleen de app.
 
+17. Etappe 4a: geen SQL, alleen de app.
+
 ### Een kantoor op betaald zetten of verlengen
 
 Plak in de SQL-editor (slug van het kantoor, laatste dag, en optioneel max. leden en max. panden):

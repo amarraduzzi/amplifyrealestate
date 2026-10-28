@@ -8,7 +8,11 @@ import type { Office, PropertyRow } from '../lib/types';
 import { loadViewings, type ViewingView } from '../lib/viewings';
 import { loadDeals, type DealView } from '../lib/deals';
 import { basisLabel, dealStageLabel, outcomeLabel, priceSuffix, purposeLabel, statusLabel, typeLabel, viewingStatusLabel } from '../lib/labels';
-import { whenText } from '../lib/dates';
+import { whenText, todayStr } from '../lib/dates';
+import { loadLeases, type LeaseView } from '../lib/leases';
+import { loadPaymentsSince, type PaymentRow } from '../lib/payments';
+import { costByLabel, loadMaintenance, maintStatusLabel, type MaintView } from '../lib/maintenance';
+import { computeFinance, periodStart } from '../lib/ownerFinance';
 import { Btn } from '../components/ui';
 import { waLink } from '../components/ContactLinks';
 import { PUBLIC_SITE, propertyUrl, whatsappShareUrl } from '../lib/publicSite';
@@ -25,18 +29,23 @@ type Mandate = { id: string; owner_person_id: string | null; basis: any; status:
  * interested people, and the commission, are left out on purpose: the owner gets the activity, not the files.
  */
 export function OwnerReport({ office, property, onClose }: { office: Office; property: PropertyRow; onClose: () => void }) {
-  const [data, setData] = useState<{ viewings: ViewingView[]; deals: DealView[]; mandate: Mandate | null; owner: { name: string; number: string | null } | null } | null>(null);
+  const [data, setData] = useState<{ viewings: ViewingView[]; deals: DealView[]; lease: LeaseView | null; payments: PaymentRow[]; repairs: MaintView[]; mandate: Mandate | null; owner: { name: string; number: string | null } | null } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let live = true;
     (async () => {
       try {
-        const [viewings, deals, m] = await Promise.all([
+        // The rental tables come with etappe 3: without them these parts stay empty.
+        const [viewings, deals, m, leases, repairs] = await Promise.all([
           loadViewings(office.id, { propertyId: property.id }),
           loadDeals(office.id, { propertyId: property.id }),
           supabase.from('property_mandates').select('id, owner_person_id, basis, status, valid_from, valid_until').eq('property_id', property.id),
+          loadLeases(office.id, { propertyId: property.id }).catch(() => [] as LeaseView[]),
+          loadMaintenance(office.id, { propertyId: property.id }).catch(() => [] as MaintView[]),
         ]);
+        const lease = leases.find(x => x.l.status === 'active') ?? leases[0] ?? null;
+        const payments = await loadPaymentsSince(leases.map(x => x.l.id), periodStart(todayStr()));
         if (m.error) throw new Error(m.error.message);
         const today = new Date().toISOString().slice(0, 10);
         const active = ((m.data ?? []) as Mandate[]).filter(x => x.status === 'active' && (!x.valid_until || x.valid_until >= today))
@@ -47,7 +56,7 @@ export function OwnerReport({ office, property, onClose }: { office: Office; pro
           const r = p.data as { full_name: string; phone: string | null; whatsapp: string | null } | null;
           owner = r ? { name: r.full_name, number: r.whatsapp || r.phone } : null;
         }
-        if (live) setData({ viewings: viewings.sort((a, b) => b.v.scheduled_at.localeCompare(a.v.scheduled_at)), deals, mandate: active, owner });
+        if (live) setData({ viewings: viewings.sort((a, b) => b.v.scheduled_at.localeCompare(a.v.scheduled_at)), deals, lease, payments, repairs, mandate: active, owner });
       } catch (e) { if (live) setError(e instanceof Error ? e.message : t('Something went wrong.')); }
     })();
     return () => { live = false; };
@@ -58,17 +67,23 @@ export function OwnerReport({ office, property, onClose }: { office: Office; pro
   const held = v.filter(x => x.v.status === 'done').length;
   const planned = v.filter(x => x.v.status === 'scheduled').length;
   const interested = v.filter(x => x.v.outcome === 'interested' || x.v.outcome === 'offer_made').length;
+  const fin = data ? computeFinance(data.payments, data.repairs.map(x => x.m), todayStr()) : null;
   const send = () => {
     if (!data) return;
     const vars = { name: data.owner?.name ?? '', title: property.title, reference: property.reference, held, planned, interested, offers: data.deals.length };
     let text = t(data.owner ? 'Hello {name}, here is the update on {title} ({reference}): {held} viewings held, {planned} planned, {interested} interested, {offers} offers.' : 'Hello, here is the update on {title} ({reference}): {held} viewings held, {planned} planned, {interested} interested, {offers} offers.', vars);
     if (property.is_published && PUBLIC_SITE) text += `\n${propertyUrl(office.slug, property.reference, getLang())}`;
+    if (fin && data.lease) text += `\n${t('Rent in the last 12 months: collected {collected}, outstanding {outstanding}.', { collected: formatMad(fin.collected), outstanding: formatMad(fin.outstanding) })}`;
+    if (fin && fin.repairCosts > 0) text += `\n${t('Repair costs in the last 12 months: {amount}.', { amount: formatMad(fin.repairCosts) })}`;
     text += `\n— ${office.name}`;
     const n = data.owner?.number;
     window.open(n ? `${waLink(n)}?text=${encodeURIComponent(text)}` : whatsappShareUrl(text), '_blank', 'noopener');
   };
   const Tile = ({ n, label }: { n: number; label: string }) => (
     <div className="rounded-xl border border-black/10 px-3 py-2 text-center"><p className="tabular text-2xl font-bold">{n}</p><p className="text-xs">{label}</p></div>
+  );
+  const Money = ({ amount, label }: { amount: number; label: string }) => (
+    <div className="rounded-xl border border-black/10 px-3 py-2 text-center"><p className="tabular text-lg font-bold">{formatMad(amount)}</p><p className="text-xs">{label}</p></div>
   );
   const H = ({ children }: { children: string }) => <h3 className="mb-2 mt-6 border-b border-black/15 pb-1 text-sm font-bold uppercase tracking-wide">{children}</h3>;
 
@@ -113,6 +128,45 @@ export function OwnerReport({ office, property, onClose }: { office: Office; pro
             <Tile n={interested} label={t('Interested')} />
             <Tile n={data.deals.length} label={t('Offers')} />
           </div>
+
+          {(data.lease || data.repairs.length > 0) && fin && (<>
+            <H>{t('Rental and repairs')}</H>
+            {data.lease && (
+              <p className="text-sm">
+                {[`${t('Tenant')}: ${data.lease.person?.full_name ?? '…'}`, `${formatMad(data.lease.l.rent_cents)} ${t('/ month')}`,
+                  `${t('Start date')}: ${fmt(data.lease.l.start_date, 'medium', true)}`, data.lease.l.end_date ? `${t('End date')}: ${fmt(data.lease.l.end_date, 'medium', true)}` : null].filter(Boolean).join(' · ')}
+              </p>
+            )}
+            <p className="mb-2 mt-3 text-xs font-semibold">{t('Last 12 months')}</p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <Money amount={fin.collected} label={t('Rent collected')} />
+              <Money amount={fin.outstanding} label={t('Rent outstanding')} />
+              <Money amount={fin.repairCosts} label={t('Repair costs')} />
+              <Money amount={fin.afterRepairs} label={t('Rent after repair costs')} />
+            </div>
+            <p className="mt-1 text-xs opacity-70">{t('Rent after repair costs is the collected rent minus the repairs paid by the owner, before any agency fees.')}</p>
+            {data.payments.length > 0 && (
+              <ul className="mt-3 divide-y divide-black/10 text-sm">
+                {data.payments.slice(0, 12).map(p => (
+                  <li key={p.id} className="flex flex-wrap justify-between gap-2 py-1.5">
+                    <span className="tabular">{fmt(p.due_date, 'medium', true)} · {formatMad(p.amount_cents)}</span>
+                    <span>{p.status === 'paid' ? t('Paid on {date}', { date: fmt(p.paid_on ?? p.due_date, 'medium', true) }) : p.due_date < todayStr() ? t('Overdue') : t('Due')}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {data.repairs.length > 0 && (<>
+              <p className="mb-1 mt-4 text-xs font-semibold">{t('Maintenance')}</p>
+              <ul className="divide-y divide-black/10 text-sm">
+                {data.repairs.slice(0, 10).map(({ m }) => (
+                  <li key={m.id} className="flex flex-wrap justify-between gap-2 py-1.5">
+                    <span>{m.title}</span>
+                    <span>{[maintStatusLabel(m.status), m.cost_cents !== null ? formatMad(m.cost_cents) : null, m.cost_borne_by ? costByLabel(m.cost_borne_by) : null].filter(Boolean).join(' · ')}</span>
+                  </li>
+                ))}
+              </ul>
+            </>)}
+          </>)}
 
           <H>{t('Viewings')}</H>
           {v.length === 0 ? <p className="text-sm">{t('No viewings yet.')}</p> : (

@@ -595,4 +595,13 @@ export const FR: Record<string, string> = {
   'Unpaid months': 'Mois impayés',
   '{amount} in total': '{amount} au total',
   '{n} days ago': 'Il y a {n} jours',
+  'Due': 'À payer',
+  'Last 12 months': '12 derniers mois',
+  'Rent after repair costs': 'Loyers après réparations',
+  'Rent after repair costs is the collected rent minus the repairs paid by the owner, before any agency fees.': 'Loyers après réparations = loyers encaissés moins les réparations payées par le propriétaire, avant d’éventuels frais d’agence.',
+  'Rent collected': 'Loyers encaissés',
+  'Rent in the last 12 months: collected {collected}, outstanding {outstanding}.': 'Loyers des 12 derniers mois : encaissés {collected}, impayés {outstanding}.',
+  'Rent outstanding': 'Loyers impayés',
+  'Rental and repairs': 'Location et réparations',
+  'Repair costs in the last 12 months: {amount}.': 'Coûts des réparations sur les 12 derniers mois : {amount}.',
 };
