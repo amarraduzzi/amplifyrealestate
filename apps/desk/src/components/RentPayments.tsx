@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Check, History, MessageCircle, Undo2 } from 'lucide-react';
+import { Check, FileText, History, MessageCircle, Undo2 } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
+import { QuittanceDoc } from '../pages/QuittanceDoc';
 import { t } from '../lib/i18n';
 import { dateText, daysTo } from '../lib/leases';
 import { planError } from '../lib/plan';
@@ -19,6 +20,7 @@ export function RentPayments({ office, leaseId, startDate, person, propertyTitle
   office: Office; leaseId: string; startDate: string; person: PersonRow | undefined; propertyTitle: string; active: boolean; onChanged: () => void;
 }) {
   const [rows, setRows] = useState<PaymentRow[] | null>(null);
+  const [receipt, setReceipt] = useState<PaymentRow | null>(null);
   const [all, setAll] = useState(false);
   const [lang, setLang] = useState<ShareLang>('fr');
   const [busy, setBusy] = useState<string | null>(null);
@@ -121,6 +123,10 @@ export function RentPayments({ office, leaseId, startDate, person, propertyTitle
                   </div>
                 )}
                 {p.status === 'due' && p.reminded_on && <p className="mt-1.5 text-xs text-muted">{t('Reminder sent on {date}', { date: dateText(p.reminded_on) })}</p>}
+                {p.status === 'paid' && office.role !== 'viewer' && (
+                  <button type="button" onClick={() => setReceipt(p)}
+                    className="me-3 mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-brand transition hover:underline"><FileText className="h-3.5 w-3.5" /> {t('Quittance')}</button>
+                )}
                 {p.status === 'paid' && canWrite && (
                   <button type="button" disabled={busy !== null} onClick={() => update(p, { status: 'due' })}
                     className="mt-2 inline-flex items-center gap-1.5 text-xs font-semibold text-muted transition hover:text-ink disabled:opacity-40"><Undo2 className="h-3.5 w-3.5" /> {t('Undo')}</button>
@@ -159,6 +165,7 @@ export function RentPayments({ office, leaseId, startDate, person, propertyTitle
         </div>
       )}
       {error && <p className="mt-2 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
+      {receipt && <QuittanceDoc office={office} payment={receipt} leaseId={leaseId} tenant={person} propertyTitle={propertyTitle} onClose={() => setReceipt(null)} />}
     </div>
   );
 }

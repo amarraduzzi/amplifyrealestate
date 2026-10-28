@@ -11,6 +11,7 @@ import { Btn, Modal } from '../components/ui';
 import { ContactLinks } from '../components/ContactLinks';
 import { RentPayments } from '../components/RentPayments';
 import { InspectionsSection } from '../components/InspectionsSection';
+import { RentRevision } from '../components/RentRevision';
 import { LeaseForm } from './LeaseForm';
 
 /** One lease: tenant, rent, dates, and the buttons to edit or end it. */
@@ -59,6 +60,7 @@ export function LeaseDetail({ office, item, onChanged, onClose }: { office: Offi
         {left !== null && left >= 0 && left <= 60 && <p className="rounded-xl bg-warn/10 px-3 py-2 text-sm font-semibold text-warn">{t('This lease ends in {n} days.', { n: left })}</p>}
         {l.notes && <p className="whitespace-pre-line text-sm leading-relaxed">{l.notes}</p>}
         <RentPayments office={office} leaseId={l.id} startDate={l.start_date} person={person} propertyTitle={property?.title ?? ''} active={l.status === 'active'} onChanged={onChanged} />
+        {l.status === 'active' && <RentRevision office={office} leaseId={l.id} rentCents={l.rent_cents} person={person} propertyTitle={property?.title ?? ''} onChanged={onChanged} />}
         <InspectionsSection office={office} leaseId={l.id} property={{ title: property?.title ?? '', reference: property?.reference ?? '' }} tenant={person?.full_name ?? ''} />
         {canWrite && (
           <div>
