@@ -70,6 +70,15 @@ Stel in Cloudflare (en in `.env.local`) ook `VITE_PUBLIC_SITE_URL` in: het adres
 - Het scherm Rentals toont de totale achterstallige huur en een rode markering bij overeenkomsten met achterstand
 - Viewers kunnen kijken, niet wijzigen; na afloop van het plan is alles alleen-lezen
 
+## Etappe 3c: onderhoud
+
+- Nieuw tabblad **Maintenance**: meldingen van problemen en reparaties per pand. Per melding: wat er aan de hand is, details, urgentie (laag, normaal, urgent), wie het meldde (bijvoorbeeld de huurder), wie het oplost (bijvoorbeeld een loodgieter, ter plekke aan te maken), de kosten en wie die betaalt (eigenaar, huurder of kantoor)
+- Status: open, in progress, done of cancelled. Een melding wordt nooit verwijderd; annuleren laat hem in de lijst staan. De afrondingsdatum komt vanzelf
+- **Send to repairer** opent WhatsApp met een bericht aan de reparateur in FR, AR of EN, met pand, probleem en de vraag om een offerte. Er wordt niets automatisch verstuurd
+- Het scherm toont het aantal openstaande en urgente meldingen en de kosten van afgeronde reparaties. Open meldingen staan gesorteerd op urgentie
+- Viewers kunnen kijken, niet wijzigen; na afloop van het plan is alles alleen-lezen
+- Voor 3c is `supabase/migrations/20261027001400_maintenance.sql` nodig
+
 ## Talen
 
 De desk is er in Engels, Frans en Arabisch (rechts naar links). Rechtsboven (en op het inlogscherm) staat een keuze **FR / AR / EN**; de keuze wordt op dat apparaat onthouden. Testen kan ook met `?lang=fr` of `?lang=ar`.
