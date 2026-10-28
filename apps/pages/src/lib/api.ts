@@ -101,7 +101,8 @@ export type PortalProperty = {
   lease: { tenant: string; rent_cents: number; start_date: string; end_date: string | null; payments: PortalPayment[] } | null;
   repairs: PortalRepair[];
 };
-export type OwnerPortalData = { owner: { name: string }; lang: string; office: PublicOffice; properties: PortalProperty[]; generated_at: string };
+export type PortalStatement = { period: string; property: string; reference: string; rent_cents: number; fee_pct: number; fee_cents: number; repairs_cents: number; payout_cents: number; status: 'open' | 'paid_out'; paid_out_on: string | null };
+export type OwnerPortalData = { owner: { name: string }; lang: string; office: PublicOffice; properties: PortalProperty[]; statements?: PortalStatement[]; generated_at: string };
 
 /** The owner portal behind a personal link. null = the link is not valid (anymore). */
 export async function loadOwnerPortal(token: string): Promise<OwnerPortalData | null> {

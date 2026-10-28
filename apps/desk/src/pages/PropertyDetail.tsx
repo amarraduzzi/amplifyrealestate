@@ -15,6 +15,7 @@ import { PhotosSection } from './PhotosSection';
 import { PublishSection } from './PublishSection';
 import { PostingSection } from './PostingSection';
 import { OwnerPortalSection } from '../components/OwnerPortalSection';
+import { ManagementSection } from '../components/ManagementSection';
 import { NetworkShare } from '../components/NetworkShare';
 import { OwnerReport } from './OwnerReport';
 import { ViewingsSection } from './ViewingsSection';
@@ -154,6 +155,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
         {report && <OwnerReport office={office} property={row} onClose={() => setReport(false)} />}
         <PropertyParties office={office} property={row} canWrite={canWrite} />
         <OwnerPortalSection office={office} property={row} canWrite={canWrite} />
+        <ManagementSection office={office} property={row} canWrite={canWrite} />
         <PropertyMandates office={office} property={row} canWrite={canWrite} />
         <PhotosSection office={office} property={row} canWrite={canWrite} onChanged={onChanged} />
         <PublishSection office={office} property={row} canWrite={canWrite} onChanged={() => { onChanged(); loadHistory(); }} />

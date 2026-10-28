@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
-import { CalendarCheck, CalendarClock, Eye, Handshake, Heart, KeyRound, MapPin, MessageCircle, Wrench } from 'lucide-react';
+import { Banknote, CalendarCheck, CalendarClock, Eye, Handshake, Heart, KeyRound, MapPin, MessageCircle, Wrench } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
-import { loadOwnerPortal, photoUrl, type PortalProperty } from '../lib/api';
+import { loadOwnerPortal, photoUrl, type PortalProperty, type PortalStatement } from '../lib/api';
 import { useFetch } from '../lib/useFetch';
 import { placeText, priceSuffix, purposeLabel, statusCls, statusLabel } from '../lib/format';
 import { getLang, LOCALE, PORTAL_LANGS, t } from '../lib/i18n';
@@ -124,6 +124,32 @@ function PropertyBlock({ p, slug }: { p: PortalProperty; slug: string }) {
   );
 }
 
+function Statements({ list }: { list: PortalStatement[] }) {
+  return (
+    <section className="card rise rounded-3xl p-4 sm:p-5">
+      <h2 className="flex items-center gap-2 font-display text-lg font-bold"><Banknote className="h-5 w-5 text-brand" /> {t('Monthly statements')}</h2>
+      <ul className="mt-3 space-y-2.5">
+        {list.map(s => (
+          <li key={`${s.period}-${s.reference}`} className="rounded-2xl bg-surface-2 p-3 text-sm">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="font-semibold capitalize">{month(s.period)} <span className="font-normal text-muted">· {s.property}</span></span>
+              <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${s.status === 'paid_out' ? 'bg-ok/10 text-ok' : 'bg-warn/10 text-warn'}`}>
+                {s.status === 'paid_out' && s.paid_out_on ? t('Paid out on {date}', { date: day(s.paid_out_on) }) : t('To be paid out')}
+              </span>
+            </div>
+            <div className="mt-2 space-y-0.5 text-xs">
+              <p className="flex justify-between"><span>{t('Rent collected')}</span><span className="tabular">{formatMad(s.rent_cents)}</span></p>
+              <p className="flex justify-between text-muted"><span>{t('Management fee ({pct}%)', { pct: Number(s.fee_pct) })}</span><span className="tabular">- {formatMad(s.fee_cents)}</span></p>
+              {s.repairs_cents > 0 && <p className="flex justify-between text-muted"><span>{t('Repairs')}</span><span className="tabular">- {formatMad(s.repairs_cents)}</span></p>}
+              <p className="flex justify-between border-t border-line/10 pt-1 text-sm font-bold"><span>{t('For you')}</span><span className="tabular">{formatMad(s.payout_cents)}</span></p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 /** What an owner sees behind the personal link the office sent: all their properties, activity, rent and repairs. */
 export function OwnerPortal({ token }: { token: string }) {
   const [state, retry] = useFetch(() => loadOwnerPortal(token), token);
@@ -151,6 +177,7 @@ export function OwnerPortal({ token }: { token: string }) {
           <p className="mt-1 text-sm text-muted">{t('Your properties with {office}. Updated {date}.', { office: office.name, date: day(data.generated_at.slice(0, 10), 'long') })}</p>
         </div>
         {properties.length === 0 && <p className="card rounded-2xl p-5 text-sm text-muted">{t('No properties to show right now.')}</p>}
+        {data.statements && data.statements.length > 0 && <Statements list={data.statements} />}
         {properties.map(p => <PropertyBlock key={p.reference} p={p} slug={office.slug} />)}
         <p className="text-center text-xs text-muted">{t('This page is personal. Do not share the link.')}</p>
       </div>

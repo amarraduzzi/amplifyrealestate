@@ -156,6 +156,14 @@ const FR: Record<string, string> = {
   'Your properties with {office}. Updated {date}.': 'Vos biens chez {office}. Mis à jour le {date}.',
   'No properties to show right now.': 'Aucun bien à afficher pour le moment.',
   'This page is personal. Do not share the link.': 'Cette page est personnelle. Ne partagez pas le lien.',
+  // Afrekeningen (7b)
+  'Monthly statements': 'Relevés mensuels',
+  'Paid out on {date}': 'Versé le {date}',
+  'To be paid out': 'À verser',
+  'Rent collected': 'Loyers encaissés',
+  'Management fee ({pct}%)': 'Honoraires de gestion ({pct} %)',
+  'Repairs': 'Réparations',
+  'For you': 'Pour vous',
 };
 
 const AR: Record<string, string> = {
@@ -271,6 +279,14 @@ const AR: Record<string, string> = {
   'Your properties with {office}. Updated {date}.': 'عقاراتكم لدى {office}. محين بتاريخ {date}.',
   'No properties to show right now.': 'لا توجد عقارات للعرض حاليا.',
   'This page is personal. Do not share the link.': 'هذه الصفحة شخصية. لا تشاركوا الرابط.',
+  // Afrekeningen (7b)
+  'Monthly statements': 'الكشوف الشهرية',
+  'Paid out on {date}': 'حول بتاريخ {date}',
+  'To be paid out': 'في انتظار التحويل',
+  'Rent collected': 'الكراء المحصل',
+  'Management fee ({pct}%)': 'أتعاب التسيير ({pct}٪)',
+  'Repairs': 'الإصلاحات',
+  'For you': 'لكم',
 };
 
 // Dutch: only for the owner portal (owners in the Netherlands and Belgium). Other pages fall back to English.
@@ -339,6 +355,14 @@ const NL: Record<string, string> = {
   'No properties to show right now.': 'Er zijn nu geen panden om te tonen.',
   'This page is personal. Do not share the link.': 'Deze pagina is persoonlijk. Deel de link niet.',
   'Other': 'Andere',
+  // Afrekeningen (7b)
+  'Monthly statements': 'Maandafrekeningen',
+  'Paid out on {date}': 'Uitbetaald op {date}',
+  'To be paid out': 'Nog uit te betalen',
+  'Rent collected': 'Ontvangen huur',
+  'Management fee ({pct}%)': 'Beheerkosten ({pct}%)',
+  'Repairs': 'Reparaties',
+  'For you': 'Voor u',
 };
 
 export function t(en: string, vars?: Record<string, string | number>): string {
