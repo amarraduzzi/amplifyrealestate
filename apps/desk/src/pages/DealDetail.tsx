@@ -11,6 +11,7 @@ import { whenText } from '../lib/dates';
 import { planError } from '../lib/plan';
 import { Btn, Modal, inputCls } from '../components/ui';
 import { ContactLinks } from '../components/ContactLinks';
+import { DealDocuments } from '../components/DealDocuments';
 import { DealForm } from './DealForm';
 
 /** One deal: price, commission, how far it is, and the buttons to move it forward. */
@@ -101,6 +102,8 @@ export function DealDetail({ office, item, onChanged, onClose }: {
             </div>
           </div>
         )}
+
+        {canWrite && <DealDocuments office={office} dealId={d.id} />}
 
         {error && <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
       </div>

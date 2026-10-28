@@ -2,7 +2,7 @@
 
 Platform voor de Marokkaanse vastgoedsector: panden, personen, mandaten en (later) leads, transacties, beheer en samenwerking tussen bemiddelaars.
 
-Stand: **etappe 1 is afgerond** (1a t/m 1l); etappe 2 is begonnen met **2a** (deals met commissie) **2b** (WhatsApp-herinnering voor de klant en dagoverzicht voor het team) **2c** (rapport voor de eigenaar per pand) en **2d** (deals exporteren naar Excel) **2e** (leads en panden exporteren) en **2f** (eigenaarsupdate via WhatsApp). Een vastgoedkantoor kan nu werken met panden, personen, mandaten, leads, bezichtigingen, taken en team, in het Frans, Arabisch en Engels; panden online zetten en delen via WhatsApp; en heeft een plan (30 dagen proef, daarna betaald of alleen-lezen).
+Stand: **etappe 1 is afgerond** (1a t/m 1l); etappe 2 is begonnen met **2a** (deals met commissie) **2b** (WhatsApp-herinnering voor de klant en dagoverzicht voor het team) **2c** (rapport voor de eigenaar per pand) en **2d** (deals exporteren naar Excel) **2e** (leads en panden exporteren), **2f** (eigenaarsupdate via WhatsApp) en **2g** (databasetest voor deals) en **2h** (documenten bij een deal). Een vastgoedkantoor kan nu werken met panden, personen, mandaten, leads, bezichtigingen, taken en team, in het Frans, Arabisch en Engels; panden online zetten en delen via WhatsApp; en heeft een plan (30 dagen proef, daarna betaald of alleen-lezen).
 
 Gebouwd per onderdeel: **1a** databasekern, **1b** desk-app (panden, personen, mandaten, leads, bezichtigingen, team, taken, Today), **1c** publieke pandpagina's, **1d** foto's, **1e** Frans en Arabisch, **1f** panden naar een lead sturen via WhatsApp, **1g** contacten importeren, **1h** eigen adresnaam, **1i** Overview, **1j** eerste stappen, **1k** automatische taak bij aflopende mandaten, **1l** plan per kantoor.
 
@@ -36,6 +36,8 @@ Gebouwd per onderdeel: **1a** databasekern, **1b** desk-app (panden, personen, m
 | Deals exporteren naar Excel (CSV met ; en accenten, volgt het gekozen filter), geen SQL nodig | klaar (2d) |
 | Leads en panden exporteren naar Excel (CSV, volgt filter en zoekopdracht; telefoonnummers behouden hun 0), geen SQL nodig | klaar (2e) |
 | Eigenaarsupdate via WhatsApp met één klik, vanuit het eigenaarsrapport (aantallen, link naar de pagina als die online staat; taal van de app), geen SQL nodig | klaar (2f) |
+| Databasetest voor deals (fasen, gevolgen voor pand en lead, rechten, alleen-lezen na afloop plan) | klaar (2g) |
+| Documenten bij een deal (contract, mandaat, betaalbewijs; PDF of afbeelding tot 10 MB, max. 20): prive opslag, alleen eigenaar, manager en agent zien ze, verwijderen alleen eigenaar en manager, geen id-kaarten (database + desk) | klaar (2h) |
 | Desk-app: pagina aan/uit per pand, deellink, kantoorgegevens voor de publieke pagina | klaar (1c) |
 
 Gebruikershandleiding voor het team (Frans, één pagina): `docs/guide-fr.md`.
@@ -68,7 +70,8 @@ Samenwerking tussen kantoren (Amplify Network), automatische betaling, en automa
 
 10. Etappe 1l: plak `supabase/migrations/20261027000900_subscription.sql` en klik Run. Test daarna met `supabase/tests/05_subscription.test.sql` (`TESTRESULTAAT: 33 geslaagd, 0 mislukt` is goed). Bestaande kantoren krijgen vandaag + 30 dagen proef.
 
-11. Etappe 2a: plak `supabase/migrations/20261027001000_deals.sql` en klik Run.
+11. Etappe 2a: plak `supabase/migrations/20261027001000_deals.sql` en klik Run. Test daarna met `supabase/tests/06_deals.test.sql` (`TESTRESULTAAT: 26 geslaagd, 0 mislukt` is goed).
+12. Etappe 2h: plak `supabase/migrations/20261027001100_deal_documents.sql` en klik Run. Test daarna met `supabase/tests/07_deal_documents.test.sql` (`TESTRESULTAAT: 22 geslaagd, 0 mislukt` is goed). Er komt een prive opslagbucket `deal-documents` bij; die is niet openbaar.
 
 ### Een kantoor op betaald zetten of verlengen
 
