@@ -13,6 +13,8 @@ export type Route =
   | { kind: 'booking'; token: string }
   | { kind: 'cleaner'; token: string }
   | { kind: 'voucher'; token: string }
+  | { kind: 'estimation'; slug: string }
+  | { kind: 'area'; slug: string; area: string }
   | { kind: 'project'; slug: string; project: string };
 
 // On an office's own domain (www.atlas-immo.ma) the office is the whole site: / is the office, /P-AB12 a property.
@@ -23,6 +25,10 @@ export const getDomainSlug = () => domainSlug;
 /** Address of an office page and of a property page, the short way on the office's own domain. */
 export const officePath = (slug: string) => (domainSlug === slug ? '/' : `/${slug}`);
 export const projectPath = (slug: string, project: string) => (domainSlug === slug ? `/projet/${project}` : `/${slug}/projet/${project}`);
+/** "Agdal Sud" becomes "agdal-sud": the address of a neighborhood page. */
+export const areaSlug = (name: string) => name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+export const areaPath = (slug: string, name: string) => (domainSlug === slug ? `/quartier/${areaSlug(name)}` : `/${slug}/quartier/${areaSlug(name)}`);
+export const estimationPath = (slug: string) => (domainSlug === slug ? '/estimation' : `/${slug}/estimation`);
 export const propertyPath = (slug: string, reference: string) =>
   domainSlug === slug ? `/${encodeURIComponent(reference)}` : `/${slug}/${encodeURIComponent(reference)}`;
 
@@ -40,6 +46,11 @@ export function parse(pathname: string): Route {
   if (parts[0] === 'g' && parts.length === 2) return { kind: 'guest', token: parts[1] };
   if (parts[0] === 'c' && parts.length === 2) return { kind: 'cleaner', token: parts[1] };
   // /<office>/projet/<project> (or /projet/<project> on the office's own domain): a new-build project
+  // /<office>/estimation and /<office>/quartier/<name> (Amplify Vitrine), the short way on the office's own domain
+  if (domainSlug && parts.length === 1 && parts[0] === 'estimation') return { kind: 'estimation', slug: domainSlug };
+  if (domainSlug && parts.length === 2 && parts[0] === 'quartier') return { kind: 'area', slug: domainSlug, area: parts[1].toLowerCase() };
+  if (!domainSlug && parts.length === 2 && parts[1] === 'estimation') return { kind: 'estimation', slug: parts[0].toLowerCase() };
+  if (!domainSlug && parts.length === 3 && parts[1] === 'quartier') return { kind: 'area', slug: parts[0].toLowerCase(), area: parts[2].toLowerCase() };
   if (domainSlug && parts.length === 2 && parts[0] === 'projet') return { kind: 'project', slug: domainSlug, project: parts[1].toLowerCase() };
   if (!domainSlug && parts.length === 3 && parts[1] === 'projet') return { kind: 'project', slug: parts[0].toLowerCase(), project: parts[2].toLowerCase() };
   if (domainSlug) {

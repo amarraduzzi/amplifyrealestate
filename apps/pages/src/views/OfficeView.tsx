@@ -3,7 +3,8 @@ import { CheckCircle2, ExternalLink, HardHat, Mail, MapPin, MessageCircle, Phone
 import type { DealPurpose, PropertyType } from '@vastgoed/shared';
 import { formatMad } from '@vastgoed/shared';
 import { loadOffice, loadOfficeProjects, logEvent, photoUrl, type ProjectCard, type SiteBlock } from '../lib/api';
-import { Link, projectPath } from '../lib/router';
+import { Link, areaPath, estimationPath, projectPath } from '../lib/router';
+import { EstimateBox } from '../components/EstimateBox';
 import { projectStatus } from './ProjectView';
 import { useFetch } from '../lib/useFetch';
 import { purposeLabel, typeLabel } from '../lib/format';
@@ -18,7 +19,7 @@ import { Failed, Loading, NotFound } from './States';
 
 const PURPOSES: DealPurpose[] = ['sale', 'rent_long', 'rent_short'];
 const SITE_NAME = { avito: 'Avito', mubawab: 'Mubawab', facebook: 'Facebook', instagram: 'Instagram', tiktok: 'TikTok' } as const;
-const DEFAULT_BLOCKS: SiteBlock[] = ['hero', 'listings', 'about', 'team', 'reviews', 'areas', 'contact'];
+const DEFAULT_BLOCKS: SiteBlock[] = ['hero', 'listings', 'about', 'team', 'reviews', 'areas', 'estimate', 'contact'];
 const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 /** Fades a section in when it scrolls into view. */
@@ -258,15 +259,24 @@ export function OfficeView({ slug }: { slug: string }) {
           <h2 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{t('Our neighborhoods')}</h2>
           <div className="mt-6 flex flex-wrap gap-2">
             {areas.map(a => (
-              <button key={a} type="button" onClick={() => goSearch(a, 'all')}
+              <Link key={a} to={areaPath(office.slug, a)}
                 className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold ring-1 ring-white/15 transition hover:bg-white hover:text-night">
                 <MapPin className="h-4 w-4" />{a}
-              </button>
+              </Link>
             ))}
           </div>
         </div>
       </Reveal>
     ) : null,
+    estimate: (
+      <Reveal id="estimation">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <Heading kicker={t('Owners')} title={t('How much is my property worth?')} />
+          <Link to={estimationPath(office.slug)} className="mb-6 text-sm font-semibold text-brand hover:underline">{t('Open as a page')}</Link>
+        </div>
+        <EstimateBox slug={office.slug} areas={areas} />
+      </Reveal>
+    ),
     contact: (
       <Reveal id="contact" className="grid gap-4 md:grid-cols-2 md:items-start">
         <div className="rounded-3xl bg-surface p-6 ring-1 ring-line/[0.08] sm:p-8">

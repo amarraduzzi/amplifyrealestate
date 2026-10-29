@@ -1,3 +1,4 @@
+import { EstimationRequests } from '../components/EstimationRequests';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Download, Plus, Search, Upload, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -83,6 +84,7 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
         </div>
       </div>
 
+      <EstimationRequests office={office} />
       {error && <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
       {leads === null && !error && <p className="mt-10 text-center text-muted">…</p>}
 

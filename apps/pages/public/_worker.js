@@ -19,6 +19,8 @@ const WORDS = {
     status: { reserved: 'Réservé', rented: 'Loué', sold: 'Vendu' },
     office: (name, city) => `Biens disponibles chez ${name}${city ? ` à ${city}` : ''}`,
     project: n => `Programme neuf · ${n} lots disponibles`, from: 'à partir de',
+    estimate: name => `Combien vaut votre bien ? Estimation gratuite par ${name}`, estimateTitle: 'Estimation gratuite',
+    area: (a, name, n) => `Immobilier à ${a} · ${n} biens disponibles chez ${name}`, areaTitle: a => `Immobilier à ${a}`,
   },
   en: {
     types: { apartment: 'Apartment', villa: 'Villa', riad: 'Riad', house: 'House', land: 'Land', shop: 'Shop', office: 'Office', building: 'Building', other: 'Property' },
@@ -27,6 +29,8 @@ const WORDS = {
     status: { reserved: 'Reserved', rented: 'Rented', sold: 'Sold' },
     office: (name, city) => `Available properties from ${name}${city ? ` in ${city}` : ''}`,
     project: n => `New build · ${n} units available`, from: 'from',
+    estimate: name => `What is your property worth? Free estimate by ${name}`, estimateTitle: 'Free estimate',
+    area: (a, name, n) => `Real estate in ${a} · ${n} properties available at ${name}`, areaTitle: a => `Real estate in ${a}`,
   },
   ar: {
     types: { apartment: 'شقة', villa: 'فيلا', riad: 'رياض', house: 'منزل', land: 'أرض', shop: 'محل تجاري', office: 'مكتب', building: 'عمارة', other: 'عقار' },
@@ -35,6 +39,8 @@ const WORDS = {
     status: { reserved: 'محجوز', rented: 'مكترى', sold: 'مباع' },
     office: (name, city) => `العقارات المتوفرة لدى ${name}${city ? ` في ${city}` : ''}`,
     project: n => `مشروع جديد · ${n} وحدة متوفرة`, from: 'ابتداء من',
+    estimate: name => `كم يساوي عقارك؟ تقدير مجاني من ${name}`, estimateTitle: 'تقدير مجاني',
+    area: (a, name, n) => `العقار في ${a} · ${n} عقارات متوفرة لدى ${name}`, areaTitle: a => `العقار في ${a}`,
   },
 };
 
@@ -64,6 +70,24 @@ async function metaFor(parts, lang, env) {
     const d = await rpc(env, 'public_office_page', { p_slug: slug });
     if (!d) return { found: false };
     return { found: true, title: `${d.office.name} · Amplify Real Estate`, description: w.office(d.office.name, d.office.city) };
+  }
+  if (parts.length === 2 && parts[1] === 'estimation') {
+    const d = await rpc(env, 'public_office_page', { p_slug: slug });
+    if (!d) return { found: false };
+    return { found: true, title: `${w.estimateTitle} · ${d.office.name}`, description: w.estimate(d.office.name) };
+  }
+  if (parts.length === 3 && parts[1] === 'quartier') {
+    const key = (parts[2] || '').toLowerCase();
+    if (!SLUG.test(key)) return { found: false };
+    const d = await rpc(env, 'public_office_page', { p_slug: slug });
+    if (!d) return { found: false };
+    const norm = x => String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    const list = (d.listings || []).filter(l => norm(l.neighborhood) === key);
+    const areas = String((d.site && d.site.areas) || '').split(/[,·\n]/).map(x => x.trim()).filter(Boolean);
+    const name = areas.find(a => norm(a) === key) || (list[0] && list[0].neighborhood) || key.replace(/-/g, ' ');
+    const cover = list.find(l => l.cover);
+    const image = cover ? `${String(env.VITE_SUPABASE_URL).replace(/\/+$/, '')}/storage/v1/object/public/property-photos/${cover.cover}_t.jpg` : null;
+    return { found: true, title: `${w.areaTitle(name)} · ${d.office.name}`, description: w.area(name, d.office.name, list.length), image };
   }
   if (parts.length === 2) {
     const reference = decodeURIComponent(parts[1]);
@@ -189,12 +213,13 @@ export default {
         return new Response(r.body, { status: 200, headers: h });
       } catch { return env.ASSETS.fetch(request); }
     }
-    const isProject = (parts.length === 3 && parts[1] === 'projet') || (parts.length === 2 && parts[0] === 'projet');
+    const DEEP = ['projet', 'quartier'];
+    const isProject = (parts.length === 3 && DEEP.includes(parts[1])) || (parts.length === 2 && DEEP.includes(parts[0]));
     const looksLikePage = request.method === 'GET' && (parts.length <= 2 || isProject) && !(parts.length && parts[parts.length - 1].includes('.'));
     if (!looksLikePage) return env.ASSETS.fetch(request);
     const own = await domainSlug(url.hostname, env);
-    if (own) parts = parts.length === 0 ? [own] : parts.length === 2 && parts[0] === 'projet' ? [own, 'projet', parts[1]] : parts.length === 1 ? [own, parts[0]] : [];
-    const isPage = (parts.length >= 1 && parts.length <= 2 && parts[0] !== 'projet') || (parts.length === 3 && parts[1] === 'projet');
+    if (own) parts = parts.length === 0 ? [own] : parts.length === 2 && DEEP.includes(parts[0]) ? [own, parts[0], parts[1]] : parts.length === 1 ? [own, parts[0]] : [];
+    const isPage = (parts.length >= 1 && parts.length <= 2 && !DEEP.includes(parts[0])) || (parts.length === 3 && DEEP.includes(parts[1]));
     if (!isPage) return env.ASSETS.fetch(request);
 
     let shell;

@@ -21,7 +21,7 @@ export type PublicProperty = PublicCard & {
 
 export type SiteMember = { name: string; role: string | null; photo: string | null; whatsapp: string | null; langs: string[] };
 export type SiteReview = { author: string; place: string | null; body: string; rating: number };
-export type SiteBlock = 'hero' | 'listings' | 'projects' | 'about' | 'team' | 'reviews' | 'areas' | 'contact';
+export type SiteBlock = 'hero' | 'listings' | 'projects' | 'about' | 'team' | 'reviews' | 'areas' | 'estimate' | 'contact';
 export type OfficeSite = {
   tagline: string | null; about: string | null; services: string | null; areas: string | null; done: number;
   hero?: string | null; hero_title?: string | null; hero_sub?: string | null; blocks?: SiteBlock[]; team?: SiteMember[]; reviews?: SiteReview[];
@@ -262,4 +262,26 @@ export type VoucherPage = {
 export async function loadVoucher(token: string): Promise<VoucherPage | null> {
   if (!/^[0-9a-f]{36}$/.test(token)) return null;
   return rpc<VoucherPage>('public_visit_voucher', { p_token: token });
+}
+
+export type EstimateRange = { scope: 'neighborhood' | 'office' | 'none'; count?: number; low?: number; high?: number; per_m2?: number };
+/** The price range for an owner's property, from the office's own comparable properties (at least 3). */
+export async function loadEstimate(slug: string, purpose: string, type: string, neighborhood: string, area: number): Promise<EstimateRange | null> {
+  try { return await rpc<EstimateRange>('public_estimate', { p_slug: slug, p_purpose: purpose, p_type: type, p_neighborhood: neighborhood, p_area: String(area) }); }
+  catch { return null; }
+}
+export async function submitEstimation(o: { slug: string; name: string; phone: string; purpose: string; type: string; neighborhood: string; area: number | null; bedrooms: number | null; condition: string | null; message: string; trap: string }): Promise<InquiryResult> {
+  try {
+    const r = await fetch(`${BASE}/rest/v1/rpc/submit_estimation`, {
+      method: 'POST',
+      headers: { apikey: KEY, 'content-type': 'application/json' },
+      body: JSON.stringify({ p_slug: o.slug, p_name: o.name, p_phone: o.phone, p_purpose: o.purpose, p_type: o.type, p_neighborhood: o.neighborhood || null,
+        p_area: o.area, p_bedrooms: o.bedrooms, p_condition: o.condition, p_message: o.message || null, p_trap: o.trap }),
+    });
+    if (r.ok) return 'ok';
+    const text = await r.text();
+    if (text.includes('estimation_invalid')) return 'invalid';
+    if (text.includes('estimation_busy')) return 'busy';
+    return 'error';
+  } catch { return 'error'; }
 }
