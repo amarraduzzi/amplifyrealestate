@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Building2, CalendarClock, HardHat, MapPin, MessageCircle } from 'lucide-react';
+import { Building2, CalendarClock, HardHat, MapPin, MessageCircle, Phone } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { loadProjectPage, type DevUnitKind, type PublicUnit } from '../lib/api';
 import { useFetch } from '../lib/useFetch';
@@ -7,7 +7,9 @@ import { getLang, LOCALE, t } from '../lib/i18n';
 import { Link, officePath } from '../lib/router';
 import { Layout } from '../components/Layout';
 import { ContactBar } from '../components/ContactBar';
-import { Gallery } from '../components/Gallery';
+import { PhotoMosaic } from '../components/PhotoHero';
+import { logEvent } from '../lib/api';
+import { telLink, waLink } from '../lib/contact';
 import { InquiryForm } from '../components/InquiryForm';
 import { Failed, Loading, NotFound } from './States';
 
@@ -49,36 +51,79 @@ export function ProjectView({ slug, project }: { slug: string; project: string }
   const message = t('Hello, I am interested in the project “{name}”. {url}', { name: p.name, url: link });
   const place = [p.address, p.city].filter(Boolean).join(', ');
 
-  return (
-    <Layout office={office} stickyBar>
-      <div className="mx-auto w-full max-w-4xl space-y-5 px-4 py-5 sm:px-6 sm:py-8">
-        <section className="night rise rounded-3xl p-5 sm:p-7">
-          <div className="flex items-start justify-between gap-3">
-            <span className="grid h-12 w-12 place-items-center rounded-2xl bg-white/10 ring-1 ring-white/15"><HardHat className="h-6 w-6" /></span>
-            <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold ring-1 ring-white/15">{t('New build')} · {projectStatus(p.status)}</span>
-          </div>
-          <h1 className="mt-5 font-display text-2xl font-bold leading-snug sm:text-4xl">{p.name}</h1>
-          <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-white/75">
-            {place && <span className="inline-flex items-center gap-1"><MapPin className="h-4 w-4" />{place}</span>}
-            {p.delivery_date && <span className="inline-flex items-center gap-1"><CalendarClock className="h-4 w-4" />{t('Delivery {date}', { date: month(p.delivery_date) })}</span>}
-          </p>
-          <div className="mt-5 grid grid-cols-2 gap-2.5 sm:max-w-md">
-            <div className="rounded-2xl bg-white/10 p-3 ring-1 ring-white/15"><p className="font-display tabular text-2xl font-bold">{p.available_units}</p><p className="text-xs text-white/70">{t('Units available')}</p></div>
-            <div className="rounded-2xl bg-white/10 p-3 ring-1 ring-white/15"><p className="font-display tabular text-2xl font-bold">{p.total_units}</p><p className="text-xs text-white/70">{t('Units in the project')}</p></div>
-          </div>
-        </section>
+  const prices = units.map(u => u.price_cents).filter((x): x is number => x !== null);
+  const from = prices.length ? Math.min(...prices) : null;
+  const toUnits = () => document.getElementById('lots')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const facts = [
+    { n: p.available_units, label: t('Units available') },
+    { n: p.total_units, label: t('Units in the project') },
+  ];
 
-        {p.photos.length > 0 && <Gallery photos={p.photos} title={p.name} />}
-
-        {p.description && (
-          <section className="card rounded-2xl p-4 sm:p-5">
-            <h2 className="mb-2 text-sm font-semibold">{t('About the project')}</h2>
-            <p className="whitespace-pre-line text-sm leading-relaxed">{p.description}</p>
-          </section>
+  const card = (
+    <div className="card rounded-3xl p-5">
+      <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-semibold text-muted">{t('New build')} · {projectStatus(p.status)}</span>
+      {from !== null
+        ? <p className="mt-3"><span className="block text-sm text-muted">{t('Starting from')}</span><span className="font-display tabular text-3xl font-bold">{formatMad(from)}</span></p>
+        : <p className="mt-3 text-sm text-muted">{t('Prices on request: leave your number and we will send you the price list.')}</p>}
+      <div className="mt-4 grid grid-cols-2 gap-2">
+        {facts.map(x => <div key={x.label} className="rounded-2xl bg-surface-2 p-3"><p className="font-display tabular text-xl font-bold">{x.n}</p><p className="text-xs text-muted">{x.label}</p></div>)}
+      </div>
+      {p.delivery_date && <p className="mt-3 flex items-center gap-1.5 text-sm"><CalendarClock className="h-4 w-4 text-brand" />{t('Delivery {date}', { date: month(p.delivery_date) })}</p>}
+      <div className="mt-4 space-y-2">
+        {groups.length > 0 && <button type="button" onClick={toUnits} className="w-full rounded-xl bg-ink px-4 py-3 text-sm font-bold text-bg transition hover:opacity-90">{t('Choose a unit')}</button>}
+        {office.whatsapp && (
+          <a href={waLink(office.whatsapp, message)} target="_blank" rel="noreferrer" onClick={() => logEvent(office.slug, null, 'whatsapp')}
+            className="gold-fill flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-bold text-brand-ink transition hover:brightness-105">
+            <MessageCircle className="h-5 w-5" /> {t('Contact on WhatsApp')}
+          </a>
         )}
+        {office.phone && (
+          <a href={telLink(office.phone)} onClick={() => logEvent(office.slug, null, 'call')}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-line/[0.12] bg-surface px-4 py-3 text-sm font-bold transition hover:bg-surface-2">
+            <Phone className="h-5 w-5" /> {t('Call')}
+          </a>
+        )}
+      </div>
+      <p className="mt-4 border-t border-line/[0.07] pt-3 text-xs text-muted">{office.name}{office.city ? ` · ${office.city}` : ''}</p>
+    </div>
+  );
+
+  return (
+    <Layout office={office} stickyBar wide>
+      <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 sm:py-8">
+        <div className="mb-4">
+          <p className="text-sm text-muted">
+            <Link to={officePath(office.slug)} className="font-semibold text-brand hover:underline">{office.name}</Link> · {t('New build')}{place ? ` · ${place}` : ''}
+          </p>
+          <h1 className="mt-1 font-display text-2xl font-bold leading-tight sm:text-4xl">{p.name}</h1>
+        </div>
+        <PhotoMosaic photos={p.photos} title={p.name} icon={<HardHat className="h-10 w-10 text-white/85" />} />
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
+          <div className="space-y-6">
+            {/* on a phone the key figures come first, under the photos */}
+            <div className="lg:hidden">
+              <p className="flex flex-wrap items-baseline gap-x-2">
+                {from !== null && <><span className="text-sm text-muted">{t('Starting from')}</span><span className="font-display tabular text-3xl font-bold">{formatMad(from)}</span></>}
+                <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-semibold text-muted">{projectStatus(p.status)}</span>
+              </p>
+            </div>
+
+            <section aria-label={t('Details')} className="flex flex-wrap gap-x-6 gap-y-3 border-y border-line/[0.08] py-4">
+              <div className="flex items-center gap-2.5"><Building2 className="h-5 w-5 text-brand" /><span><span className="block font-semibold leading-tight tabular">{p.available_units} / {p.total_units}</span><span className="block text-xs text-muted">{t('Units available')}</span></span></div>
+              {p.delivery_date && <div className="flex items-center gap-2.5"><CalendarClock className="h-5 w-5 text-brand" /><span><span className="block font-semibold leading-tight">{month(p.delivery_date)}</span><span className="block text-xs text-muted">{t('Delivery')}</span></span></div>}
+              {place && <div className="flex items-center gap-2.5"><MapPin className="h-5 w-5 text-brand" /><span className="font-semibold">{place}</span></div>}
+            </section>
+
+            {p.description && (
+              <section>
+                <h2 className="mb-2 font-display text-lg font-bold">{t('About the project')}</h2>
+                <p className="whitespace-pre-line leading-relaxed">{p.description}</p>
+              </section>
+            )}
 
         {groups.length > 0 ? (
-          <section className="card rounded-2xl p-4 sm:p-5">
+          <section id="lots" className="scroll-mt-4">
             <h2 className="font-display text-lg font-bold">{t('Available now')}</h2>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {groups.map(([k, g]) => (
@@ -114,15 +159,19 @@ export function ProjectView({ slug, project }: { slug: string; project: string }
           <InquiryForm slug={office.slug} reference={null} project={p.slug} units={units.map(u => ({ reference: u.reference, label: unitLabel(u) }))} unit={pick} />
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Link to={officePath(office.slug)} className="text-sm font-semibold text-brand hover:underline">{t('More from {office}', { office: office.name })}</Link>
-          <a href={`https://wa.me/?text=${encodeURIComponent(`${p.name}\n${link}`)}`} target="_blank" rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl border border-line/[0.12] bg-surface px-3.5 py-2 text-sm font-semibold text-ink transition hover:bg-surface-2">
-            <MessageCircle className="h-4 w-4" />{t('Share on WhatsApp')}
-          </a>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <Link to={officePath(office.slug)} className="text-sm font-semibold text-brand hover:underline">{t('More from {office}', { office: office.name })}</Link>
+              <a href={`https://wa.me/?text=${encodeURIComponent(`${p.name}\n${link}`)}`} target="_blank" rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-xl border border-line/[0.12] bg-surface px-3.5 py-2 text-sm font-semibold text-ink transition hover:bg-surface-2">
+                <MessageCircle className="h-4 w-4" />{t('Share on WhatsApp')}
+              </a>
+            </div>
+          </div>
+
+          <aside className="hidden lg:sticky lg:top-6 lg:block">{card}</aside>
         </div>
       </div>
-      <ContactBar office={office} message={message} sticky />
+      <div className="lg:hidden"><ContactBar office={office} message={message} sticky /></div>
     </Layout>
   );
 }

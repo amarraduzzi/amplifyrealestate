@@ -79,6 +79,9 @@ export const BOOK_FR: Record<string, string> = {
   '{n} bedrooms': '{n} chambres',
   'Contact on WhatsApp': 'Contacter sur WhatsApp',
   'Call': 'Appeler',
+  'Starting from': 'À partir de',
+  'Choose a unit': 'Choisir un lot',
+  'Delivery': 'Livraison',
   '1 bedroom': '1 chambre',
 };
 export const BOOK_AR: Record<string, string> = {
@@ -160,6 +163,9 @@ export const BOOK_AR: Record<string, string> = {
   '{n} bedrooms': '{n} غرف',
   'Contact on WhatsApp': 'تواصل عبر واتساب',
   'Call': 'اتصل',
+  'Starting from': 'ابتداء من',
+  'Choose a unit': 'اختر وحدة',
+  'Delivery': 'التسليم',
   '1 bedroom': 'غرفة واحدة',
 };
 export const BOOK_NL: Record<string, string> = {
@@ -241,5 +247,8 @@ export const BOOK_NL: Record<string, string> = {
   '{n} bedrooms': '{n} slaapkamers',
   'Contact on WhatsApp': 'Contact via WhatsApp',
   'Call': 'Bellen',
+  'Starting from': 'Vanaf',
+  'Choose a unit': 'Kies een woning',
+  'Delivery': 'Oplevering',
   '1 bedroom': '1 slaapkamer',
 };

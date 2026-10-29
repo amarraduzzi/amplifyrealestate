@@ -54,55 +54,68 @@ export function OfficeView({ slug }: { slug: string }) {
   const forSale = listings.filter(l => l.purpose === 'sale').length;
   const forRent = listings.length - forSale;
 
+  const covers = listings.filter(l => l.cover).slice(0, 3).map(l => l.cover as string);
+  const figures = [
+    { n: listings.length, label: t('Properties online') },
+    { n: forSale, label: t('For sale') },
+    { n: forRent, label: t('For rent') },
+    ...(site && site.done > 0 ? [{ n: site.done, label: t('Sold or rented') }] : []),
+  ];
+
   return (
-    <Layout office={office} stickyBar>
-      <div className="mx-auto w-full max-w-4xl space-y-6 px-4 py-5 sm:px-6 sm:py-8">
-        {/* Hero */}
-        <section className="night rise overflow-hidden rounded-3xl p-6 sm:p-9">
-          <h1 className="font-display text-3xl font-bold leading-tight sm:text-4xl">{office.name}</h1>
-          {site?.tagline && <p className="mt-2 max-w-xl text-lg text-white/85">{site.tagline}</p>}
-          {(office.city || site?.areas) && (
-            <p className="mt-3 flex items-start gap-1.5 text-sm text-white/70"><MapPin className="mt-0.5 h-4 w-4 shrink-0" />{[office.city, site?.areas].filter(Boolean).join(' · ')}</p>
-          )}
-          <div className="mt-6 flex flex-wrap gap-2">
-            <a href="#biens" className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-night transition hover:opacity-90">{t('See our properties')}</a>
-            {office.whatsapp && (
-              <a href={waLink(office.whatsapp, hello)} target="_blank" rel="noreferrer" onClick={() => logEvent(office.slug, null, 'whatsapp')}
-                className="inline-flex items-center gap-2 rounded-xl bg-white/10 px-4 py-2.5 text-sm font-bold ring-1 ring-white/20 transition hover:bg-white/15">
-                <MessageCircle className="h-4 w-4" />{t('Contact on WhatsApp')}
-              </a>
+    <Layout office={office} stickyBar wide>
+      <div className="mx-auto w-full max-w-6xl space-y-10 px-4 py-5 sm:px-6 sm:py-8">
+        {/* Hero: who they are next to their own photos */}
+        <section className={`rise grid gap-5 ${covers.length ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-center' : ''}`}>
+          <div className={covers.length ? 'order-2 lg:order-1' : ''}>
+            {(office.city || site?.areas) && (
+              <p className="flex items-start gap-1.5 text-sm font-semibold text-brand"><MapPin className="mt-0.5 h-4 w-4 shrink-0" />{[office.city, site?.areas].filter(Boolean).join(' · ')}</p>
             )}
-          </div>
-        </section>
-
-        {/* Figures */}
-        <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-4" aria-label={t('In figures')}>
-          {[
-            { n: listings.length, label: t('Properties online') },
-            { n: forSale, label: t('For sale') },
-            { n: forRent, label: t('For rent') },
-            ...(site && site.done > 0 ? [{ n: site.done, label: t('Sold or rented') }] : []),
-          ].map(x => (
-            <div key={x.label} className="card rounded-2xl p-4 text-center">
-              <p className="font-display tabular text-2xl font-bold text-brand">{x.n}</p>
-              <p className="text-xs text-muted">{x.label}</p>
+            <h1 className="mt-2 font-display text-3xl font-bold leading-tight sm:text-5xl">{office.name}</h1>
+            {site?.tagline && <p className="mt-3 max-w-xl text-lg text-muted">{site.tagline}</p>}
+            <div className="mt-6 flex flex-wrap gap-2">
+              <a href="#biens" className="inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-3 text-sm font-bold text-bg transition hover:opacity-90">{t('See our properties')}</a>
+              {office.whatsapp && (
+                <a href={waLink(office.whatsapp, hello)} target="_blank" rel="noreferrer" onClick={() => logEvent(office.slug, null, 'whatsapp')}
+                  className="gold-fill inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-brand-ink transition hover:brightness-105">
+                  <MessageCircle className="h-4 w-4" />{t('Contact on WhatsApp')}
+                </a>
+              )}
             </div>
-          ))}
+            <dl className="mt-8 flex flex-wrap gap-x-8 gap-y-3 border-t border-line/[0.08] pt-5" aria-label={t('In figures')}>
+              {figures.map(x => (
+                <div key={x.label}>
+                  <dt className="sr-only">{x.label}</dt>
+                  <dd><span className="block font-display tabular text-2xl font-bold">{x.n}</span><span className="text-xs text-muted">{x.label}</span></dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+          {covers.length > 0 && (
+            <div className={`order-1 -mx-4 grid gap-2 sm:mx-0 lg:order-2 ${covers.length >= 3 ? 'sm:grid-cols-3 sm:grid-rows-2' : covers.length === 2 ? 'sm:grid-cols-3' : ''} sm:h-80 lg:h-[26rem]`}>
+              {covers.map((c, k) => (
+                <img key={c} src={photoUrl(c, k > 0)} alt="" loading={k ? 'lazy' : 'eager'}
+                  className={`h-64 w-full bg-surface-3 object-cover sm:h-full sm:rounded-3xl ${k === 0 ? (covers.length >= 3 ? 'sm:col-span-2 sm:row-span-2' : covers.length === 2 ? 'sm:col-span-2' : '') : 'hidden sm:block'}`} />
+              ))}
+            </div>
+          )}
         </section>
 
-        {/* Properties */}
+        {/* Projects */}
         {projects.length > 0 && (
           <section id="projets" className="scroll-mt-4">
-            <h2 className="font-display text-2xl font-bold">{t('New-build projects')}</h2>
-            <ul className="mt-3 grid gap-3 sm:grid-cols-2">
+            <h2 className="font-display text-2xl font-bold sm:text-3xl">{t('New-build projects')}</h2>
+            <ul className="mt-4 grid gap-5 sm:grid-cols-2">
               {projects.map(pr => (
-                <li key={pr.slug} className="rise"><Link to={projectPath(office.slug, pr.slug)} className="card block overflow-hidden rounded-3xl transition hover:ring-2 hover:ring-brand/25">
-                  {pr.cover ? <img src={photoUrl(pr.cover, true)} alt="" className="h-40 w-full bg-surface-3 object-cover" loading="lazy" />
-                    : <span className="night grid h-40 place-items-center"><HardHat className="h-10 w-10 text-white/80" /></span>}
-                  <span className="block p-4">
-                    <span className="block font-display text-lg font-bold">{pr.name}</span>
-                    <span className="block text-xs text-muted">{[pr.city, projectStatus(pr.status)].filter(Boolean).join(' · ')}</span>
-                    <span className="mt-1 block text-sm">{t('{n} available', { n: pr.available_units })}{pr.price_from !== null ? ` · ${t('from {price}', { price: formatMad(pr.price_from) })}` : ''}</span>
+                <li key={pr.slug} className="rise"><Link to={projectPath(office.slug, pr.slug)} className="group relative block overflow-hidden rounded-3xl bg-surface-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
+                  {pr.cover ? <img src={photoUrl(pr.cover)} alt="" className="aspect-[16/10] w-full object-cover transition duration-500 group-hover:scale-[1.03]" loading="lazy" />
+                    : <span className="night grid aspect-[16/10] w-full place-items-center"><HardHat className="h-12 w-12 text-white/80" /></span>}
+                  <span className="absolute start-3 top-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-night shadow-sm">{t('New build')} · {projectStatus(pr.status)}</span>
+                  <span className="absolute inset-x-0 bottom-0 block bg-black/55 p-4 text-white backdrop-blur-sm">
+                    <span className="block font-display text-xl font-bold">{pr.name}</span>
+                    <span className="mt-0.5 block text-sm text-white/85">
+                      {[pr.city, t('{n} available', { n: pr.available_units }), pr.price_from !== null ? t('from {price}', { price: formatMad(pr.price_from) }) : null].filter(Boolean).join(' · ')}
+                    </span>
                   </span>
                 </Link></li>
               ))}
@@ -110,10 +123,11 @@ export function OfficeView({ slug }: { slug: string }) {
           </section>
         )}
 
+        {/* Properties */}
         <section id="biens" className="scroll-mt-4">
-          <h2 className="font-display text-2xl font-bold">{t('Available properties')}</h2>
+          <h2 className="font-display text-2xl font-bold sm:text-3xl">{t('Available properties')}</h2>
           {listings.length > 0 && (
-            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
               {present.length > 1 && (
                 <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group">
                   {(['all', ...present] as const).map(p => (
@@ -142,7 +156,7 @@ export function OfficeView({ slug }: { slug: string }) {
           )}
           {listings.length === 0 && <p className="mt-8 text-center text-muted">{t('No properties are online right now.')}</p>}
           {listings.length > 0 && shown.length === 0 && <p className="mt-8 text-center text-muted">{t('No property matches your search. Leave your number below and we will look for you.')}</p>}
-          <ul className="mt-4 grid gap-3 md:grid-cols-2">
+          <ul className="mt-5 grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
             {shown.map(p => <li key={p.reference} className="rise"><PropertyCard slug={office.slug} p={p} /></li>)}
           </ul>
         </section>
