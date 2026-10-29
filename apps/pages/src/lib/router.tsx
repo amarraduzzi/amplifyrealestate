@@ -14,6 +14,8 @@ export type Route =
   | { kind: 'cleaner'; token: string }
   | { kind: 'voucher'; token: string }
   | { kind: 'estimation'; slug: string }
+  | { kind: 'blog'; slug: string }
+  | { kind: 'post'; slug: string; post: string }
   | { kind: 'area'; slug: string; area: string }
   | { kind: 'project'; slug: string; project: string };
 
@@ -28,6 +30,8 @@ export const projectPath = (slug: string, project: string) => (domainSlug === sl
 /** "Agdal Sud" becomes "agdal-sud": the address of a neighborhood page. */
 export const areaSlug = (name: string) => name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
 export const areaPath = (slug: string, name: string) => (domainSlug === slug ? `/quartier/${areaSlug(name)}` : `/${slug}/quartier/${areaSlug(name)}`);
+export const blogPath = (slug: string) => (domainSlug === slug ? '/blog' : `/${slug}/blog`);
+export const postPath = (slug: string, post: string) => (domainSlug === slug ? `/blog/${post}` : `/${slug}/blog/${post}`);
 export const estimationPath = (slug: string) => (domainSlug === slug ? '/estimation' : `/${slug}/estimation`);
 export const propertyPath = (slug: string, reference: string) =>
   domainSlug === slug ? `/${encodeURIComponent(reference)}` : `/${slug}/${encodeURIComponent(reference)}`;
@@ -48,6 +52,10 @@ export function parse(pathname: string): Route {
   // /<office>/projet/<project> (or /projet/<project> on the office's own domain): a new-build project
   // /<office>/estimation and /<office>/quartier/<name> (Amplify Vitrine), the short way on the office's own domain
   if (domainSlug && parts.length === 1 && parts[0] === 'estimation') return { kind: 'estimation', slug: domainSlug };
+  if (domainSlug && parts.length === 1 && parts[0] === 'blog') return { kind: 'blog', slug: domainSlug };
+  if (domainSlug && parts.length === 2 && parts[0] === 'blog') return { kind: 'post', slug: domainSlug, post: parts[1].toLowerCase() };
+  if (!domainSlug && parts.length === 2 && parts[1] === 'blog') return { kind: 'blog', slug: parts[0].toLowerCase() };
+  if (!domainSlug && parts.length === 3 && parts[1] === 'blog') return { kind: 'post', slug: parts[0].toLowerCase(), post: parts[2].toLowerCase() };
   if (domainSlug && parts.length === 2 && parts[0] === 'quartier') return { kind: 'area', slug: domainSlug, area: parts[1].toLowerCase() };
   if (!domainSlug && parts.length === 2 && parts[1] === 'estimation') return { kind: 'estimation', slug: parts[0].toLowerCase() };
   if (!domainSlug && parts.length === 3 && parts[1] === 'quartier') return { kind: 'area', slug: parts[0].toLowerCase(), area: parts[2].toLowerCase() };
@@ -64,6 +72,12 @@ export function parse(pathname: string): Route {
 }
 
 const NAV = 'pages:navigate';
+/** Go to a page of the site without reloading (for a tap on the map). */
+export function navigate(to: string) {
+  window.history.pushState(null, '', withLang(to));
+  window.scrollTo(0, 0);
+  window.dispatchEvent(new Event(NAV));
+}
 
 export function useRoute(): Route {
   const [route, setRoute] = useState<Route>(() => parse(window.location.pathname));

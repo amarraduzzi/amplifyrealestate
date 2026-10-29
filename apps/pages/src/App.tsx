@@ -12,6 +12,7 @@ import { CleanerPage } from './views/CleanerPage';
 import { VoucherView } from './views/VoucherView';
 import { EstimationView } from './views/EstimationView';
 import { AreaView } from './views/AreaView';
+import { BlogView, PostView } from './views/BlogView';
 
 export default function App() {
   const route = useRoute();
@@ -28,6 +29,8 @@ export default function App() {
   if (route.kind === 'resident') return <ResidentPortal key={route.token} token={route.token} />;
   if (route.kind === 'guest') return <GuestGuide key={route.token} token={route.token} />;
   if (route.kind === 'estimation') return <EstimationView key={route.slug} slug={route.slug} />;
+  if (route.kind === 'blog') return <BlogView key={route.slug} slug={route.slug} />;
+  if (route.kind === 'post') return <PostView key={`${route.slug}/${route.post}`} slug={route.slug} post={route.post} />;
   if (route.kind === 'area') return <AreaView key={`${route.slug}/${route.area}`} slug={route.slug} area={route.area} />;
   if (route.kind === 'voucher') return <VoucherView key={route.token} token={route.token} />;
   if (route.kind === 'cleaner') return <CleanerPage key={route.token} token={route.token} />;

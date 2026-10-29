@@ -21,10 +21,12 @@ export type PublicProperty = PublicCard & {
 
 export type SiteMember = { name: string; role: string | null; photo: string | null; whatsapp: string | null; langs: string[] };
 export type SiteReview = { author: string; place: string | null; body: string; rating: number };
-export type SiteBlock = 'hero' | 'listings' | 'projects' | 'about' | 'team' | 'reviews' | 'areas' | 'estimate' | 'contact';
+export type SiteBlock = 'hero' | 'listings' | 'projects' | 'about' | 'team' | 'reviews' | 'areas' | 'map' | 'blog' | 'estimate' | 'contact';
+export type PostCard = { slug: string; title: string; excerpt: string | null; cover: string | null; published_at: string };
 export type OfficeSite = {
   tagline: string | null; about: string | null; services: string | null; areas: string | null; done: number;
   hero?: string | null; hero_title?: string | null; hero_sub?: string | null; blocks?: SiteBlock[]; team?: SiteMember[]; reviews?: SiteReview[];
+  points?: Record<string, [number, number]>; posts?: PostCard[];
 };
 export type OfficePage = { office: PublicOffice; site?: OfficeSite; listings: PublicCard[] };
 export type PropertyPage = { office: PublicOffice; property: PublicProperty; similar?: PublicCard[] };
@@ -284,4 +286,15 @@ export async function submitEstimation(o: { slug: string; name: string; phone: s
     if (text.includes('estimation_busy')) return 'busy';
     return 'error';
   } catch { return 'error'; }
+}
+
+export type BlogPage = { office: PublicOffice; posts: PostCard[] };
+export type PostPage = { office: PublicOffice; post: PostCard & { body: string }; more: PostCard[] };
+export async function loadBlog(slug: string): Promise<BlogPage | null> {
+  if (!SLUG.test(slug)) return null;
+  return rpc<BlogPage>('public_blog', { p_slug: slug });
+}
+export async function loadPost(slug: string, post: string): Promise<PostPage | null> {
+  if (!SLUG.test(slug) || !SLUG.test(post)) return null;
+  return rpc<PostPage>('public_post', { p_slug: slug, p_post: post });
 }

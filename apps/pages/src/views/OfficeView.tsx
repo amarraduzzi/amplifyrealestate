@@ -3,7 +3,10 @@ import { CheckCircle2, ExternalLink, HardHat, Mail, MapPin, MessageCircle, Phone
 import type { DealPurpose, PropertyType } from '@vastgoed/shared';
 import { formatMad } from '@vastgoed/shared';
 import { loadOffice, loadOfficeProjects, logEvent, photoUrl, type ProjectCard, type SiteBlock } from '../lib/api';
-import { Link, areaPath, estimationPath, projectPath } from '../lib/router';
+import { Link, areaPath, areaSlug, blogPath, estimationPath, navigate, projectPath } from '../lib/router';
+import { TileMap } from '../components/TileMap';
+import { PostCardView } from './BlogView';
+import { themeName } from '../lib/theme';
 import { EstimateBox } from '../components/EstimateBox';
 import { projectStatus } from './ProjectView';
 import { useFetch } from '../lib/useFetch';
@@ -112,6 +115,12 @@ export function OfficeView({ slug }: { slug: string }) {
   const blocks: SiteBlock[] = [...chosen.filter(b => b !== 'hero'), ...(chosen.includes('listings') ? [] : ['listings' as SiteBlock])];
   const heroOn = chosen.includes('hero');
   const heroImg = site?.hero ?? listings.find(l => l.cover)?.cover ?? null;
+  const posts = site?.posts ?? [];
+  const pts = site?.points ?? {};
+  const mapPoints = areas.filter(a => Array.isArray(pts[a])).map(a => {
+    const n = listings.filter(l => l.neighborhood && areaSlug(l.neighborhood) === areaSlug(a)).length;
+    return { id: a, lat: pts[a][0], lng: pts[a][1], label: <>{a}{n > 0 && <span className="rounded-full bg-white/25 px-1.5">{n}</span>}</>, onClick: () => navigate(areaPath(office.slug, a)) };
+  });
   const avg = reviews.length ? reviews.reduce((a, r) => a + r.rating, 0) / reviews.length : 0;
 
   const figures = [
@@ -266,6 +275,22 @@ export function OfficeView({ slug }: { slug: string }) {
             ))}
           </div>
         </div>
+      </Reveal>
+    ) : null,
+    map: mapPoints.length > 0 ? (
+      <Reveal>
+        <Heading kicker={t('Where we work')} title={t('Our properties on the map')} />
+        <TileMap points={mapPoints} height={460} dark={themeName(office.style) === 'noir'} />
+        <p className="mt-2 text-xs text-muted">{t('One point per neighborhood. The exact address of a property is shared by the agent.')}</p>
+      </Reveal>
+    ) : null,
+    blog: posts.length > 0 ? (
+      <Reveal>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <Heading kicker={t('Advice')} title={t('Our latest articles')} />
+          <Link to={blogPath(office.slug)} className="mb-6 text-sm font-semibold text-brand hover:underline">{t('All articles')}</Link>
+        </div>
+        <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{posts.map(p => <li key={p.slug}><PostCardView slug={office.slug} p={p} /></li>)}</ul>
       </Reveal>
     ) : null,
     estimate: (

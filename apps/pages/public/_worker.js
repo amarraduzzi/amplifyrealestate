@@ -20,6 +20,7 @@ const WORDS = {
     office: (name, city) => `Biens disponibles chez ${name}${city ? ` à ${city}` : ''}`,
     project: n => `Programme neuf · ${n} lots disponibles`, from: 'à partir de',
     estimate: name => `Combien vaut votre bien ? Estimation gratuite par ${name}`, estimateTitle: 'Estimation gratuite',
+    blog: name => `Conseils et actualités immobilières par ${name}`, blogTitle: 'Blog',
     area: (a, name, n) => `Immobilier à ${a} · ${n} biens disponibles chez ${name}`, areaTitle: a => `Immobilier à ${a}`,
   },
   en: {
@@ -30,6 +31,7 @@ const WORDS = {
     office: (name, city) => `Available properties from ${name}${city ? ` in ${city}` : ''}`,
     project: n => `New build · ${n} units available`, from: 'from',
     estimate: name => `What is your property worth? Free estimate by ${name}`, estimateTitle: 'Free estimate',
+    blog: name => `Real estate advice and news by ${name}`, blogTitle: 'Blog',
     area: (a, name, n) => `Real estate in ${a} · ${n} properties available at ${name}`, areaTitle: a => `Real estate in ${a}`,
   },
   ar: {
@@ -40,6 +42,7 @@ const WORDS = {
     office: (name, city) => `العقارات المتوفرة لدى ${name}${city ? ` في ${city}` : ''}`,
     project: n => `مشروع جديد · ${n} وحدة متوفرة`, from: 'ابتداء من',
     estimate: name => `كم يساوي عقارك؟ تقدير مجاني من ${name}`, estimateTitle: 'تقدير مجاني',
+    blog: name => `نصائح وأخبار عقارية من ${name}`, blogTitle: 'المدونة',
     area: (a, name, n) => `العقار في ${a} · ${n} عقارات متوفرة لدى ${name}`, areaTitle: a => `العقار في ${a}`,
   },
 };
@@ -75,6 +78,19 @@ async function metaFor(parts, lang, env) {
     const d = await rpc(env, 'public_office_page', { p_slug: slug });
     if (!d) return { found: false };
     return { found: true, title: `${w.estimateTitle} · ${d.office.name}`, description: w.estimate(d.office.name) };
+  }
+  if (parts.length === 2 && parts[1] === 'blog') {
+    const d = await rpc(env, 'public_blog', { p_slug: slug });
+    if (!d) return { found: false };
+    return { found: true, title: `${w.blogTitle} · ${d.office.name}`, description: w.blog(d.office.name) };
+  }
+  if (parts.length === 3 && parts[1] === 'blog') {
+    const post = (parts[2] || '').toLowerCase();
+    if (!SLUG.test(post)) return { found: false };
+    const d = await rpc(env, 'public_post', { p_slug: slug, p_post: post });
+    if (!d) return { found: false };
+    const image = d.post.cover ? `${String(env.VITE_SUPABASE_URL).replace(/\/+$/, '')}/storage/v1/object/public/property-photos/${d.post.cover}_t.jpg` : null;
+    return { found: true, title: `${d.post.title} · ${d.office.name}`, description: d.post.excerpt || w.blog(d.office.name), image };
   }
   if (parts.length === 3 && parts[1] === 'quartier') {
     const key = (parts[2] || '').toLowerCase();
@@ -213,7 +229,7 @@ export default {
         return new Response(r.body, { status: 200, headers: h });
       } catch { return env.ASSETS.fetch(request); }
     }
-    const DEEP = ['projet', 'quartier'];
+    const DEEP = ['projet', 'quartier', 'blog'];
     const isProject = (parts.length === 3 && DEEP.includes(parts[1])) || (parts.length === 2 && DEEP.includes(parts[0]));
     const looksLikePage = request.method === 'GET' && (parts.length <= 2 || isProject) && !(parts.length && parts[parts.length - 1].includes('.'));
     if (!looksLikePage) return env.ASSETS.fetch(request);

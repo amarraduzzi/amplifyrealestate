@@ -12,8 +12,9 @@ import { Btn, Card, Field, inputCls } from '../components/ui';
 import { WebsiteSettings } from '../components/WebsiteSettings';
 import { AgentProfile } from '../components/AgentProfile';
 import { PublicProfile } from './PublicProfile';
+import { BlogTab, MapTab } from './SiteMapBlog';
 
-type Tab = 'style' | 'home' | 'blocks' | 'team' | 'reviews' | 'texts' | 'contact';
+type Tab = 'style' | 'home' | 'blocks' | 'team' | 'reviews' | 'map' | 'blog' | 'texts' | 'contact';
 type Site = { site_theme: Theme; site_color: string | null; site_logo: string | null; site_hero: string | null; site_hero_title: string | null; site_hero_sub: string | null; site_blocks: Block[] };
 type Member = { id: string; name: string; role: string | null; photo: string | null; whatsapp: string | null; langs: string[]; sort: number };
 type Review = { id: string; author: string; place: string | null; body: string; rating: number; sort: number };
@@ -44,7 +45,7 @@ export function SiteEditor({ office, onSelfChanged }: { office: Office; onSelfCh
   const url = PUBLIC_SITE ? officeUrl(office.slug, lang) : '';
   const tabs: { id: Tab; label: string }[] = [
     { id: 'style', label: t('Style') }, { id: 'home', label: t('Top of the page') }, { id: 'blocks', label: t('Blocks') },
-    { id: 'team', label: t('Team') }, { id: 'reviews', label: t('Reviews') }, { id: 'texts', label: t('Texts and domain') },
+    { id: 'team', label: t('Team') }, { id: 'reviews', label: t('Reviews') }, { id: 'map', label: t('Map') }, { id: 'blog', label: t('Blog') }, { id: 'texts', label: t('Texts and domain') },
     { id: 'contact', label: isSolo(office) ? t('Your profile') : t('Contact') },
   ];
 
@@ -76,6 +77,8 @@ export function SiteEditor({ office, onSelfChanged }: { office: Office; onSelfCh
             {site && tab === 'blocks' && <BlocksTab office={office} site={site} setSite={setSite} canManage={canManage} onSaved={refresh} />}
             {tab === 'team' && <TeamTab office={office} canManage={canManage} onSaved={refresh} />}
             {tab === 'reviews' && <ReviewsTab office={office} canManage={canManage} onSaved={refresh} />}
+            {tab === 'map' && <MapTab office={office} canManage={canManage} onSaved={refresh} />}
+            {tab === 'blog' && <BlogTab office={office} canManage={canManage} onSaved={refresh} />}
             {tab === 'texts' && <div className="-mt-6"><WebsiteSettings office={office} canManage={canManage} /></div>}
             {tab === 'contact' && <div className="-mt-6"><PublicProfile office={office} canManage={canManage} onSlugChanged={onSelfChanged} /><AgentProfile office={office} canManage={canManage} /></div>}
           </div>

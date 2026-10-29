@@ -10,6 +10,8 @@ import { PropertyCard } from '../components/PropertyCard';
 import { EstimateBox } from '../components/EstimateBox';
 import { ContactBar } from '../components/ContactBar';
 import { splitAreas } from './EstimationView';
+import { TileMap } from '../components/TileMap';
+import { themeName } from '../lib/theme';
 import { Failed, Loading, NotFound } from './States';
 
 /** "Immobilier à Agdal": a page per neighborhood, filled with the office's own properties there. Good for Google. */
@@ -31,6 +33,7 @@ export function AreaView({ slug, area }: { slug: string; area: string }) {
   const rents = inArea.filter(l => l.purpose === 'rent_long' && l.price_cents);
   const rentFrom = rents.length ? Math.min(...rents.map(l => l.price_cents as number)) : null;
   const img = inArea.find(l => l.cover)?.cover ?? site?.hero ?? null;
+  const point = Object.entries(site?.points ?? {}).find(([k]) => areaSlug(k) === area)?.[1] ?? null;
   const hello = t('Hello, I am looking for a property in {area}.', { area: name });
   const stats = [
     { v: String(inArea.length), label: t('Properties available') },
@@ -56,6 +59,11 @@ export function AreaView({ slug, area }: { slug: string; area: string }) {
           {stats.map(s => <div key={s.label} className="bg-surface p-5 text-center"><p className="font-display tabular text-2xl font-bold text-brand sm:text-3xl">{s.v}</p><p className="mt-1 text-xs font-semibold uppercase tracking-wide text-muted">{s.label}</p></div>)}
         </div>
 
+        {point && (
+          <div className="pt-10">
+            <TileMap height={300} dark={themeName(office.style) === 'noir'} points={[{ id: name, lat: point[0], lng: point[1], label: name }]} />
+          </div>
+        )}
         <section className="py-14">
           <h2 className="font-display text-3xl font-bold">{t('Our properties in {area}', { area: name })}</h2>
           {inArea.length === 0
