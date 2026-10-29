@@ -47,6 +47,9 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
   const link = window.location.origin + window.location.pathname;
   const videoMsg = t('Hello, I live abroad. Could I get a video visit of “{title}” ({ref})? {url}', { title: p.title, ref: p.reference, url: link });
   const message = t('Hello, I am interested in “{title}” ({ref}). {url}', { title: p.title, ref: p.reference, url: link });
+  const cta = office.whatsapp
+    ? { price: formatMad(p.price_cents), suffix: priceSuffix(p.purpose), href: waLink(office.whatsapp, message), onClick: () => logEvent(office.slug, p.reference, 'whatsapp') }
+    : undefined;
   const short = p.purpose === 'rent_short' && p.status === 'available';
   const banner = p.status === 'reserved' ? t('This property is currently reserved. Contact us for similar properties.')
     : p.status === 'rented' ? t('This property has been rented. Contact us for similar properties.')
@@ -107,7 +110,7 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
       <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 sm:py-8">
         {/* direction 3: a short stay on a phone opens like a story */}
         {short && photos.length > 0 && (
-          <StoryHero photos={photos} title={p.title} icon={icon} price={formatMad(p.price_cents)} facts={facts} place={place} onBook={toBooking} />
+          <StoryHero photos={photos} title={p.title} icon={icon} price={formatMad(p.price_cents)} facts={facts} place={place} onBook={toBooking} cta={cta} />
         )}
 
         {/* direction 1: title above the photos on a computer */}
@@ -120,7 +123,7 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
             <span className="shrink-0 sm:mt-1"><FavButton slug={office.slug} reference={p.reference} variant="page" /></span>
           </div>
         </div>
-        <PhotoMosaic photos={photos} title={p.title} icon={icon} className={short && photos.length > 0 ? 'hidden sm:block' : ''} />
+        <PhotoMosaic photos={photos} title={p.title} icon={icon} cta={cta} className={short && photos.length > 0 ? 'hidden sm:block' : ''} />
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start">
           <div className="space-y-5">

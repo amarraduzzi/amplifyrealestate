@@ -1,5 +1,8 @@
 // Texts of the uithangbord Maroc on the public pages. The English text is the key; i18n.ts looks here last.
 export const VIT_FR: Record<string, string> = {
+  'Zoom in': 'Zoomer',
+  'Zoom out': 'Dézoomer',
+  'Ask on WhatsApp': 'Demander sur WhatsApp',
   'Photo {n}': 'Photo {n}',
   'Maximum budget': 'Budget maximum',
   'Choose Buy or Rent': 'Choisissez Acheter ou Louer',
@@ -207,6 +210,9 @@ export const VIT_FR: Record<string, string> = {
   'Close': 'Fermer',
 };
 export const VIT_AR: Record<string, string> = {
+  'Zoom in': 'تكبير',
+  'Zoom out': 'تصغير',
+  'Ask on WhatsApp': 'اسأل عبر واتساب',
   'Photo {n}': 'الصورة {n}',
   'Maximum budget': 'الميزانية القصوى',
   'Choose Buy or Rent': 'اختر الشراء أو الكراء',
@@ -414,6 +420,9 @@ export const VIT_AR: Record<string, string> = {
   'Close': 'إغلاق',
 };
 export const VIT_NL: Record<string, string> = {
+  'Zoom in': 'Inzoomen',
+  'Zoom out': 'Uitzoomen',
+  'Ask on WhatsApp': 'Vraag het via WhatsApp',
   'Photo {n}': 'Foto {n}',
   'Maximum budget': 'Maximaal budget',
   'Choose Buy or Rent': 'Kies Kopen of Huren',

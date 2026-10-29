@@ -1,44 +1,10 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ChevronLeft, ChevronRight, Grid2x2, ImageOff, X } from 'lucide-react';
+import { useRef, useState, type ReactNode } from 'react';
+import { Grid2x2, ImageOff } from 'lucide-react';
 import { photoUrl } from '../lib/api';
+import { Lightbox, type LightboxCta } from './Lightbox';
 import { t } from '../lib/i18n';
 
 const rtl = () => document.documentElement.dir === 'rtl';
-
-/** Full screen photos, swipe or arrows. */
-function Lightbox({ photos, title, start, onClose }: { photos: string[]; title: string; start: number; onClose: () => void }) {
-  const [i, setI] = useState(start);
-  const n = photos.length;
-  const touch = useRef<number | null>(null);
-  const go = useCallback((d: number) => setI(x => (x + d + n) % n), [n]);
-  useEffect(() => {
-    const k = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-      if (e.key === 'ArrowRight') go(rtl() ? -1 : 1);
-      if (e.key === 'ArrowLeft') go(rtl() ? 1 : -1);
-    };
-    window.addEventListener('keydown', k);
-    const prev = document.body.style.overflow; document.body.style.overflow = 'hidden';
-    return () => { window.removeEventListener('keydown', k); document.body.style.overflow = prev; };
-  }, [go, onClose]);
-  const swipe = (e: React.TouchEvent) => {
-    if (touch.current === null) return;
-    const dx = e.changedTouches[0].clientX - touch.current; touch.current = null;
-    if (Math.abs(dx) > 40 && n > 1) go((dx < 0 ? 1 : -1) * (rtl() ? -1 : 1));
-  };
-  return (
-    <div role="dialog" aria-modal="true" aria-label={title} className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"
-      onClick={onClose} onTouchStart={e => { touch.current = e.touches[0].clientX; }} onTouchEnd={swipe}>
-      <img src={photoUrl(photos[i])} alt={`${title} · ${i + 1}/${n}`} className="max-h-full max-w-full object-contain" onClick={e => e.stopPropagation()} />
-      <button type="button" onClick={onClose} aria-label={t('Close')} className="absolute end-3 top-3 grid h-11 w-11 place-items-center rounded-full bg-white/15 text-white"><X className="h-6 w-6" /></button>
-      {n > 1 && <>
-        <button type="button" onClick={e => { e.stopPropagation(); go(-1); }} aria-label={t('Previous')} className="absolute start-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/15 text-white"><ChevronLeft className="h-6 w-6 rtl:rotate-180" /></button>
-        <button type="button" onClick={e => { e.stopPropagation(); go(1); }} aria-label={t('Next')} className="absolute end-3 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-full bg-white/15 text-white"><ChevronRight className="h-6 w-6 rtl:rotate-180" /></button>
-      </>}
-      <span className="tabular absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/15 px-3 py-1 text-sm font-semibold text-white">{i + 1} / {n}</span>
-    </div>
-  );
-}
 
 /** No photos yet: a calm placeholder instead of an empty block. */
 function NoPhotos({ icon, className = '' }: { icon: ReactNode; className?: string }) {
@@ -56,7 +22,7 @@ function NoPhotos({ icon, className = '' }: { icon: ReactNode; className?: strin
  * Direction 1, photos first: on a computer one large photo with up to four small ones next to it; on a phone the
  * photos side by side to swipe. A tap opens them full screen.
  */
-export function PhotoMosaic({ photos, title, icon, className = '' }: { photos: string[]; title: string; icon: ReactNode; className?: string }) {
+export function PhotoMosaic({ photos, title, icon, className = '', cta }: { photos: string[]; title: string; icon: ReactNode; className?: string; cta?: LightboxCta }) {
   const [open, setOpen] = useState<number | null>(null);
   const [i, setI] = useState(0);
   const strip = useRef<HTMLDivElement>(null);
@@ -95,7 +61,7 @@ export function PhotoMosaic({ photos, title, icon, className = '' }: { photos: s
           <Grid2x2 className="h-3.5 w-3.5" /> {t('See the {n} photos', { n })}
         </button>
       )}
-      {open !== null && <Lightbox photos={photos} title={title} start={open} onClose={() => setOpen(null)} />}
+      {open !== null && <Lightbox photos={photos} title={title} start={open} onClose={() => setOpen(null)} cta={cta} />}
     </section>
   );
 }
@@ -104,8 +70,8 @@ export function PhotoMosaic({ photos, title, icon, className = '' }: { photos: s
  * Direction 3, for short stays on a phone: the photos fill the screen like a story, with the price and the key facts
  * on the photo. Tap the right half for the next photo, the left half for the previous one.
  */
-export function StoryHero({ photos, title, icon, price, facts, place, onBook }: {
-  photos: string[]; title: string; icon: ReactNode; price: string; facts: string[]; place: string | null; onBook: () => void;
+export function StoryHero({ photos, title, icon, price, facts, place, onBook, cta }: {
+  photos: string[]; title: string; icon: ReactNode; price: string; facts: string[]; place: string | null; onBook: () => void; cta?: LightboxCta;
 }) {
   const [i, setI] = useState(0);
   const [open, setOpen] = useState(false);
@@ -135,7 +101,7 @@ export function StoryHero({ photos, title, icon, price, facts, place, onBook }: 
         <button type="button" onClick={onBook} className="mt-3 w-full rounded-xl bg-white px-4 py-3 text-sm font-bold text-ink">{t('See the free dates')}</button>
       </div>
       <span className="sr-only">{icon}</span>
-      {open && <Lightbox photos={photos} title={title} start={i} onClose={() => setOpen(false)} />}
+      {open && <Lightbox photos={photos} title={title} start={i} onClose={() => setOpen(false)} cta={cta} />}
     </section>
   );
 }
