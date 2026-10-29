@@ -5,7 +5,7 @@ import { Minus, Plus } from 'lucide-react';
  * A light map without a library: OpenStreetMap tiles, markers on top, drag to move, + and - to zoom.
  * Only neighborhoods are shown on it, never the address of a property.
  */
-export type MapPoint = { id: string; lat: number; lng: number; label: ReactNode; onClick?: () => void; active?: boolean };
+export type MapPoint = { id: string; lat: number; lng: number; label: ReactNode; onClick?: () => void; active?: boolean; dx?: number; dy?: number; price?: boolean };
 
 const TILE = 256;
 const project = (lat: number, lng: number, z: number) => {
@@ -34,8 +34,8 @@ function fit(points: { lat: number; lng: number }[], w: number, h: number) {
   return { lat: points[0].lat, lng: points[0].lng, z: 9 };
 }
 
-export function TileMap({ points, height = 420, dark = false, onPick, className = '' }: {
-  points: MapPoint[]; height?: number; dark?: boolean; onPick?: (lat: number, lng: number) => void; className?: string;
+export function TileMap({ points, height = 420, dark = false, onPick, onBackground, className = '' }: {
+  points: MapPoint[]; height?: number; dark?: boolean; onPick?: (lat: number, lng: number) => void; onBackground?: () => void; className?: string;
 }) {
   const box = useRef<HTMLDivElement>(null);
   const [w, setW] = useState(800);
@@ -75,6 +75,7 @@ export function TileMap({ points, height = 420, dark = false, onPick, className 
   };
   const up = (e: RPointerEvent<HTMLDivElement>) => {
     const d = drag.current; drag.current = null;
+    if (d && !d.moved) onBackground?.();
     if (d && !d.moved && onPick) {
       const r = e.currentTarget.getBoundingClientRect();
       const p = unproject(left + (e.clientX - r.left), top + (e.clientY - r.top), view.z);
@@ -95,9 +96,9 @@ export function TileMap({ points, height = 420, dark = false, onPick, className 
       {points.map(p => {
         const q = project(p.lat, p.lng, view.z);
         return (
-          <button key={p.id} type="button" onClick={p.onClick} className="absolute -translate-x-1/2 -translate-y-full" style={{ left: q.x - left, top: q.y - top }}>
-            <span className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold shadow-lg ring-2 ring-white transition hover:scale-105 ${p.active ? 'bg-ink text-bg' : 'gold-fill text-brand-ink'}`}>{p.label}</span>
-            <span className={`mx-auto block h-2.5 w-2.5 -translate-y-0.5 rotate-45 ${p.active ? 'bg-ink' : 'bg-brand'}`} />
+          <button key={p.id} type="button" onClick={p.onClick} className="absolute -translate-x-1/2 -translate-y-full" style={{ left: q.x - left + (p.dx ?? 0), top: q.y - top + (p.dy ?? 0), zIndex: p.active ? 2 : 1 }}>
+            <span className={`flex items-center gap-1.5 whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-bold shadow-lg ring-2 transition hover:scale-105 ${p.active ? 'scale-110 bg-ink text-bg ring-white' : p.price ? 'bg-white text-night ring-black/10' : 'gold-fill text-brand-ink ring-white'}`}>{p.label}</span>
+            <span className={`mx-auto block h-2.5 w-2.5 -translate-y-0.5 rotate-45 ${p.active ? 'bg-ink' : p.price ? 'bg-white' : 'bg-brand'}`} />
           </button>
         );
       })}

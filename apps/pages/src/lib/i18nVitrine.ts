@@ -1,5 +1,12 @@
 // Texts of the uithangbord Maroc on the public pages. The English text is the key; i18n.ts looks here last.
 export const VIT_FR: Record<string, string> = {
+  'List': 'Liste',
+  'Map': 'Carte',
+  'View': 'Affichage',
+  'View the property': 'Voir le bien',
+  'Each property is shown in its neighborhood. The exact address is shared by the agent.': 'Chaque bien est placé dans son quartier. L’adresse exacte est communiquée par l’agent.',
+  '{n} without a neighborhood on the map.': '{n} sans quartier sur la carte.',
+  'Price on request': 'Prix sur demande',
   'New': 'Nouveau',
   'Price drop': 'Prix en baisse',
   'Remove from favorites': 'Retirer des favoris',
@@ -194,6 +201,13 @@ export const VIT_FR: Record<string, string> = {
   'Close': 'Fermer',
 };
 export const VIT_AR: Record<string, string> = {
+  'List': 'قائمة',
+  'Map': 'خريطة',
+  'View': 'العرض',
+  'View the property': 'عرض العقار',
+  'Each property is shown in its neighborhood. The exact address is shared by the agent.': 'يظهر كل عقار في حيه. العنوان الدقيق يقدمه الوكيل.',
+  '{n} without a neighborhood on the map.': '{n} بدون حي على الخريطة.',
+  'Price on request': 'السعر عند الطلب',
   'New': 'جديد',
   'Price drop': 'انخفاض السعر',
   'Remove from favorites': 'إزالة من المفضلة',
@@ -388,6 +402,13 @@ export const VIT_AR: Record<string, string> = {
   'Close': 'إغلاق',
 };
 export const VIT_NL: Record<string, string> = {
+  'List': 'Lijst',
+  'Map': 'Kaart',
+  'View': 'Weergave',
+  'View the property': 'Bekijk het pand',
+  'Each property is shown in its neighborhood. The exact address is shared by the agent.': 'Elk pand staat in zijn wijk. Het exacte adres krijg je van de makelaar.',
+  '{n} without a neighborhood on the map.': '{n} zonder wijk op de kaart.',
+  'Price on request': 'Prijs op aanvraag',
   'New': 'Nieuw',
   'Price drop': 'Prijs verlaagd',
   'Remove from favorites': 'Uit favorieten halen',

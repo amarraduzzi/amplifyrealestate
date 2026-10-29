@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { CheckCircle2, ExternalLink, HardHat, Heart, Mail, MapPin, MessageCircle, Phone, Quote, Search, Star, UserRound } from 'lucide-react';
+import { CheckCircle2, ExternalLink, HardHat, Heart, LayoutGrid, Map as MapIcon, Mail, MapPin, MessageCircle, Phone, Quote, Search, Star, UserRound } from 'lucide-react';
 import type { DealPurpose, PropertyType } from '@vastgoed/shared';
 import { formatMad } from '@vastgoed/shared';
 import { loadOffice, loadOfficeProjects, logEvent, photoUrl, type ProjectCard, type SiteBlock } from '../lib/api';
@@ -19,6 +19,7 @@ import { langLabel } from '../lib/vitrine';
 import { ContactBar } from '../components/ContactBar';
 import { PropertyCard } from '../components/PropertyCard';
 import { AlertBox } from '../components/AlertBox';
+import { ListingMap } from '../components/ListingMap';
 import { readFavs, selectionUrl, sharedSelection, useFavs } from '../lib/favorites';
 import { ListingFilters, NO_FILTERS, applyFilters, type Filters } from '../components/ListingFilters';
 import { InquiryForm } from '../components/InquiryForm';
@@ -80,6 +81,7 @@ export function OfficeView({ slug }: { slug: string }) {
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const favs = useFavs(slug);
   const [favOnly, setFavOnly] = useState(false);
+  const [mode, setMode] = useState<'list' | 'map'>('list');
   const [shared, setShared] = useState<string[] | null>(() => sharedSelection());
   const [heroQ, setHeroQ] = useState('');
   const [heroPurpose, setHeroPurpose] = useState<DealPurpose | 'all'>('all');
@@ -137,6 +139,16 @@ export function OfficeView({ slug }: { slug: string }) {
   if (!data) return <NotFound text={t('This page does not exist, or the link is not correct.')} />;
 
   const { office, listings } = data;
+  const viewToggle = (
+    <span className="inline-flex rounded-xl bg-surface p-1 ring-1 ring-line/10" role="group" aria-label={t('View')}>
+      {([['list', t('List'), <LayoutGrid key="l" className="h-4 w-4" />], ['map', t('Map'), <MapIcon key="m" className="h-4 w-4" />]] as const).map(([k, label, icon]) => (
+        <button key={k} type="button" aria-pressed={mode === k} onClick={() => setMode(k)}
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition ${mode === k ? 'bg-ink text-bg' : 'text-muted hover:text-ink'}`}>
+          {icon}{label}
+        </button>
+      ))}
+    </span>
+  );
   const showAll = () => {
     setFavOnly(false);
     if (shared) {
@@ -241,16 +253,23 @@ export function OfficeView({ slug }: { slug: string }) {
           </div>
         )}
         {pickedList === null && listings.length > 1 && <ListingFilters f={filters} setF={setFilters} purpose={dealFor} count={shown.length} total={listings.length}
-          extra={favs.length > 0 ? (
-            <button type="button" onClick={() => setFavOnly(true)} className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:bg-rose-50">
-              <Heart className="h-4 w-4 fill-current" /> {t('My favorites')} <span className="tabular">{favs.length}</span>
-            </button>
-          ) : null} />}
+          extra={<>
+            {viewToggle}
+            {favs.length > 0 && (
+              <button type="button" onClick={() => setFavOnly(true)} className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:bg-rose-50">
+                <Heart className="h-4 w-4 fill-current" /> <span className="max-sm:sr-only">{t('My favorites')}</span> <span className="tabular">{favs.length}</span>
+              </button>
+            )}
+          </>} />}
         {listings.length === 0 && <p className="mt-8 text-center text-muted">{t('No properties are online right now.')}</p>}
         {pickedList === null && listings.length > 0 && shown.length === 0 && <p className="mt-8 text-center text-muted">{t('No property matches your search. Leave your number below and we will look for you.')}</p>}
-        <ul className="mt-5 grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
-          {(pickedList ?? shown).map(p => <li key={p.reference}><PropertyCard slug={office.slug} p={p} /></li>)}
-        </ul>
+        {mode === 'map' && (pickedList ?? shown).length > 0
+          ? <ListingMap slug={office.slug} list={pickedList ?? shown} points={site?.points ?? {}} dark={themeName(office.style) === 'noir'} />
+          : (
+            <ul className="mt-5 grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+              {(pickedList ?? shown).map(p => <li key={p.reference}><PropertyCard slug={office.slug} p={p} /></li>)}
+            </ul>
+          )}
         {pickedList === null && listings.length > 0 && (
           <AlertBox slug={office.slug} purposes={present.length > 0 ? present : ['sale']} purpose={dealFor} type={type === 'all' ? null : type}
             filters={filters} hoods={hoods} hood={hoodFromQ} strong={shown.length === 0} />
