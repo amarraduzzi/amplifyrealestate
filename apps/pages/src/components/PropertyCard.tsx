@@ -1,4 +1,5 @@
-import { Bath, BedDouble, MapPin, Ruler } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { Bath, BedDouble, ChevronLeft, ChevronRight, MapPin, Ruler } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { photoUrl, type PublicCard } from '../lib/api';
 import { placeText, priceSuffix, purposeLabel, statusCls, statusLabel, typeLabel } from '../lib/format';
@@ -15,14 +16,39 @@ export function PropertyCard({ slug, p }: { slug: string; p: PublicCard }) {
   const drop = p.old_price_cents && p.price_cents !== null && p.old_price_cents > p.price_cents
     ? Math.round((1 - p.price_cents / p.old_price_cents) * 100) : 0;
   const fresh = !drop && !!p.published_at && Date.now() - new Date(p.published_at).getTime() < NEW_DAYS * 86_400_000;
+  const pics = p.photos && p.photos.length > 0 ? p.photos : p.cover ? [p.cover] : [];
+  const strip = useRef<HTMLSpanElement>(null);
+  const [at, setAt] = useState(0);
+  const onScroll = () => { const el = strip.current; if (el) setAt(Math.round(Math.abs(el.scrollLeft) / Math.max(1, el.clientWidth))); };
+  const step = (e: React.MouseEvent, d: 1 | -1) => {
+    e.preventDefault(); e.stopPropagation();
+    const el = strip.current; if (!el) return;
+    const rtl = getComputedStyle(el).direction === 'rtl';
+    const next = Math.max(0, Math.min(pics.length - 1, at + d));
+    el.scrollTo({ left: (rtl ? -1 : 1) * next * el.clientWidth, behavior: 'smooth' });
+  };
+  const arrow = 'pointer-events-auto grid h-8 w-8 place-items-center rounded-full bg-white/90 text-night shadow transition hover:scale-105 disabled:opacity-0';
   return (
-    <div className="relative">
+    <div className="group/card relative">
     <Link to={propertyPath(slug, p.reference)}
       className="group block rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
       <span className="relative block overflow-hidden rounded-3xl bg-surface-3">
-        {p.cover
-          ? <img src={photoUrl(p.cover, true)} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
+        {pics.length > 1 ? (
+          <span ref={strip} onScroll={onScroll}
+            className="flex aspect-[4/3] w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {pics.map((ph, i) => (
+              <img key={ph} src={photoUrl(ph, true)} alt="" loading={i === 0 ? 'eager' : 'lazy'} draggable={false}
+                className="h-full w-full shrink-0 snap-center object-cover" />
+            ))}
+          </span>
+        ) : pics.length === 1
+          ? <img src={photoUrl(pics[0], true)} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover transition duration-500 group-hover:scale-[1.03]" />
           : <span className="night grid aspect-[4/3] w-full place-items-center"><PropertyIcon type={p.property_type} className="h-10 w-10 text-white/85" /></span>}
+        {pics.length > 1 && (
+          <span className="pointer-events-none absolute inset-x-0 bottom-2.5 flex justify-center gap-1.5" aria-hidden="true">
+            {pics.map((ph, i) => <span key={ph} className={`h-1.5 rounded-full bg-white shadow transition-all ${i === at ? 'w-4 opacity-100' : 'w-1.5 opacity-60'}`} />)}
+          </span>
+        )}
         <span className="absolute start-3 end-14 top-3 flex flex-wrap gap-1.5">
           <span className="rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-night shadow-sm">{purposeLabel(p.purpose)}</span>
           {drop > 0 && p.status === 'available' && <span className="rounded-full bg-rose-600 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm">{t('Price drop')} -{drop}%</span>}
@@ -46,6 +72,12 @@ export function PropertyCard({ slug, p }: { slug: string; p: PublicCard }) {
         </span>
       </span>
     </Link>
+    {pics.length > 1 && (
+      <span className="pointer-events-none absolute inset-x-0 top-0 hidden aspect-[4/3] items-center justify-between px-2.5 opacity-0 transition group-hover/card:opacity-100 sm:flex">
+        <button type="button" onClick={e => step(e, -1)} disabled={at === 0} aria-label={t('Previous photo')} className={arrow}><ChevronLeft className="h-4 w-4 rtl:rotate-180" /></button>
+        <button type="button" onClick={e => step(e, 1)} disabled={at >= pics.length - 1} aria-label={t('Next photo')} className={arrow}><ChevronRight className="h-4 w-4 rtl:rotate-180" /></button>
+      </span>
+    )}
     <FavButton slug={slug} reference={p.reference} />
     </div>
   );

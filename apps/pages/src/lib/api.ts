@@ -13,6 +13,8 @@ export type PublicCard = {
   cover?: string | null;
   /** When the property went online, and its earlier price if it dropped in the last 30 days. */
   published_at?: string | null; old_price_cents?: number | null;
+  /** Up to 5 photos, cover first, to swipe through on the card. */
+  photos?: string[];
 };
 export type NearKey = 'beach' | 'transport' | 'school' | 'mosque' | 'shops';
 export type PublicProperty = PublicCard & {

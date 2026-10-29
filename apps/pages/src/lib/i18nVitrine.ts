@@ -1,5 +1,7 @@
 // Texts of the uithangbord Maroc on the public pages. The English text is the key; i18n.ts looks here last.
 export const VIT_FR: Record<string, string> = {
+  'Previous photo': 'Photo précédente',
+  'Next photo': 'Photo suivante',
   'List': 'Liste',
   'Map': 'Carte',
   'View': 'Affichage',
@@ -201,6 +203,8 @@ export const VIT_FR: Record<string, string> = {
   'Close': 'Fermer',
 };
 export const VIT_AR: Record<string, string> = {
+  'Previous photo': 'الصورة السابقة',
+  'Next photo': 'الصورة التالية',
   'List': 'قائمة',
   'Map': 'خريطة',
   'View': 'العرض',
@@ -402,6 +406,8 @@ export const VIT_AR: Record<string, string> = {
   'Close': 'إغلاق',
 };
 export const VIT_NL: Record<string, string> = {
+  'Previous photo': 'Vorige foto',
+  'Next photo': 'Volgende foto',
   'List': 'Lijst',
   'Map': 'Kaart',
   'View': 'Weergave',
