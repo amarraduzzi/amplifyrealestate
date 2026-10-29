@@ -20,6 +20,7 @@ import { ContactBar } from '../components/ContactBar';
 import { PropertyCard } from '../components/PropertyCard';
 import { AlertBox } from '../components/AlertBox';
 import { ListingMap } from '../components/ListingMap';
+import { HeroBackdrop, HeroSearch, heroSlides } from '../components/HeroSlides';
 import { readFavs, selectionUrl, sharedSelection, useFavs } from '../lib/favorites';
 import { ListingFilters, NO_FILTERS, applyFilters, type Filters } from '../components/ListingFilters';
 import { InquiryForm } from '../components/InquiryForm';
@@ -83,8 +84,6 @@ export function OfficeView({ slug }: { slug: string }) {
   const [favOnly, setFavOnly] = useState(false);
   const [mode, setMode] = useState<'list' | 'map'>('list');
   const [shared, setShared] = useState<string[] | null>(() => sharedSelection());
-  const [heroQ, setHeroQ] = useState('');
-  const [heroPurpose, setHeroPurpose] = useState<DealPurpose | 'all'>('all');
   useEffect(() => { setPurpose('all'); setType('all'); setQ(''); setFilters(NO_FILTERS); setFavOnly(false); }, [slug]);
 
   const data = state.status === 'ready' ? state.data : null;
@@ -174,7 +173,7 @@ export function OfficeView({ slug }: { slug: string }) {
   const chosen = (site?.blocks?.length ? site.blocks : DEFAULT_BLOCKS);
   const blocks: SiteBlock[] = [...chosen.filter(b => b !== 'hero'), ...(chosen.includes('listings') ? [] : ['listings' as SiteBlock])];
   const heroOn = chosen.includes('hero');
-  const heroImg = site?.hero ?? listings.find(l => l.cover)?.cover ?? null;
+  const slides = heroSlides(site?.hero, listings);
   const posts = site?.posts ?? [];
   const pts = site?.points ?? {};
   const mapPoints = areas.filter(a => Array.isArray(pts[a])).map(a => {
@@ -189,10 +188,6 @@ export function OfficeView({ slug }: { slug: string }) {
     { n: forRent, label: t('For rent') },
     ...(site && site.done > 0 ? [{ n: site.done, label: t('Sold or rented') }] : []),
   ];
-  const goSearch = (text: string, p: DealPurpose | 'all') => {
-    setQ(text); setPurpose(p); setType('all');
-    document.getElementById('biens')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
 
   const waBtn = office.whatsapp && (
     <a href={waLink(office.whatsapp, hello)} target="_blank" rel="noreferrer" onClick={() => logEvent(office.slug, null, 'whatsapp')}
@@ -430,10 +425,7 @@ export function OfficeView({ slug }: { slug: string }) {
     <Layout office={office} stickyBar wide brand={office.style} flush={heroOn} site={office}>
       {heroOn ? (
         <section className="relative isolate overflow-hidden">
-          <div className="absolute inset-0 -z-10 bg-night">
-            {heroImg && <img src={photoUrl(heroImg)} alt="" className="slowzoom h-full w-full object-cover" />}
-            <div className="absolute inset-0 bg-black/45" />
-          </div>
+          {slides.length > 0 ? <HeroBackdrop slides={slides} slug={office.slug} /> : <div className="absolute inset-0 -z-10 bg-night" />}
           <div className="mx-auto flex min-h-[78svh] w-full max-w-6xl flex-col justify-end px-4 pb-24 pt-16 text-white sm:px-6 sm:pb-28 lg:min-h-[82vh]">
             <div className="rise max-w-3xl">
               {solo && (
@@ -445,22 +437,11 @@ export function OfficeView({ slug }: { slug: string }) {
               <h1 className="mt-3 font-display text-4xl font-bold leading-[1.05] sm:text-6xl">{site?.hero_title || name}</h1>
               <p className="mt-4 max-w-xl text-lg text-white/85 sm:text-xl">{site?.hero_sub || site?.tagline || (solo ? office.agent?.role : null) || ''}</p>
               {listings.length > 0 && (
-                <form onSubmit={e => { e.preventDefault(); goSearch(heroQ, heroPurpose); }}
-                  className="mt-7 flex flex-col gap-2 rounded-2xl bg-surface p-2 text-ink shadow-2xl sm:flex-row sm:items-center">
-                  <div className="relative min-w-0 flex-1">
-                    <Search className="pointer-events-none absolute start-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
-                    <input value={heroQ} onChange={e => setHeroQ(e.target.value)} placeholder={t('Neighborhood, city...')} aria-label={t('Search')}
-                      className="w-full rounded-xl bg-transparent py-3 pe-3 ps-10 outline-none" />
-                  </div>
-                  {present.length > 1 && (
-                    <select value={heroPurpose} onChange={e => setHeroPurpose(e.target.value as DealPurpose | 'all')} aria-label={t('Type')}
-                      className="rounded-xl bg-surface-2 px-3 py-3 text-sm font-semibold outline-none">
-                      <option value="all">{t('All')}</option>
-                      {present.map(p => <option key={p} value={p}>{purposeLabel(p)}</option>)}
-                    </select>
-                  )}
-                  <button type="submit" className="gold-fill rounded-xl px-6 py-3 text-sm font-bold text-brand-ink">{t('Search')}</button>
-                </form>
+                <HeroSearch purposes={present} hoods={hoods} onSearch={({ purpose: p, hood, max }) => {
+                  setPurpose(p); setType('all'); setQ(hood); setFavOnly(false); setMode('list');
+                  setFilters(f => ({ ...NO_FILTERS, sort: f.sort, max }));
+                  window.setTimeout(() => document.getElementById('biens')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
+                }} />
               )}
               {listings.length === 0 && <div className="mt-7">{waBtn}</div>}
             </div>
@@ -483,9 +464,9 @@ export function OfficeView({ slug }: { slug: string }) {
 
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
         {/* the figures, half over the photo */}
-        <div className={`relative z-10 grid grid-cols-2 gap-px overflow-hidden rounded-3xl bg-line/10 shadow-xl ring-1 ring-line/[0.08] sm:grid-cols-4 ${heroOn ? '-mt-12' : 'mt-8'}`} aria-label={t('In figures')}>
-          {figures.map(x => (
-            <div key={x.label} className="bg-surface p-5 text-center sm:p-6">
+        <div className={`relative z-10 grid grid-cols-2 gap-px overflow-hidden rounded-3xl bg-line/10 shadow-xl ring-1 ring-line/[0.08] ${figures.length === 3 ? 'sm:grid-cols-3' : 'sm:grid-cols-4'} ${heroOn ? '-mt-12' : 'mt-8'}`} aria-label={t('In figures')}>
+          {figures.map((x, i) => (
+            <div key={x.label} className={`bg-surface p-5 text-center sm:p-6 ${figures.length % 2 === 1 && i === figures.length - 1 ? 'col-span-2 sm:col-span-1' : ''}`}>
               <p className="font-display text-3xl font-bold text-brand sm:text-4xl"><CountUp n={x.n} /></p>
               <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-muted">{x.label}</p>
             </div>

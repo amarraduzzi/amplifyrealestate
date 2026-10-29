@@ -64,3 +64,11 @@ html, body { overflow-x: hidden; }
 /* the bar at the bottom: room under the footer; on a computer the site header has WhatsApp, so no bar there */
 .footer-bar { padding-bottom: 6.5rem; }
 @media (min-width: 1024px) { .site-mode .contact-sticky { display: none; } .site-mode .footer-bar { padding-bottom: 1.5rem; } }
+
+/* the large photos at the top: slow zoom and pan, two directions so the slides do not all move alike */
+@keyframes kb-a { from { transform: scale(1.04) translate3d(0, 0, 0); } to { transform: scale(1.16) translate3d(-1.5%, -1%, 0); } }
+@keyframes kb-b { from { transform: scale(1.16) translate3d(1.5%, 0, 0); } to { transform: scale(1.04) translate3d(0, -1%, 0); } }
+.kenburns { will-change: transform, opacity; }
+.kenburns.kb-a { animation: kb-a 16s ease-out infinite alternate; }
+.kenburns.kb-b { animation: kb-b 16s ease-out infinite alternate; }
+@media (prefers-reduced-motion: reduce) { .kenburns.kb-a, .kenburns.kb-b { animation: none; } }

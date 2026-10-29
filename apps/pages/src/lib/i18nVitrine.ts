@@ -1,5 +1,9 @@
 // Texts of the uithangbord Maroc on the public pages. The English text is the key; i18n.ts looks here last.
 export const VIT_FR: Record<string, string> = {
+  'Photo {n}': 'Photo {n}',
+  'Maximum budget': 'Budget maximum',
+  'Choose Buy or Rent': 'Choisissez Acheter ou Louer',
+  'No limit': 'Sans limite',
   'Previous photo': 'Photo précédente',
   'Next photo': 'Photo suivante',
   'List': 'Liste',
@@ -203,6 +207,10 @@ export const VIT_FR: Record<string, string> = {
   'Close': 'Fermer',
 };
 export const VIT_AR: Record<string, string> = {
+  'Photo {n}': 'الصورة {n}',
+  'Maximum budget': 'الميزانية القصوى',
+  'Choose Buy or Rent': 'اختر الشراء أو الكراء',
+  'No limit': 'بدون حد',
   'Previous photo': 'الصورة السابقة',
   'Next photo': 'الصورة التالية',
   'List': 'قائمة',
@@ -406,6 +414,10 @@ export const VIT_AR: Record<string, string> = {
   'Close': 'إغلاق',
 };
 export const VIT_NL: Record<string, string> = {
+  'Photo {n}': 'Foto {n}',
+  'Maximum budget': 'Maximaal budget',
+  'Choose Buy or Rent': 'Kies Kopen of Huren',
+  'No limit': 'Geen limiet',
   'Previous photo': 'Vorige foto',
   'Next photo': 'Volgende foto',
   'List': 'Lijst',
