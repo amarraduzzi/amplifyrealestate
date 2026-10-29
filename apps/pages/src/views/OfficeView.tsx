@@ -18,6 +18,7 @@ import { Layout } from '../components/Layout';
 import { langLabel } from '../lib/vitrine';
 import { ContactBar } from '../components/ContactBar';
 import { PropertyCard } from '../components/PropertyCard';
+import { ListingFilters, NO_FILTERS, applyFilters, type Filters } from '../components/ListingFilters';
 import { InquiryForm } from '../components/InquiryForm';
 import { Failed, Loading, NotFound } from './States';
 
@@ -74,9 +75,10 @@ export function OfficeView({ slug }: { slug: string }) {
   const [purpose, setPurpose] = useState<DealPurpose | 'all'>('all');
   const [type, setType] = useState<PropertyType | 'all'>('all');
   const [q, setQ] = useState('');
+  const [filters, setFilters] = useState<Filters>(NO_FILTERS);
   const [heroQ, setHeroQ] = useState('');
   const [heroPurpose, setHeroPurpose] = useState<DealPurpose | 'all'>('all');
-  useEffect(() => { setPurpose('all'); setType('all'); setQ(''); }, [slug]);
+  useEffect(() => { setPurpose('all'); setType('all'); setQ(''); setFilters(NO_FILTERS); }, [slug]);
 
   const data = state.status === 'ready' ? state.data : null;
   useEffect(() => {
@@ -91,7 +93,7 @@ export function OfficeView({ slug }: { slug: string }) {
       if (p) {
         const has = (x: DealPurpose) => data.listings.some(l => l.purpose === x);
         // "Rent": long-term first, else short stays, else everything
-        setPurpose(has(p) ? p : p === 'rent_long' && has('rent_short') ? 'rent_short' : 'all'); setType('all'); setQ('');
+        setPurpose(has(p) ? p : p === 'rent_long' && has('rent_short') ? 'rent_short' : 'all'); setType('all'); setQ(''); setFilters(f => ({ ...f, min: null, max: null }));
       }
       window.setTimeout(() => document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
     };
@@ -106,11 +108,14 @@ export function OfficeView({ slug }: { slug: string }) {
 
   const present = useMemo(() => PURPOSES.filter(p => data?.listings.some(l => l.purpose === p)), [data]);
   const types = useMemo(() => Array.from(new Set((data?.listings ?? []).map(l => l.property_type))), [data]);
+  // the budget only makes sense for one kind of deal: the chosen one, or the only one the office has
+  const dealFor = purpose !== 'all' ? purpose : present.length === 1 ? present[0] : null;
   const shown = useMemo(() => {
     const n = norm(q.trim());
-    return (data?.listings ?? []).filter(l => (purpose === 'all' || l.purpose === purpose) && (type === 'all' || l.property_type === type)
+    const base = (data?.listings ?? []).filter(l => (purpose === 'all' || l.purpose === purpose) && (type === 'all' || l.property_type === type)
       && (!n || norm([l.title, l.neighborhood, l.city, l.reference].filter(Boolean).join(' ')).includes(n)));
-  }, [data, purpose, type, q]);
+    return applyFilters(base, filters, dealFor !== null);
+  }, [data, purpose, type, q, filters, dealFor]);
 
   if (state.status === 'loading') return <Loading />;
   if (state.status === 'error') return <Failed onRetry={retry} />;
@@ -170,7 +175,7 @@ export function OfficeView({ slug }: { slug: string }) {
             {present.length > 1 && (
               <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group">
                 {(['all', ...present] as const).map(p => (
-                  <button key={p} type="button" aria-pressed={purpose === p} onClick={() => setPurpose(p)}
+                  <button key={p} type="button" aria-pressed={purpose === p} onClick={() => { setPurpose(p); setFilters(f => ({ ...f, min: null, max: null })); }}
                     className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${purpose === p ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
                     {p === 'all' ? t('All') : purposeLabel(p)}
                   </button>
@@ -193,6 +198,7 @@ export function OfficeView({ slug }: { slug: string }) {
             </div>
           </div>
         )}
+        {listings.length > 1 && <ListingFilters f={filters} setF={setFilters} purpose={dealFor} count={shown.length} total={listings.length} />}
         {listings.length === 0 && <p className="mt-8 text-center text-muted">{t('No properties are online right now.')}</p>}
         {listings.length > 0 && shown.length === 0 && <p className="mt-8 text-center text-muted">{t('No property matches your search. Leave your number below and we will look for you.')}</p>}
         <ul className="mt-5 grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
