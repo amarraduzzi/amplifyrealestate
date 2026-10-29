@@ -42,7 +42,7 @@ export function AreaView({ slug, area }: { slug: string; area: string }) {
   ];
 
   return (
-    <Layout office={office} stickyBar wide brand={office.style} flush>
+    <Layout office={office} stickyBar wide brand={office.style} flush site={office}>
       <section className="relative isolate overflow-hidden">
         <div className="absolute inset-0 -z-10 bg-night">
           {img && <img src={photoUrl(img)} alt="" className="slowzoom h-full w-full object-cover" />}

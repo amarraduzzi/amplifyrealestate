@@ -28,7 +28,7 @@ export function EstimationView({ slug }: { slug: string }) {
     { icon: <MessageCircle className="h-5 w-5" />, text: t('Confirmed by a local agent') },
   ];
   return (
-    <Layout office={office} stickyBar wide brand={office.style}>
+    <Layout office={office} stickyBar wide brand={office.style} site={office}>
       <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
         <p className="text-sm text-muted"><Link to={officePath(office.slug)} className="font-semibold text-brand hover:underline">{office.name}</Link></p>
         <h1 className="mt-2 max-w-3xl font-display text-4xl font-bold leading-tight sm:text-5xl">{t('How much is my property worth?')}</h1>

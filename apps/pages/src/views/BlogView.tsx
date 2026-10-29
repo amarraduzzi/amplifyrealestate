@@ -60,7 +60,7 @@ export function BlogView({ slug }: { slug: string }) {
   if (!data) return <NotFound text={t('This page does not exist, or the link is not correct.')} />;
   const { office, posts } = data;
   return (
-    <Layout office={office} stickyBar wide brand={office.style}>
+    <Layout office={office} stickyBar wide brand={office.style} site={office}>
       <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
         <p className="text-sm"><Link to={officePath(office.slug)} className="font-semibold text-brand hover:underline">{office.name}</Link></p>
         <h1 className="mt-2 font-display text-4xl font-bold sm:text-5xl">{t('Our advice and news')}</h1>
@@ -87,7 +87,7 @@ export function PostView({ slug, post }: { slug: string; post: string }) {
   const hello = t('Hello, I read your article “{title}”.', { title: p.title });
   const author = office.agent?.name ?? office.name;
   return (
-    <Layout office={office} stickyBar wide brand={office.style}>
+    <Layout office={office} stickyBar wide brand={office.style} site={office}>
       <article className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 sm:py-12">
         <Link to={blogPath(office.slug)} className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:underline"><ArrowLeft className="h-4 w-4 rtl:rotate-180" /> {t('All articles')}</Link>
         <h1 className="mt-4 font-display text-4xl font-bold leading-tight sm:text-5xl">{p.title}</h1>

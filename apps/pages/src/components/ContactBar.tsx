@@ -31,7 +31,7 @@ export function ContactBar({ office, message, sticky, reference = null }: { offi
   );
   if (!sticky) return inner;
   return (
-    <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line/10 bg-surface/95 px-4 pt-3 backdrop-blur" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
+    <div className="contact-sticky fixed inset-x-0 bottom-0 z-20 border-t border-line/10 bg-surface/95 px-4 pt-3 backdrop-blur" style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}>
       {inner}
     </div>
   );

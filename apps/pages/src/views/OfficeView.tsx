@@ -7,6 +7,7 @@ import { Link, areaPath, areaSlug, blogPath, estimationPath, navigate, projectPa
 import { TileMap } from '../components/TileMap';
 import { PostCardView } from './BlogView';
 import { themeName } from '../lib/theme';
+import { rememberSite, SECTION_EVENT, takePending } from '../components/SiteHeader';
 import { EstimateBox } from '../components/EstimateBox';
 import { projectStatus } from './ProjectView';
 import { useFetch } from '../lib/useFetch';
@@ -35,7 +36,7 @@ function Reveal({ children, className = '', id }: { children: ReactNode; classNa
     io.observe(el);
     return () => io.disconnect();
   }, []);
-  return <section ref={ref} id={id} className={`reveal scroll-mt-6 ${className}`}>{children}</section>;
+  return <section ref={ref} id={id} className={`reveal scroll-mt-24 ${className}`}>{children}</section>;
 }
 
 /** A number that counts up once it is on screen. */
@@ -82,6 +83,24 @@ export function OfficeView({ slug }: { slug: string }) {
     document.title = data ? `${data.office.name}${data.site?.tagline ? ` · ${data.site.tagline}` : ''}` : 'Amplify Real Estate';
   }, [data]);
   useEffect(() => { if (data) logEvent(data.office.slug, null, 'view'); }, [data]);
+  // the menu in the header: open a section, with a filter for Buy and Rent
+  useEffect(() => {
+    if (!data) return;
+    rememberSite(data.office.slug, { blog: (data.site?.posts ?? []).length > 0, areas: (data.site?.areas ?? '').trim().length > 0 });
+    const open = (section: string, p?: DealPurpose) => {
+      if (p) {
+        const has = (x: DealPurpose) => data.listings.some(l => l.purpose === x);
+        // "Rent": long-term first, else short stays, else everything
+        setPurpose(has(p) ? p : p === 'rent_long' && has('rent_short') ? 'rent_short' : 'all'); setType('all'); setQ('');
+      }
+      window.setTimeout(() => document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    };
+    const first = takePending();
+    if (first) open(first.section, first.purpose);
+    const on = (e: Event) => { const d = (e as CustomEvent<{ section: string; purpose?: DealPurpose }>).detail; open(d.section, d.purpose); };
+    window.addEventListener(SECTION_EVENT, on);
+    return () => window.removeEventListener(SECTION_EVENT, on);
+  }, [data]);
   const [projects, setProjects] = useState<ProjectCard[]>([]);
   useEffect(() => { loadOfficeProjects(slug).then(setProjects); }, [slug]);
 
@@ -262,7 +281,7 @@ export function OfficeView({ slug }: { slug: string }) {
       </Reveal>
     ) : null,
     areas: areas.length > 0 ? (
-      <Reveal>
+      <Reveal id="quartiers">
         <div className="night overflow-hidden rounded-[2rem] p-7 sm:p-10">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/70">{t('Where we work')}</p>
           <h2 className="mt-1 font-display text-3xl font-bold sm:text-4xl">{t('Our neighborhoods')}</h2>
@@ -332,7 +351,7 @@ export function OfficeView({ slug }: { slug: string }) {
   };
 
   return (
-    <Layout office={office} stickyBar wide brand={office.style} flush={heroOn}>
+    <Layout office={office} stickyBar wide brand={office.style} flush={heroOn} site={office}>
       {heroOn ? (
         <section className="relative isolate overflow-hidden">
           <div className="absolute inset-0 -z-10 bg-night">

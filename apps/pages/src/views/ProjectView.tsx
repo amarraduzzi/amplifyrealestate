@@ -91,7 +91,7 @@ export function ProjectView({ slug, project }: { slug: string; project: string }
   );
 
   return (
-    <Layout office={office} stickyBar wide>
+    <Layout office={office} stickyBar wide brand={office.style} site={office}>
       <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 sm:py-8">
         <div className="mb-4">
           <p className="text-sm text-muted">

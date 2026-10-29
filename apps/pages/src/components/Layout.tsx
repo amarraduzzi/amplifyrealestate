@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { themeName, themeVars, type SiteStyle } from '../lib/theme';
-import { photoUrl } from '../lib/api';
+import { photoUrl, type PublicOffice } from '../lib/api';
+import { SiteHeader } from './SiteHeader';
 import { applyLang, getLang, LANGS, saveLang, t, type Lang } from '../lib/i18n';
 import { AmplifyLogo, AmplifyMark } from './Brand';
 import { Link, officePath } from '../lib/router';
@@ -27,10 +28,11 @@ function LangSwitch({ langs = LANGS }: { langs?: { id: Lang; name: string }[] })
 }
 
 /** Header (office name or the Amplify logo, language), the page, and a small footer. */
-export function Layout({ office, stickyBar, children, langs, wide, brand, flush }: {
+export function Layout({ office, stickyBar, children, langs, wide, brand, flush, site }: {
   office?: { name: string; slug: string; city: string | null }; stickyBar?: boolean; children: ReactNode; langs?: { id: Lang; name: string }[]; wide?: boolean;
   /** the style the office chose in Amplify Vitrine */ brand?: SiteStyle | null;
   /** the page starts right under the header (a full-width photo) */ flush?: boolean;
+  /** an office website page (Amplify Vitrine): the full header with menu */ site?: PublicOffice;
 }) {
   const theme = themeName(brand);
   // the area around the page (overscroll on a phone) takes the color of the style too
@@ -39,7 +41,8 @@ export function Layout({ office, stickyBar, children, langs, wide, brand, flush 
     return () => { document.body.style.background = ''; };
   }, [theme]);
   return (
-    <div className={`themed flex min-h-screen flex-col bg-bg text-ink theme-${theme}`} style={themeVars(brand)}>
+    <div className={`themed flex min-h-screen flex-col bg-bg text-ink theme-${theme} ${site ? 'site-mode' : ''}`} style={themeVars(brand)}>
+      {site ? <SiteHeader office={site} overlay={!!flush} /> : (
       <header className="night px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
         <div className={`mx-auto flex w-full ${wide ? 'max-w-6xl' : 'max-w-4xl'} items-center justify-between gap-3`}>
           {office ? (
@@ -55,9 +58,9 @@ export function Layout({ office, stickyBar, children, langs, wide, brand, flush 
           ) : <AmplifyLogo size="sm" />}
           <LangSwitch langs={langs} />
         </div>
-      </header>
+      </header>)}
       <main className={`flex-1 ${flush ? '' : 'pb-6'}`}>{children}</main>
-      <footer className="px-4 pb-6 text-center text-xs text-muted" style={stickyBar ? { paddingBottom: '6.5rem' } : undefined}>
+      <footer className={`px-4 pb-6 text-center text-xs text-muted ${stickyBar ? 'footer-bar' : ''}`}>
         {t('Powered by Amplify Real Estate')}
       </footer>
     </div>
