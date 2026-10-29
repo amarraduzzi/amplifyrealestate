@@ -126,6 +126,44 @@
     "2.jpg",
     "3.jpg"
    ]
+  },
+  {
+   "title": "Appartement vue mer à Harhoura",
+   "dir": "appartement-vue-mer-harhoura",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "title": "Duplex moderne à Hay Riad",
+   "dir": "duplex-moderne-hay-riad",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "title": "Appartement neuf à Prestigia",
+   "dir": "appartement-neuf-prestigia",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "title": "Appartement lumineux à Agdal",
+   "dir": "appartement-lumineux-agdal",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg",
+    "4.jpg",
+    "5.jpg"
+   ]
   }
  ],
  "team": [

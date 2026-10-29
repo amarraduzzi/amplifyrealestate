@@ -11,7 +11,7 @@ import { Btn, Card } from './ui';
 export const DEMO_SLUGS = ['demo-immobilier', 'salma-bennani'];
 
 type Manifest = {
-  properties: { ref: string; files: string[] }[];
+  properties: { ref?: string; title?: string; dir?: string; files: string[] }[];
   team: { name: string; file: string }[];
   blog: { slug: string; file: string }[];
 };
@@ -45,15 +45,19 @@ export function DemoImport({ office }: { office: Office }) {
       }
 
       for (const p of m.properties) {
-        const { data: prop } = await supabase.from('properties').select('id').eq('org_id', office.id).eq('reference', p.ref).maybeSingle();
+        const q = supabase.from('properties').select('id').eq('org_id', office.id);
+        const { data: found } = await (p.ref ? q.eq('reference', p.ref) : q.eq('title', p.title ?? '')).limit(1);
+        const prop = found?.[0];
         if (!prop) continue;
+        const label = p.ref ?? p.title ?? '';
+        const dir = p.dir ?? p.ref ?? '';
         const { count } = await supabase.from('property_photos').select('id', { count: 'exact', head: true }).eq('property_id', prop.id);
-        if ((count ?? 0) > 0) { add(`${p.ref} : a déjà des photos, ignoré`); continue; }
+        if ((count ?? 0) > 0) continue;
         for (let i = 0; i < p.files.length; i++) {
-          setLog(l => [...l.filter(x => !x.startsWith(`${p.ref} : envoi`)), `${p.ref} : envoi ${i + 1}/${p.files.length}`]);
-          await uploadPhoto(office.id, prop.id, await grab(`${p.ref}/${p.files[i]}`));
+          setLog(l => [...l.filter(x => !x.startsWith(`${label} : envoi`)), `${label} : envoi ${i + 1}/${p.files.length}`]);
+          await uploadPhoto(office.id, prop.id, await grab(`${dir}/${p.files[i]}`));
         }
-        setLog(l => [...l.filter(x => !x.startsWith(`${p.ref} : envoi`)), `${p.ref} : ${p.files.length} photos ajoutées`]);
+        setLog(l => [...l.filter(x => !x.startsWith(`${label} : envoi`)), `${label} : ${p.files.length} photos ajoutées`]);
       }
 
       if (office.slug === 'demo-immobilier') {
