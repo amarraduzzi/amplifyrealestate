@@ -1,5 +1,7 @@
 // Texts of the uithangbord Maroc on the public pages. The English text is the key; i18n.ts looks here last.
 export const VIT_FR: Record<string, string> = {
+  'New': 'Nouveau',
+  'Price drop': 'Prix en baisse',
   'Remove from favorites': 'Retirer des favoris',
   'Save to favorites': 'Ajouter aux favoris',
   'Saved': 'Enregistré',
@@ -192,6 +194,8 @@ export const VIT_FR: Record<string, string> = {
   'Close': 'Fermer',
 };
 export const VIT_AR: Record<string, string> = {
+  'New': 'جديد',
+  'Price drop': 'انخفاض السعر',
   'Remove from favorites': 'إزالة من المفضلة',
   'Save to favorites': 'أضف إلى المفضلة',
   'Saved': 'محفوظ',
@@ -384,6 +388,8 @@ export const VIT_AR: Record<string, string> = {
   'Close': 'إغلاق',
 };
 export const VIT_NL: Record<string, string> = {
+  'New': 'Nieuw',
+  'Price drop': 'Prijs verlaagd',
   'Remove from favorites': 'Uit favorieten halen',
   'Save to favorites': 'Bewaar als favoriet',
   'Saved': 'Bewaard',
