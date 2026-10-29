@@ -13,6 +13,7 @@ import { WebsiteSettings } from '../components/WebsiteSettings';
 import { AgentProfile } from '../components/AgentProfile';
 import { PublicProfile } from './PublicProfile';
 import { BlogTab, MapTab } from './SiteMapBlog';
+import { DEMO_SLUGS, DemoImport } from '../components/DemoImport';
 
 type Tab = 'style' | 'home' | 'blocks' | 'team' | 'reviews' | 'map' | 'blog' | 'texts' | 'contact';
 type Site = { site_theme: Theme; site_color: string | null; site_logo: string | null; site_hero: string | null; site_hero_title: string | null; site_hero_sub: string | null; site_blocks: Block[] };
@@ -60,6 +61,7 @@ export function SiteEditor({ office, onSelfChanged }: { office: Office; onSelfCh
         {url && <a href={url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-bg"><ExternalLink className="h-4 w-4" /> {t('Open my website')}</a>}
       </div>
       {!canManage && <p className="mt-4 rounded-xl bg-warn/10 px-3 py-2 text-sm font-semibold text-warn">{t('Only owners and managers can change the website.')}</p>}
+      {canManage && DEMO_SLUGS.includes(office.slug) && <DemoImport office={office} />}
 
       <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start">
         <div className="min-w-0">

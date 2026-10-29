@@ -1,0 +1,155 @@
+{
+ "properties": [
+  {
+   "ref": "P-019B5A",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "ref": "P-0575B7",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "ref": "P-28683E",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "ref": "P-3D6352",
+   "files": [
+    "1.jpg",
+    "2.jpg"
+   ]
+  },
+  {
+   "ref": "P-55DC3A",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "ref": "P-6B6BB5",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "ref": "P-87B138",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "ref": "P-92CF76",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "ref": "P-B5B338",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "ref": "P-B66E2B",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "ref": "P-BA80A1",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "ref": "P-C14744",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "ref": "P-CFF38C",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  },
+  {
+   "ref": "P-DD734A",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg",
+    "4.jpg"
+   ]
+  },
+  {
+   "ref": "P-E55B3E",
+   "files": [
+    "1.jpg",
+    "2.jpg"
+   ]
+  },
+  {
+   "ref": "P-E998D6",
+   "files": [
+    "1.jpg",
+    "2.jpg",
+    "3.jpg"
+   ]
+  }
+ ],
+ "team": [
+  {
+   "name": "Salma Bennani",
+   "file": "extra/team1.jpg"
+  },
+  {
+   "name": "Youssef Alami",
+   "file": "extra/team2.jpg"
+  },
+  {
+   "name": "Nadia Tazi",
+   "file": "extra/team3.jpg"
+  }
+ ],
+ "blog": [
+  {
+   "slug": "acheter-depuis-l-etranger-mre",
+   "file": "extra/blog1.jpg"
+  },
+  {
+   "slug": "frais-achat-immobilier-maroc",
+   "file": "extra/blog2.jpg"
+  }
+ ]
+}
