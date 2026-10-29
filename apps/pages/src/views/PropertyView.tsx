@@ -7,6 +7,7 @@ import { confirmedText, placeText, priceSuffix, purposeLabel, statusCls, statusL
 import { getLang, t } from '../lib/i18n';
 import { telLink, waLink } from '../lib/contact';
 import { Link, officePath } from '../lib/router';
+import { FavButton } from '../components/FavButton';
 import { Layout } from '../components/Layout';
 import { ContactBar } from '../components/ContactBar';
 import { InquiryForm } from '../components/InquiryForm';
@@ -114,7 +115,10 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
           <p className="text-sm text-muted">
             <Link to={officePath(office.slug)} className="font-semibold text-brand hover:underline">{office.name}</Link> · {typeLabel(p.property_type)}{place ? ` · ${place}` : ''}
           </p>
-          <h1 className="mt-1 font-display text-2xl font-bold leading-tight sm:text-4xl">{p.title}</h1>
+          <div className="mt-1 flex items-start justify-between gap-3">
+            <h1 className="font-display text-2xl font-bold leading-tight sm:text-4xl">{p.title}</h1>
+            <span className="shrink-0 sm:mt-1"><FavButton slug={office.slug} reference={p.reference} variant="page" /></span>
+          </div>
         </div>
         <PhotoMosaic photos={photos} title={p.title} icon={icon} className={short && photos.length > 0 ? 'hidden sm:block' : ''} />
 
@@ -177,10 +181,13 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
 
             <div className="flex flex-wrap items-center justify-between gap-3">
               <Link to={officePath(office.slug)} className="text-sm font-semibold text-brand hover:underline">{t('More properties from {office}', { office: office.name })}</Link>
+              <span className="flex flex-wrap gap-2">
+              <FavButton slug={office.slug} reference={p.reference} variant="page" />
               <a href={`https://wa.me/?text=${encodeURIComponent(`${p.title}\n${link}`)}`} target="_blank" rel="noreferrer"
                 className="inline-flex items-center gap-2 rounded-xl border border-line/[0.12] bg-surface px-3.5 py-2 text-sm font-semibold text-ink transition hover:bg-surface-2">
                 <MessageCircle className="h-4 w-4" />{t('Share on WhatsApp')}
               </a>
+              </span>
             </div>
           </div>
 

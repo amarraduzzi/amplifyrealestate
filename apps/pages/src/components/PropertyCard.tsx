@@ -5,11 +5,13 @@ import { placeText, priceSuffix, purposeLabel, statusCls, statusLabel, typeLabel
 import { Link, propertyPath } from '../lib/router';
 import { t } from '../lib/i18n';
 import { PropertyIcon } from './PropertyIcon';
+import { FavButton } from './FavButton';
 
 /** A property in a list: the photo first and large, then the price, the title and the key facts. */
 export function PropertyCard({ slug, p }: { slug: string; p: PublicCard }) {
   const place = placeText(p);
   return (
+    <div className="relative">
     <Link to={propertyPath(slug, p.reference)}
       className="group block rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
       <span className="relative block overflow-hidden rounded-3xl bg-surface-3">
@@ -36,5 +38,7 @@ export function PropertyCard({ slug, p }: { slug: string; p: PublicCard }) {
         </span>
       </span>
     </Link>
+    <FavButton slug={slug} reference={p.reference} />
+    </div>
   );
 }

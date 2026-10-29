@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { RotateCcw, SlidersHorizontal } from 'lucide-react';
 import type { DealPurpose } from '@vastgoed/shared';
 import type { PublicCard } from '../lib/api';
@@ -44,8 +44,8 @@ const selectCls = 'w-full rounded-xl border border-line/[0.12] bg-surface px-3 p
 const chip = (on: boolean) => `min-w-[2.75rem] rounded-full px-3 py-1.5 text-sm font-semibold transition ${on ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`;
 
 /** The button with the number of active filters, the panel with budget, bedrooms and surface, and the sort order. */
-export function ListingFilters({ f, setF, purpose, count, total }: {
-  f: Filters; setF: (f: Filters) => void; purpose: DealPurpose | null; count: number; total: number;
+export function ListingFilters({ f, setF, purpose, count, total, extra }: {
+  f: Filters; setF: (f: Filters) => void; purpose: DealPurpose | null; count: number; total: number; extra?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const n = activeCount(f, purpose !== null);
@@ -66,6 +66,7 @@ export function ListingFilters({ f, setF, purpose, count, total }: {
             <RotateCcw className="h-3.5 w-3.5" /> {t('Reset')}
           </button>
         )}
+        {extra}
         <p className="text-sm text-muted" aria-live="polite">{count === total ? t('{n} properties', { n: total }) : t('{n} of {total} properties', { n: count, total })}</p>
         <label className="ms-auto flex items-center gap-2 text-sm text-muted">
           <span className="hidden sm:inline">{t('Sort by')}</span>

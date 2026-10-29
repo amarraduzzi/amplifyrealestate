@@ -1,25 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
-import { ChevronDown, Menu, MessageCircle, Phone, X } from 'lucide-react';
+import { ChevronDown, Heart, Menu, MessageCircle, Phone, X } from 'lucide-react';
 import type { DealPurpose } from '@vastgoed/shared';
 import { logEvent, photoUrl, type PublicOffice } from '../lib/api';
 import { applyLang, getLang, LANGS, saveLang, t, type Lang } from '../lib/i18n';
 import { telLink, waLink } from '../lib/contact';
 import { blogPath, estimationPath, navigate, officePath } from '../lib/router';
 import { AmplifyMark } from './Brand';
+import { useFavs } from '../lib/favorites';
 
 /** What the office page knows about the site, so the menu only shows what exists. */
 const known = new Map<string, { blog: boolean; areas: boolean }>();
 export const rememberSite = (slug: string, info: { blog: boolean; areas: boolean }) => { known.set(slug, info); };
 
 /** A section of the office page to open after navigating there (listings with a filter, neighborhoods, contact). */
-let pending: { section: string; purpose?: DealPurpose } | null = null;
+let pending: { section: string; purpose?: DealPurpose; favs?: boolean } | null = null;
 export const takePending = () => { const p = pending; pending = null; return p; };
 export const SECTION_EVENT = 'pages:section';
 
-function goSection(slug: string, section: string, purpose?: DealPurpose) {
+function goSection(slug: string, section: string, purpose?: DealPurpose, favs?: boolean) {
   const here = window.location.pathname.replace(/\/+$/, '') === officePath(slug).replace(/\/+$/, '') || (officePath(slug) === '/' && window.location.pathname === '/');
-  if (here) { window.dispatchEvent(new CustomEvent(SECTION_EVENT, { detail: { section, purpose } })); return; }
-  pending = { section, purpose };
+  if (here) { window.dispatchEvent(new CustomEvent(SECTION_EVENT, { detail: { section, purpose, favs } })); return; }
+  pending = { section, purpose, favs };
   navigate(officePath(slug));
 }
 
@@ -77,6 +78,7 @@ export function SiteHeader({ office, overlay }: { office: PublicOffice; overlay:
   const hello = t('Hello, I would like information about your properties.');
   const clear = overlay && !scrolled && !open;
   const go = (f: () => void) => { setOpen(false); f(); };
+  const favs = useFavs(office.slug);
   const items: { label: string; run: () => void }[] = [
     { label: t('Buy'), run: () => goSection(office.slug, 'biens', 'sale') },
     { label: t('Rent'), run: () => goSection(office.slug, 'biens', 'rent_long') },
@@ -114,6 +116,13 @@ export function SiteHeader({ office, overlay }: { office: PublicOffice; overlay:
                 className="gold-fill hidden items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-brand-ink transition hover:brightness-105 sm:inline-flex">
                 <MessageCircle className="h-4 w-4" />WhatsApp
               </a>
+            )}
+            {favs.length > 0 && (
+              <button type="button" onClick={() => go(() => goSection(office.slug, 'biens', undefined, true))} aria-label={t('My favorites')} title={t('My favorites')}
+                className="relative grid h-10 w-10 place-items-center rounded-full text-white ring-1 ring-white/25 transition hover:bg-white/10">
+                <Heart className="h-[18px] w-[18px]" />
+                <span className="absolute -end-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-rose-500 px-1 text-[11px] font-bold text-white">{favs.length}</span>
+              </button>
             )}
             <LangMenu light={clear} />
             <button type="button" onClick={() => setOpen(o => !o)} aria-expanded={open} aria-label={open ? t('Close') : t('Menu')}

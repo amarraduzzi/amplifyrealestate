@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { CheckCircle2, ExternalLink, HardHat, Mail, MapPin, MessageCircle, Phone, Quote, Search, Star, UserRound } from 'lucide-react';
+import { CheckCircle2, ExternalLink, HardHat, Heart, Mail, MapPin, MessageCircle, Phone, Quote, Search, Star, UserRound } from 'lucide-react';
 import type { DealPurpose, PropertyType } from '@vastgoed/shared';
 import { formatMad } from '@vastgoed/shared';
 import { loadOffice, loadOfficeProjects, logEvent, photoUrl, type ProjectCard, type SiteBlock } from '../lib/api';
@@ -19,6 +19,7 @@ import { langLabel } from '../lib/vitrine';
 import { ContactBar } from '../components/ContactBar';
 import { PropertyCard } from '../components/PropertyCard';
 import { AlertBox } from '../components/AlertBox';
+import { readFavs, selectionUrl, sharedSelection, useFavs } from '../lib/favorites';
 import { ListingFilters, NO_FILTERS, applyFilters, type Filters } from '../components/ListingFilters';
 import { InquiryForm } from '../components/InquiryForm';
 import { Failed, Loading, NotFound } from './States';
@@ -77,9 +78,12 @@ export function OfficeView({ slug }: { slug: string }) {
   const [type, setType] = useState<PropertyType | 'all'>('all');
   const [q, setQ] = useState('');
   const [filters, setFilters] = useState<Filters>(NO_FILTERS);
+  const favs = useFavs(slug);
+  const [favOnly, setFavOnly] = useState(false);
+  const [shared, setShared] = useState<string[] | null>(() => sharedSelection());
   const [heroQ, setHeroQ] = useState('');
   const [heroPurpose, setHeroPurpose] = useState<DealPurpose | 'all'>('all');
-  useEffect(() => { setPurpose('all'); setType('all'); setQ(''); setFilters(NO_FILTERS); }, [slug]);
+  useEffect(() => { setPurpose('all'); setType('all'); setQ(''); setFilters(NO_FILTERS); setFavOnly(false); }, [slug]);
 
   const data = state.status === 'ready' ? state.data : null;
   useEffect(() => {
@@ -90,7 +94,9 @@ export function OfficeView({ slug }: { slug: string }) {
   useEffect(() => {
     if (!data) return;
     rememberSite(data.office.slug, { blog: (data.site?.posts ?? []).length > 0, areas: (data.site?.areas ?? '').trim().length > 0 });
-    const open = (section: string, p?: DealPurpose) => {
+    const open = (section: string, p?: DealPurpose, fav?: boolean) => {
+      if (fav) { setFavOnly(readFavs(data.office.slug).length > 0); setShared(null); }
+      else if (section === 'biens') setFavOnly(false);
       if (p) {
         const has = (x: DealPurpose) => data.listings.some(l => l.purpose === x);
         // "Rent": long-term first, else short stays, else everything
@@ -99,8 +105,8 @@ export function OfficeView({ slug }: { slug: string }) {
       window.setTimeout(() => document.getElementById(section)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
     };
     const first = takePending();
-    if (first) open(first.section, first.purpose);
-    const on = (e: Event) => { const d = (e as CustomEvent<{ section: string; purpose?: DealPurpose }>).detail; open(d.section, d.purpose); };
+    if (first) open(first.section, first.purpose, first.favs);
+    const on = (e: Event) => { const d = (e as CustomEvent<{ section: string; purpose?: DealPurpose; favs?: boolean }>).detail; open(d.section, d.purpose, d.favs); };
     window.addEventListener(SECTION_EVENT, on);
     return () => window.removeEventListener(SECTION_EVENT, on);
   }, [data]);
@@ -119,12 +125,27 @@ export function OfficeView({ slug }: { slug: string }) {
       && (!n || norm([l.title, l.neighborhood, l.city, l.reference].filter(Boolean).join(' ')).includes(n)));
     return applyFilters(base, filters, dealFor !== null);
   }, [data, purpose, type, q, filters, dealFor]);
+  // a shared selection or "my favorites" replaces the search: exactly those properties, in that order
+  const picked = shared ?? (favOnly ? favs : null);
+  const pickedList = useMemo(() => picked === null ? null
+    : picked.map(r => (data?.listings ?? []).find(l => l.reference === r)).filter((x): x is NonNullable<typeof x> => !!x), [picked, data]);
+  useEffect(() => { if (favOnly && favs.length === 0) setFavOnly(false); }, [favOnly, favs.length]);
+  useEffect(() => { if (shared) window.setTimeout(() => document.getElementById('biens')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 400); }, [shared, data]);
 
   if (state.status === 'loading') return <Loading />;
   if (state.status === 'error') return <Failed onRetry={retry} />;
   if (!data) return <NotFound text={t('This page does not exist, or the link is not correct.')} />;
 
   const { office, listings } = data;
+  const showAll = () => {
+    setFavOnly(false);
+    if (shared) {
+      setShared(null);
+      const u = new URL(window.location.href); u.searchParams.delete('selection'); window.history.replaceState(null, '', u);
+    }
+  };
+  const shareText = [t('My selection at {office}:', { office: office.name }), '',
+    ...(pickedList ?? []).map(l => `• ${l.title} · ${formatMad(l.price_cents)}`), '', selectionUrl(office.slug, (pickedList ?? []).map(l => l.reference))].join('\n');
   const site = data.site;
   const services = (site?.services ?? '').split('\n').map(s => s.replace(/^[-•*\s]+/, '').trim()).filter(Boolean);
   const areas = (site?.areas ?? '').split(/[,·\n]/).map(s => s.trim()).filter(Boolean);
@@ -173,7 +194,25 @@ export function OfficeView({ slug }: { slug: string }) {
     listings: (
       <Reveal id="biens">
         <Heading kicker={t('Our selection')} title={t('Available properties')} />
-        {listings.length > 0 && (
+        {pickedList !== null && (
+          <div className="flex flex-col gap-3 rounded-2xl bg-surface p-4 ring-1 ring-line/10 sm:flex-row sm:items-center sm:p-5">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-rose-50 text-rose-500"><Heart className="h-5 w-5 fill-current" /></span>
+            <div className="min-w-0 flex-1">
+              <p className="font-display text-lg font-bold">{shared ? t('A selection shared with you') : t('My favorites')}</p>
+              <p className="text-sm text-muted">{shared ? t('{n} properties picked for you. Tap the heart to keep the ones you like.', { n: pickedList.length }) : t('{n} properties saved on this device.', { n: pickedList.length })}</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {!shared && pickedList.length > 0 && (
+                <a href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-4 py-2.5 text-sm font-bold text-white hover:brightness-95">
+                  <MessageCircle className="h-4 w-4" /> {t('Share my selection')}
+                </a>
+              )}
+              <button type="button" onClick={showAll} className="rounded-xl px-4 py-2.5 text-sm font-semibold text-ink ring-1 ring-line/15 hover:ring-line/30">{t('See all properties')}</button>
+            </div>
+          </div>
+        )}
+        {pickedList === null && listings.length > 0 && (
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             {present.length > 1 && (
               <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" role="group">
@@ -201,13 +240,18 @@ export function OfficeView({ slug }: { slug: string }) {
             </div>
           </div>
         )}
-        {listings.length > 1 && <ListingFilters f={filters} setF={setFilters} purpose={dealFor} count={shown.length} total={listings.length} />}
+        {pickedList === null && listings.length > 1 && <ListingFilters f={filters} setF={setFilters} purpose={dealFor} count={shown.length} total={listings.length}
+          extra={favs.length > 0 ? (
+            <button type="button" onClick={() => setFavOnly(true)} className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-semibold text-rose-600 ring-1 ring-rose-200 transition hover:bg-rose-50">
+              <Heart className="h-4 w-4 fill-current" /> {t('My favorites')} <span className="tabular">{favs.length}</span>
+            </button>
+          ) : null} />}
         {listings.length === 0 && <p className="mt-8 text-center text-muted">{t('No properties are online right now.')}</p>}
-        {listings.length > 0 && shown.length === 0 && <p className="mt-8 text-center text-muted">{t('No property matches your search. Leave your number below and we will look for you.')}</p>}
+        {pickedList === null && listings.length > 0 && shown.length === 0 && <p className="mt-8 text-center text-muted">{t('No property matches your search. Leave your number below and we will look for you.')}</p>}
         <ul className="mt-5 grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
-          {shown.map(p => <li key={p.reference}><PropertyCard slug={office.slug} p={p} /></li>)}
+          {(pickedList ?? shown).map(p => <li key={p.reference}><PropertyCard slug={office.slug} p={p} /></li>)}
         </ul>
-        {listings.length > 0 && (
+        {pickedList === null && listings.length > 0 && (
           <AlertBox slug={office.slug} purposes={present.length > 0 ? present : ['sale']} purpose={dealFor} type={type === 'all' ? null : type}
             filters={filters} hoods={hoods} hood={hoodFromQ} strong={shown.length === 0} />
         )}
