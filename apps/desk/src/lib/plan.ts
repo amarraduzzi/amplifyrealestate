@@ -3,7 +3,8 @@ import { t } from './i18n';
 import { friendly } from './errors';
 
 export type PlanInfo = {
-  plan: 'trial' | 'active';
+  plan: 'trial' | 'active' | 'free';
+  edition?: 'agence' | 'agent';
   plan_until: string;
   days_left: number;
   is_open: boolean;

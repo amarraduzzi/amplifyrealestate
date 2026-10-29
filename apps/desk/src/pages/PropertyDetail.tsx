@@ -13,6 +13,7 @@ import { PropertyMandates } from './PropertyMandates';
 import { PropertyLeads } from './PropertyLeads';
 import { PhotosSection } from './PhotosSection';
 import { PublishSection } from './PublishSection';
+import { VoucherSection } from './VoucherSection';
 import { PostingSection } from './PostingSection';
 import { AdQuality } from '../components/AdQuality';
 import { OwnerPortalSection } from '../components/OwnerPortalSection';
@@ -101,7 +102,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
   return (
     <Modal title={<span className="block truncate">{row.title}</span>} onClose={onClose}
       footer={<div className="flex justify-end gap-2">
-        <Btn onClick={() => setReport(true)}><FileText className="h-4 w-4" /> {t('Owner report')}</Btn>
+        {office.edition !== 'agent' && <Btn onClick={() => setReport(true)}><FileText className="h-4 w-4" /> {t('Owner report')}</Btn>}
         {canWrite && <Btn onClick={() => setEditing(true)}><Pencil className="h-4 w-4" /> {t('Edit')}</Btn>}
         <Btn tone="brand" onClick={onClose}>{t('Close')}</Btn>
       </div>}>
@@ -156,14 +157,17 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
 
         {report && <OwnerReport office={office} property={row} onClose={() => setReport(false)} />}
         <PropertyParties office={office} property={row} canWrite={canWrite} />
-        <OwnerPortalSection office={office} property={row} canWrite={canWrite} />
-        <ManagementSection office={office} property={row} canWrite={canWrite} />
-        <PropertyMandates office={office} property={row} canWrite={canWrite} />
+        {office.edition !== 'agent' && <>
+          <OwnerPortalSection office={office} property={row} canWrite={canWrite} />
+          <ManagementSection office={office} property={row} canWrite={canWrite} />
+          <PropertyMandates office={office} property={row} canWrite={canWrite} />
+        </>}
         <AdQuality office={office} property={row} tick={photoTick} />
         <PhotosSection office={office} property={row} canWrite={canWrite} onChanged={() => { onChanged(); setPhotoTick(x => x + 1); }} />
         <PublishSection office={office} property={row} canWrite={canWrite} onChanged={() => { onChanged(); loadHistory(); }} />
         <PostingSection office={office} property={row} canWrite={canWrite} />
         <NetworkShare office={office} property={row} canWrite={canWrite} />
+        <VoucherSection office={office} property={row} canWrite={canWrite} />
         <PropertyLeads office={office} property={row} />
         <ViewingsSection office={office} property={row} />
         <TasksSection office={office} userId={userId} property={row} />

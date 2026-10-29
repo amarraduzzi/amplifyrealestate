@@ -47,6 +47,17 @@ export function PublishSection({ office, property, canWrite, onChanged }: {
     if (busy) return;
     if (on && !window.confirm(t('Switch on the public page? Anyone with the link can see the title, price, neighborhood and city, details, description and your office contact. The exact address and the owner details are never shown.'))) return;
     setBusy(true); setError(null);
+    // Amplify Agent has no separate mandate screen: going online records an (unverified) mandate first
+    if (on && office.edition === 'agent') {
+      const { data: active } = await supabase.rpc('property_public_state', { p_property: property.id });
+      if (active === 'hidden_mandate' || active === null || active === 'offline') {
+        const m = await supabase.from('property_mandates').select('id').eq('property_id', property.id).eq('status', 'active').limit(1);
+        if (!m.error && !(m.data ?? []).length) {
+          const ins = await supabase.from('property_mandates').insert({ org_id: office.id, property_id: property.id, evidence_note: 'Amplify Agent' });
+          if (ins.error) { setBusy(false); setError(publishError(ins.error.message)); return; }
+        }
+      }
+    }
     const { data, error } = await supabase.from('properties').update({ is_published: on }).eq('id', property.id).select('id');
     setBusy(false);
     if (error) { setError(publishError(error.message)); return; }

@@ -1,6 +1,9 @@
 import type { DealPurpose, DealStage, LeadStatus, OrgRole, PropertyStatus, PropertyType, TaskStatus, ViewingOutcome, ViewingStatus } from '@vastgoed/shared';
 
-export type Office = { id: string; name: string; slug: string; city: string | null; role: OrgRole };
+export type Edition = 'agence' | 'agent';
+export type Office = { id: string; name: string; slug: string; city: string | null; role: OrgRole; edition?: Edition };
+/** Amplify Agent: one person working alone, with a simpler menu. */
+export const isSolo = (o: Office) => o.edition === 'agent';
 
 export type PropertyRow = {
   id: string;

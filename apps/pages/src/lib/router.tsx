@@ -12,6 +12,7 @@ export type Route =
   | { kind: 'guest'; token: string }
   | { kind: 'booking'; token: string }
   | { kind: 'cleaner'; token: string }
+  | { kind: 'voucher'; token: string }
   | { kind: 'project'; slug: string; project: string };
 
 // On an office's own domain (www.atlas-immo.ma) the office is the whole site: / is the office, /P-AB12 a property.
@@ -34,6 +35,8 @@ export function parse(pathname: string): Route {
   // /g/<code>: the guest page of a short-term rental. /c/<code>: the cleaning list of a cleaner
   // /b/<code>: the status of a booking request (12c)
   if (parts[0] === 'b' && parts.length === 2) return { kind: 'booking', token: parts[1] };
+  // /v/<code>: the visitor's copy of a signed visit voucher (Amplify Agent)
+  if (parts[0] === 'v' && parts.length === 2) return { kind: 'voucher', token: parts[1] };
   if (parts[0] === 'g' && parts.length === 2) return { kind: 'guest', token: parts[1] };
   if (parts[0] === 'c' && parts.length === 2) return { kind: 'cleaner', token: parts[1] };
   // /<office>/projet/<project> (or /projet/<project> on the office's own domain): a new-build project

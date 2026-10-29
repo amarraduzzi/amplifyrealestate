@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { getLang, t } from '../lib/i18n';
 import type { Office } from '../lib/types';
-import { loadPlan, type PlanInfo } from '../lib/plan';
-import { Card } from '../components/ui';
+import { loadPlan, planError, type PlanInfo } from '../lib/plan';
+import { supabase } from '../lib/supabase';
+import { Btn, Card } from '../components/ui';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 
@@ -22,9 +23,28 @@ function Usage({ label, used, max }: { label: string; used: number; max: number 
 }
 
 /** The plan of the office: trial or paid, last day, and use against the limits. For the owner and managers. */
-export function Plan({ office, embedded = false }: { office: Office; embedded?: boolean }) {
+export function Plan({ office, embedded = false, onEditionChanged }: { office: Office; embedded?: boolean; onEditionChanged?: () => void }) {
   const [plan, setPlan] = useState<PlanInfo | null | undefined>(undefined);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
   useEffect(() => { let live = true; loadPlan(office.id).then(p => { if (live) setPlan(p); }); return () => { live = false; }; }, [office.id]);
+  const switchTo = async (edition: 'agence' | 'agent') => {
+    const q = edition === 'agent'
+      ? t('Switch to Amplify Agent? You work alone: free with 3 properties, with a simpler menu. You can switch back.')
+      : t('Switch to Amplify Agence? You get the full menu and a free trial for your team.');
+    if (!window.confirm(q)) return;
+    setBusy(true); setErr(null);
+    const { error } = await supabase.rpc('set_edition', { p_org: office.id, p_edition: edition });
+    setBusy(false);
+    if (error) {
+      setErr(error.message.includes('agent_heeft_team') ? t('Amplify Agent is for one person. Remove the other team members first.')
+        : error.message.includes('uitvoering_betaald_plan') ? t('You have a paid plan. Contact Amplify to change it.') : planError(error.message));
+      return;
+    }
+    onEditionChanged?.();
+    setPlan(await loadPlan(office.id));
+  };
+  const solo = plan?.edition === 'agent';
 
   const date = (iso: string) => new Intl.DateTimeFormat(LOCALES[getLang()], { dateStyle: 'long' }).format(new Date(iso + 'T12:00:00'));
 
@@ -38,15 +58,15 @@ export function Plan({ office, embedded = false }: { office: Office; embedded?: 
       {plan && (
         <div className="mt-6 space-y-4">
           <Card>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">{plan.plan === 'trial' ? t('Free trial') : t('Paid plan')}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">{solo ? 'Amplify Agent' : 'Amplify Agence'} · {plan.plan === 'trial' ? t('Free trial') : plan.plan === 'free' ? t('Free') : t('Paid plan')}</p>
             <p className={`mt-1 font-display text-2xl font-bold ${plan.is_open ? '' : 'text-danger'}`}>
               {plan.is_open ? t('Active') : t('Ended')}
             </p>
-            <p className="mt-1 text-sm text-muted">
+            {plan.plan === 'free' ? <p className="mt-1 text-sm text-muted">{t('Free, without end date. Up to {n} properties.', { n: plan.max_properties })}</p> : <p className="mt-1 text-sm text-muted">
               {plan.is_open
                 ? (plan.days_left === 0 ? t('Last day: {date}.', { date: date(plan.plan_until) }) : t('{n} days left, until {date}.', { n: plan.days_left, date: date(plan.plan_until) }))
                 : t('Ended on {date}.', { date: date(plan.plan_until) })}
-            </p>
+            </p>}
             {!plan.is_open && <p className="mt-3 text-sm">{t('You can still look at everything. Your public pages stay online. Changing things works again as soon as the plan is renewed.')}</p>}
           </Card>
 
@@ -58,8 +78,21 @@ export function Plan({ office, embedded = false }: { office: Office; embedded?: 
 
           <Card>
             <h2 className="font-display text-lg font-semibold">{t('Renew or upgrade')}</h2>
-            <p className="mt-1 text-sm text-muted">{t('Contact Amplify to renew your plan or to raise the limits. Your data is never removed.')}</p>
+            <p className="mt-1 text-sm text-muted">{solo
+              ? t('Amplify Agent: 99 DH per month or 990 DH per year, with unlimited properties. Contact Amplify to upgrade. Your data is never removed.')
+              : t('Contact Amplify to renew your plan or to raise the limits. Your data is never removed.')}</p>
           </Card>
+
+          {office.role === 'owner' && plan.plan !== 'active' && (
+            <Card>
+              <h2 className="font-display text-lg font-semibold">{solo ? t('Do you work with a team?') : t('Do you work alone?')}</h2>
+              <p className="mt-1 text-sm text-muted">{solo
+                ? t('Amplify Agence has the full menu: rentals, management, invoices, owners and your team.')
+                : t('Amplify Agent is made for an agent who works alone: your showcase, visit vouchers and colleagues. Free up to 3 properties.')}</p>
+              {err && <p className="mt-3 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{err}</p>}
+              <Btn className="mt-3" tone="ghost" disabled={busy} onClick={() => switchTo(solo ? 'agence' : 'agent')}>{busy ? '…' : solo ? t('Switch to Amplify Agence') : t('Switch to Amplify Agent')}</Btn>
+            </Card>
+          )}
         </div>
       )}
     </div>

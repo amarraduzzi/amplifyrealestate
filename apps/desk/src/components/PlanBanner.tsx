@@ -6,6 +6,17 @@ import type { View } from './Shell';
 /** A thin strip under the header: trial days left, a plan that ends soon, or a plan that has ended (read only). */
 export function PlanBanner({ plan, canSee, onGo }: { plan: PlanInfo | null; canSee: boolean; onGo: (v: View) => void }) {
   if (!plan) return null;
+  if (plan.plan === 'free') {
+    if (plan.properties < plan.max_properties) return null;
+    return (
+      <div className="bg-brand/10 px-4 py-2 text-sm font-semibold text-brand sm:px-6">
+        <div className="mx-auto flex max-w-5xl items-center gap-2">
+          <span className="min-w-0 flex-1">{t('Amplify Agent free: {used} of {max} properties. Upgrade for unlimited properties.', { used: plan.properties, max: plan.max_properties })}</span>
+          {canSee && <button type="button" onClick={() => onGo('plan')} className="shrink-0 underline underline-offset-2">{t('See plan')}</button>}
+        </div>
+      </div>
+    );
+  }
   const ended = !plan.is_open;
   const soon = plan.is_open && (plan.plan === 'trial' || plan.days_left <= 7);
   if (!ended && !soon) return null;

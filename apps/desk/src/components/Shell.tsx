@@ -1,16 +1,16 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import {
-  BarChart3, BedDouble, Building, Building2, HardHat, CalendarClock, CalendarDays, Handshake, KeyRound, LayoutGrid, LogOut, Network, Receipt, Settings, Sun, Users, Wrench, X,
+  BarChart3, BedDouble, Building, Building2, FileSignature, Globe, HardHat, CalendarClock, CalendarDays, Handshake, KeyRound, LayoutGrid, LogOut, Network, Receipt, Settings, Sun, Users, Wrench, X,
 } from 'lucide-react';
 import { AmplifyLogo, AmplifyMark } from './Brand';
 import { LangSwitch } from './LangSwitch';
 import { t } from '../lib/i18n';
-import type { Office } from '../lib/types';
+import { isSolo, type Office } from '../lib/types';
 
 // 'tasks', 'team' and 'plan' are no longer separate tabs (tasks live in the Agenda, team and plan in Settings),
 // but other screens may still send the user there: App opens the right place.
 export type View = 'today' | 'agenda' | 'overview' | 'properties' | 'leads' | 'viewings' | 'deals' | 'invoices' | 'leases' | 'stays' | 'syndic' | 'projects' | 'maintenance'
-  | 'network' | 'settings' | 'tasks' | 'team' | 'plan' | 'site' | 'billing';
+  | 'network' | 'settings' | 'tasks' | 'team' | 'plan' | 'site' | 'billing' | 'vouchers';
 
 /** The overview with the numbers is for the owner and managers. */
 export const canSeeOverview = (role: Office['role']) => role === 'owner' || role === 'manager';
@@ -19,11 +19,20 @@ type Item = { id: View; label: string; icon: ReactNode };
 type Group = { title: string; items: Item[] };
 
 /** Which tab a view belongs to (so "tasks" lights up the Agenda, "team" lights up Settings). */
-const ownerOf = (v: View): View => (v === 'tasks' ? 'agenda' : v === 'team' || v === 'plan' || v === 'site' || v === 'billing' ? 'settings' : v);
+const ownerOf = (v: View, solo = false): View => (v === 'tasks' ? 'agenda' : v === 'site' && solo ? 'site' : v === 'team' || v === 'plan' || v === 'site' || v === 'billing' ? 'settings' : v);
 
-function groups(role: Office['role']): Group[] {
+function groups(role: Office['role'], solo = false): Group[] {
   const i = (id: View, label: string, icon: ReactNode): Item => ({ id, label, icon });
   const ic = 'h-[18px] w-[18px] shrink-0';
+  // Amplify Agent: only what one agent working alone needs
+  if (solo) return [
+    { title: t('Work'), items: [i('today', t('Today'), <Sun className={ic} />), i('agenda', t('Agenda'), <CalendarDays className={ic} />)] },
+    { title: t('My business'), items: [
+      i('properties', t('My properties'), <Building2 className={ic} />), i('leads', t('My clients'), <Users className={ic} />),
+      i('vouchers', t('Visit vouchers'), <FileSignature className={ic} />), i('network', t('Colleagues'), <Network className={ic} />),
+      i('site', t('My showcase'), <Globe className={ic} />),
+    ] },
+  ];
   return [
     { title: t('Work'), items: [i('today', t('Today'), <Sun className={ic} />), i('agenda', t('Agenda'), <CalendarDays className={ic} />)] },
     { title: t('Sales'), items: [
@@ -43,6 +52,7 @@ function groups(role: Office['role']): Group[] {
 
 /** On a phone the bar at the bottom holds the four screens used most; the rest is under "More". */
 const BOTTOM: View[] = ['today', 'properties', 'leads', 'agenda'];
+const BOTTOM_SOLO: View[] = ['properties', 'leads', 'vouchers', 'agenda'];
 
 function OfficePick({ offices, office, onPick }: { offices: Office[]; office: Office; onPick: (id: string) => void }) {
   if (offices.length < 2) return <span className="block truncate text-sm font-semibold text-white/85">{office.name}</span>;
@@ -58,8 +68,10 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
   offices: Office[]; office: Office; view: View; onView: (v: View) => void; onPick: (id: string) => void; onSignOut: () => void; banner?: ReactNode; children: ReactNode;
 }) {
   const [more, setMore] = useState(false);
-  const active = ownerOf(view);
-  const gs = groups(office.role);
+  const active = ownerOf(view, office.edition === 'agent');
+  const solo = isSolo(office);
+  const gs = groups(office.role, solo);
+  const bottom = solo ? BOTTOM_SOLO : BOTTOM;
   const all = gs.flatMap(g => g.items);
   const settings: Item = { id: 'settings', label: t('Settings'), icon: <Settings className="h-[18px] w-[18px] shrink-0" /> };
   const go = (v: View) => { setMore(false); onView(v); window.scrollTo(0, 0); };
@@ -123,14 +135,14 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
       {/* ---- Phone and tablet: bottom bar ---- */}
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line/10 bg-surface/95 backdrop-blur lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} aria-label={t('Sections')}>
         <div className="mx-auto grid max-w-lg grid-cols-5">
-          {BOTTOM.map(id => all.find(x => x.id === id)).filter((x): x is Item => !!x).map(x => (
+          {bottom.map(id => all.find(x => x.id === id)).filter((x): x is Item => !!x).map(x => (
             <button key={x.id} type="button" onClick={() => go(x.id)} aria-current={active === x.id ? 'page' : undefined}
               className={`flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold transition ${active === x.id ? 'text-brand' : 'text-muted hover:text-ink'}`}>
               {x.icon}<span className="max-w-full truncate px-1">{x.label}</span>
             </button>
           ))}
           <button type="button" onClick={() => setMore(true)} aria-expanded={more}
-            className={`flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold transition ${!BOTTOM.includes(active) ? 'text-brand' : 'text-muted hover:text-ink'}`}>
+            className={`flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold transition ${!bottom.includes(active) ? 'text-brand' : 'text-muted hover:text-ink'}`}>
             <LayoutGrid className="h-[18px] w-[18px]" /><span>{t('More')}</span>
           </button>
         </div>

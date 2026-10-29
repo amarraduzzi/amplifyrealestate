@@ -4,7 +4,7 @@ import type { DealPurpose, PropertyStatus, PropertyType } from '@vastgoed/shared
 // Visitors have no access to any table. Only the public anon key is used here.
 
 export type PublicAgent = { name: string; role: string | null; photo: string | null; langs: string[] };
-export type PublicOffice = { name: string; slug: string; city: string | null; whatsapp: string | null; phone: string | null; email: string | null; domain?: string | null; agent?: PublicAgent | null };
+export type PublicOffice = { name: string; slug: string; city: string | null; whatsapp: string | null; phone: string | null; email: string | null; domain?: string | null; agent?: PublicAgent | null; edition?: 'agence' | 'agent' };
 
 export type PublicCard = {
   reference: string; title: string; property_type: PropertyType; purpose: DealPurpose; status: PropertyStatus;
@@ -245,4 +245,15 @@ export async function guestStayRequest(token: string, action: 'paid' | 'accept_c
     const r = await fetch(`${BASE}/rest/v1/rpc/guest_stay_request`, { method: 'POST', headers: { apikey: KEY, 'content-type': 'application/json' }, body: JSON.stringify({ p_token: token, p_action: action }) });
     return r.ok;
   } catch { return false; }
+}
+
+export type VoucherPage = {
+  office: { name: string; slug: string; city: string | null; whatsapp: string | null; phone: string | null; agent_name: string | null; edition: string };
+  property: { reference: string; title: string; property_type: PropertyType; purpose: DealPurpose; city: string | null; neighborhood: string | null };
+  visitor_name: string; visitor_phone: string; months: number; visited_at: string; signature: string; number: string;
+};
+/** The visitor's copy of a signed visit voucher. */
+export async function loadVoucher(token: string): Promise<VoucherPage | null> {
+  if (!/^[0-9a-f]{36}$/.test(token)) return null;
+  return rpc<VoucherPage>('public_visit_voucher', { p_token: token });
 }

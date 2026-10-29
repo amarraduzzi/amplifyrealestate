@@ -11,6 +11,8 @@ import { purposeLabel, typeLabel } from '../lib/format';
 import { t } from '../lib/i18n';
 import { telLink, waLink } from '../lib/contact';
 import { Layout } from '../components/Layout';
+import { langLabel } from '../lib/vitrine';
+import { UserRound } from 'lucide-react';
 import { ContactBar } from '../components/ContactBar';
 import { PropertyCard } from '../components/PropertyCard';
 import { InquiryForm } from '../components/InquiryForm';
@@ -53,6 +55,7 @@ export function OfficeView({ slug }: { slug: string }) {
   const hello = t('Hello, I would like information about your properties.');
   const forSale = listings.filter(l => l.purpose === 'sale').length;
   const forRent = listings.length - forSale;
+  const solo = office.edition === 'agent' && !!office.agent;
 
   const covers = listings.filter(l => l.cover).slice(0, 3).map(l => l.cover as string);
   const figures = [
@@ -71,10 +74,22 @@ export function OfficeView({ slug }: { slug: string }) {
             {(office.city || site?.areas) && (
               <p className="flex items-start gap-1.5 text-sm font-semibold text-brand"><MapPin className="mt-0.5 h-4 w-4 shrink-0" />{[office.city, site?.areas].filter(Boolean).join(' · ')}</p>
             )}
-            <h1 className="mt-2 font-display text-3xl font-bold leading-tight sm:text-5xl">{office.name}</h1>
+            {solo && (
+              <div className="mt-4 flex items-center gap-4">
+                {office.agent?.photo
+                  ? <img src={photoUrl(office.agent.photo)} alt="" className="h-20 w-20 rounded-full bg-surface-3 object-cover ring-4 ring-surface sm:h-24 sm:w-24" />
+                  : <span className="grid h-20 w-20 place-items-center rounded-full bg-surface-2 text-muted sm:h-24 sm:w-24"><UserRound className="h-9 w-9" /></span>}
+                <div className="min-w-0">
+                  {office.agent?.role && <p className="font-semibold">{office.agent.role}</p>}
+                  {office.agent && office.agent.langs.length > 0 && <p className="text-sm text-muted">{t('Speaks {langs}', { langs: office.agent.langs.map(langLabel).join(', ') })}</p>}
+                </div>
+              </div>
+            )}
+            <h1 className="mt-2 font-display text-3xl font-bold leading-tight sm:text-5xl">{solo ? office.agent!.name : office.name}</h1>
+            {solo && office.agent!.name !== office.name && <p className="mt-1 text-muted">{office.name}</p>}
             {site?.tagline && <p className="mt-3 max-w-xl text-lg text-muted">{site.tagline}</p>}
             <div className="mt-6 flex flex-wrap gap-2">
-              <a href="#biens" className="inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-3 text-sm font-bold text-bg transition hover:opacity-90">{t('See our properties')}</a>
+              <a href="#biens" className="inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-3 text-sm font-bold text-bg transition hover:opacity-90">{solo ? t('See my properties') : t('See our properties')}</a>
               {office.whatsapp && (
                 <a href={waLink(office.whatsapp, hello)} target="_blank" rel="noreferrer" onClick={() => logEvent(office.slug, null, 'whatsapp')}
                   className="gold-fill inline-flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold text-brand-ink transition hover:brightness-105">

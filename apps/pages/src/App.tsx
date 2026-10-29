@@ -9,6 +9,7 @@ import { RequestView } from './views/RequestView';
 import { ProjectView } from './views/ProjectView';
 import { GuestGuide } from './views/GuestGuide';
 import { CleanerPage } from './views/CleanerPage';
+import { VoucherView } from './views/VoucherView';
 
 export default function App() {
   const route = useRoute();
@@ -24,6 +25,7 @@ export default function App() {
   if (route.kind === 'booking') return <RequestView key={route.token} token={route.token} />;
   if (route.kind === 'resident') return <ResidentPortal key={route.token} token={route.token} />;
   if (route.kind === 'guest') return <GuestGuide key={route.token} token={route.token} />;
+  if (route.kind === 'voucher') return <VoucherView key={route.token} token={route.token} />;
   if (route.kind === 'cleaner') return <CleanerPage key={route.token} token={route.token} />;
   if (route.kind === 'project') return <ProjectView key={`${route.slug}/${route.project}`} slug={route.slug} project={route.project} />;
   if (route.kind === 'office') return <OfficeView key={route.slug} slug={route.slug} />;

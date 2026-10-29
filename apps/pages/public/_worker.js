@@ -181,7 +181,7 @@ export default {
     // /api/ical?url=...: fetch the iCal calendar of Airbnb or Booking for a signed-in team member (the browser may not read it directly)
     if (parts[0] === 'api' && parts[1] === 'ical' && parts.length === 2 && request.method === 'GET') return icalProxy(request, url, env);
     // /o/<code> (owner), /r/<code> (co-owner), /g/<code> (guest) and /c/<code> (cleaner): private pages. Plain page, never cached, never in search engines.
-    if (['o', 'r', 'g', 'c', 'b'].includes(parts[0]) && parts.length === 2 && request.method === 'GET') {
+    if (['o', 'r', 'g', 'c', 'b', 'v'].includes(parts[0]) && parts.length === 2 && request.method === 'GET') {
       try {
         const r = await env.ASSETS.fetch(new Request(new URL('/', url), { headers: request.headers }));
         const h = new Headers(r.headers);

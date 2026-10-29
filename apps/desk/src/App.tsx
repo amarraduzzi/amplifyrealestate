@@ -24,6 +24,7 @@ import { Projects } from './pages/Projects';
 import { Leases } from './pages/Leases';
 import { Maintenance } from './pages/Maintenance';
 import { PlanBanner } from './components/PlanBanner';
+import { Vouchers } from './pages/Vouchers';
 import { loadPlan, type PlanInfo } from './lib/plan';
 import { friendly } from './lib/errors';
 
@@ -41,13 +42,16 @@ function Workspace({ session }: { session: Session }) {
   const [orgId, setOrgId] = useState<string | null>(() => { try { return localStorage.getItem(ORG_KEY); } catch { return null; } });
 
   const load = useCallback(async () => {
-    const { data, error } = await supabase.from('memberships').select('role, organizations(id, name, slug, city)').eq('user_id', session.user.id);
+    // edition comes with Amplify Agent; before that SQL is run the column does not exist, so ask without it
+    let res: { data: unknown[] | null; error: unknown } = await supabase.from('memberships').select('role, organizations(id, name, slug, city, edition)').eq('user_id', session.user.id);
+    if (res.error) res = await supabase.from('memberships').select('role, organizations(id, name, slug, city)').eq('user_id', session.user.id);
+    const { data, error } = res;
     if (error) { setError(friendly(error)); return; }
     setError(null);
     const list: Office[] = [];
     for (const m of (data ?? []) as any[]) {
       const o = Array.isArray(m.organizations) ? m.organizations[0] : m.organizations;
-      if (o) list.push({ id: o.id, name: o.name, slug: o.slug, city: o.city, role: m.role });
+      if (o) list.push({ id: o.id, name: o.name, slug: o.slug, city: o.city, role: m.role, edition: o.edition === 'agent' ? 'agent' : 'agence' });
     }
     setOffices(list);
   }, [session.user.id]);
@@ -101,6 +105,7 @@ function Workspace({ session }: { session: Session }) {
         : shown === 'network' ? <Network key={office.id} office={work} />
         : shown === 'maintenance' ? <Maintenance key={office.id} office={work} />
         : shown === 'viewings' ? <Viewings key={office.id} office={work} />
+        : shown === 'vouchers' ? <Vouchers key={office.id} office={work} />
         : shown === 'settings' || shown === 'team' || shown === 'plan' || shown === 'site' || shown === 'billing'
           ? <Settings key={`${office.id}-${shown}`} office={office} userId={session.user.id} onSelfChanged={load} initialTab={shown === 'plan' || shown === 'site' || shown === 'billing' ? shown : 'team'} />
         : <Properties key={office.id} office={work} userId={session.user.id} />}
