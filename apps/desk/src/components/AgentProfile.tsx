@@ -6,6 +6,15 @@ import type { Office } from '../lib/types';
 import { photoUrl } from '../lib/photos';
 import { LANGS, langLabel, removeAgentPhoto, uploadAgentPhoto } from '../lib/showcase';
 import { Btn, Card, Field, inputCls } from './ui';
+
+type LinkKey = 'avito' | 'mubawab' | 'facebook' | 'instagram' | 'tiktok';
+const LINKS: { key: LinkKey; name: string; ph: string; re: RegExp }[] = [
+  { key: 'avito', name: 'Avito', ph: 'https://www.avito.ma/…', re: /^https:\/\/([a-z0-9-]+\.)*avito\.ma(\/|$)/i },
+  { key: 'mubawab', name: 'Mubawab', ph: 'https://www.mubawab.ma/…', re: /^https:\/\/([a-z0-9-]+\.)*mubawab\.ma(\/|$)/i },
+  { key: 'facebook', name: 'Facebook', ph: 'https://www.facebook.com/…', re: /^https:\/\/([a-z0-9-]+\.)*(facebook\.com|fb\.com|fb\.me)(\/|$)/i },
+  { key: 'instagram', name: 'Instagram', ph: 'https://www.instagram.com/…', re: /^https:\/\/([a-z0-9-]+\.)*instagram\.com(\/|$)/i },
+  { key: 'tiktok', name: 'TikTok', ph: 'https://www.tiktok.com/@…', re: /^https:\/\/([a-z0-9-]+\.)*tiktok\.com(\/|$)/i },
+];
 import { friendly } from '../lib/errors';
 
 /** The person buyers see next to the WhatsApp button on every public property page. */
@@ -14,6 +23,7 @@ export function AgentProfile({ office, canManage }: { office: Office; canManage:
   const [role, setRole] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
   const [langs, setLangs] = useState<string[]>([]);
+  const [links, setLinks] = useState<Record<LinkKey, string>>({ avito: '', mubawab: '', facebook: '', instagram: '', tiktok: '' });
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,10 +32,11 @@ export function AgentProfile({ office, canManage }: { office: Office; canManage:
 
   useEffect(() => {
     setLoaded(false);
-    supabase.from('organizations').select('agent_name, agent_role, agent_photo, agent_langs').eq('id', office.id).maybeSingle()
+    supabase.from('organizations').select('agent_name, agent_role, agent_photo, agent_langs, link_avito, link_mubawab, link_facebook, link_instagram, link_tiktok').eq('id', office.id).maybeSingle()
       .then(({ data, error }) => {
         if (error) setError(friendly(error));
         setName(data?.agent_name ?? ''); setRole(data?.agent_role ?? ''); setPhoto(data?.agent_photo ?? null); setLangs(data?.agent_langs ?? []);
+        setLinks(Object.fromEntries(LINKS.map(l => [l.key, (data as Record<string, string | null> | null)?.[`link_${l.key}`] ?? ''])) as Record<LinkKey, string>);
         setLoaded(true);
       });
   }, [office.id]);
@@ -58,8 +69,16 @@ export function AgentProfile({ office, canManage }: { office: Office; canManage:
   const save = async (e: FormEvent) => {
     e.preventDefault();
     if (name.trim() && name.trim().length < 2) { setError(t('Please enter a name of at least 2 letters.')); return; }
+    const clean: Record<string, string | null> = {};
+    for (const l of LINKS) {
+      let v = links[l.key].trim();
+      if (v && !/^https?:\/\//i.test(v)) v = `https://${v}`;
+      v = v.replace(/^http:\/\//i, 'https://');
+      if (v && !l.re.test(v)) { setError(t('This is not a {site} address. Copy the link of your profile from {site}.', { site: l.name })); return; }
+      clean[`link_${l.key}`] = v || null;
+    }
     setBusy(true); setError(null); setSaved(false);
-    const ok = await write({ agent_name: name.trim() || null, agent_role: role.trim() || null, agent_langs: LANGS.filter(l => langs.includes(l)) });
+    const ok = await write({ agent_name: name.trim() || null, agent_role: role.trim() || null, agent_langs: LANGS.filter(l => langs.includes(l)), ...clean });
     setBusy(false);
     if (ok) setSaved(true);
   };
@@ -92,6 +111,18 @@ export function AgentProfile({ office, canManage }: { office: Office; canManage:
                   className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${langs.includes(l) ? 'bg-ink text-bg' : 'bg-surface-2 text-muted hover:text-ink'}`}>
                   {langLabel(l)}
                 </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className="text-sm font-semibold">{t('Find me also on')}</p>
+            <p className="mb-2 text-xs text-muted">{t('The link of your profile or shop, not of one ad. Clients see these on your page.')}</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {LINKS.map(l => (
+                <label key={l.key} className="block">
+                  <span className="mb-1 block text-xs text-muted">{l.name}</span>
+                  <input className={inputCls} dir="ltr" inputMode="url" value={links[l.key]} onChange={e => { setLinks(x => ({ ...x, [l.key]: e.target.value })); setSaved(false); }} placeholder={l.ph} maxLength={300} disabled={!loaded} />
+                </label>
               ))}
             </div>
           </div>

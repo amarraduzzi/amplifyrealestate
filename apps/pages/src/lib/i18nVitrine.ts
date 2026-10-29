@@ -69,6 +69,8 @@ export const VIT_FR: Record<string, string> = {
   'Keep this link: it is your copy. The exact address of the property is shared by the agent.': 'Gardez ce lien : c’est votre copie. L’adresse exacte du bien est communiquée par l’agent.',
   'Hello, about my visit of “{title}” ({ref}).': 'Bonjour, au sujet de ma visite de « {title} » ({ref}).',
   'See my properties': 'Voir mes biens',
+  'Find me also on': 'Retrouvez-moi aussi sur',
+  'Find us also on': 'Retrouvez-nous aussi sur',
 };
 export const VIT_AR: Record<string, string> = {
   'Gated residence': 'إقامة مغلقة',
@@ -140,6 +142,8 @@ export const VIT_AR: Record<string, string> = {
   'Keep this link: it is your copy. The exact address of the property is shared by the agent.': 'احتفظ بهذا الرابط: إنه نسختك. العنوان الدقيق للعقار يقدمه الوسيط.',
   'Hello, about my visit of “{title}” ({ref}).': 'السلام عليكم، بخصوص زيارتي لـ «{title}» ({ref}).',
   'See my properties': 'شاهد عقاراتي',
+  'Find me also on': 'تجدونني أيضا على',
+  'Find us also on': 'تجدوننا أيضا على',
 };
 export const VIT_NL: Record<string, string> = {
   'Gated residence': 'Afgesloten residentie',
@@ -211,6 +215,8 @@ export const VIT_NL: Record<string, string> = {
   'Keep this link: it is your copy. The exact address of the property is shared by the agent.': 'Bewaar deze link: het is je kopie. Het exacte adres van de woning krijg je van de makelaar.',
   'Hello, about my visit of “{title}” ({ref}).': 'Hallo, over mijn bezichtiging van “{title}” ({ref}).',
   'See my properties': 'Bekijk mijn woningen',
+  'Find me also on': 'Vind me ook op',
+  'Find us also on': 'Vind ons ook op',
   'Ground floor': 'Begane grond',
   'Floor {n}': 'Verdieping {n}',
   'Basement {n}': 'Kelder {n}',

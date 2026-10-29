@@ -12,13 +12,14 @@ import { t } from '../lib/i18n';
 import { telLink, waLink } from '../lib/contact';
 import { Layout } from '../components/Layout';
 import { langLabel } from '../lib/vitrine';
-import { UserRound } from 'lucide-react';
+import { ExternalLink, UserRound } from 'lucide-react';
 import { ContactBar } from '../components/ContactBar';
 import { PropertyCard } from '../components/PropertyCard';
 import { InquiryForm } from '../components/InquiryForm';
 import { Failed, Loading, NotFound } from './States';
 
 const PURPOSES: DealPurpose[] = ['sale', 'rent_long', 'rent_short'];
+const SITE_NAME = { avito: 'Avito', mubawab: 'Mubawab', facebook: 'Facebook', instagram: 'Instagram', tiktok: 'TikTok' } as const;
 const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
 /** The office website: who they are, all properties online with search, what they do, and how to reach them. */
@@ -56,6 +57,8 @@ export function OfficeView({ slug }: { slug: string }) {
   const forSale = listings.filter(l => l.purpose === 'sale').length;
   const forRent = listings.length - forSale;
   const solo = office.edition === 'agent' && !!office.agent;
+  const profiles = (['avito', 'mubawab', 'facebook', 'instagram', 'tiktok'] as const)
+    .map(k => [k, office.links?.[k]] as const).filter((x): x is readonly [typeof x[0], string] => !!x[1] && /^https:\/\//.test(x[1]));
 
   const covers = listings.filter(l => l.cover).slice(0, 3).map(l => l.cover as string);
   const figures = [
@@ -105,6 +108,19 @@ export function OfficeView({ slug }: { slug: string }) {
                 </div>
               ))}
             </dl>
+            {profiles.length > 0 && (
+              <div className="mt-5">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted">{solo ? t('Find me also on') : t('Find us also on')}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {profiles.map(([k, url]) => (
+                    <a key={k} href={url} target="_blank" rel="noopener noreferrer nofollow"
+                      className="inline-flex items-center gap-1.5 rounded-full bg-surface px-3.5 py-1.5 text-sm font-semibold ring-1 ring-line/10 transition hover:text-brand hover:ring-brand/30">
+                      {SITE_NAME[k]}<ExternalLink className="h-3.5 w-3.5 opacity-60" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           {covers.length > 0 && (
             <div className={`order-1 -mx-4 grid gap-2 sm:mx-0 lg:order-2 ${covers.length >= 3 ? 'sm:grid-cols-3 sm:grid-rows-2' : covers.length === 2 ? 'sm:grid-cols-3' : ''} sm:h-80 lg:h-[26rem]`}>

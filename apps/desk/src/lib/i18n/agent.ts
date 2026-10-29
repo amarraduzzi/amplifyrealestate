@@ -54,6 +54,9 @@ export const FR5: Record<string, string> = {
   'Your name': 'Votre nom',
   'Start for free': 'Commencer gratuitement',
   'Back': 'Retour',
+  'Find me also on': 'Retrouvez-moi aussi sur',
+  'The link of your profile or shop, not of one ad. Clients see these on your page.': 'Le lien de votre profil ou de votre boutique, pas d’une annonce. Vos clients le voient sur votre page.',
+  'This is not a {site} address. Copy the link of your profile from {site}.': 'Ce n’est pas une adresse {site}. Copiez le lien de votre profil depuis {site}.',
 };
 export const AR5: Record<string, string> = {
   'Hello, here is your copy of the visit voucher for “{title}”: {url}': 'السلام عليكم، هذه نسختك من وصل الزيارة لـ «{title}»: {url}',
@@ -110,4 +113,7 @@ export const AR5: Record<string, string> = {
   'Your name': 'اسمك',
   'Start for free': 'ابدأ مجانا',
   'Back': 'رجوع',
+  'Find me also on': 'تجدونني أيضا على',
+  'The link of your profile or shop, not of one ad. Clients see these on your page.': 'رابط ملفك أو متجرك، وليس إعلانا واحدا. يراه زبناؤك على صفحتك.',
+  'This is not a {site} address. Copy the link of your profile from {site}.': 'هذا ليس عنوان {site}. انسخ رابط ملفك من {site}.',
 };

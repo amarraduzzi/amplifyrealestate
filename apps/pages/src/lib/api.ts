@@ -4,7 +4,7 @@ import type { DealPurpose, PropertyStatus, PropertyType } from '@vastgoed/shared
 // Visitors have no access to any table. Only the public anon key is used here.
 
 export type PublicAgent = { name: string; role: string | null; photo: string | null; langs: string[] };
-export type PublicOffice = { name: string; slug: string; city: string | null; whatsapp: string | null; phone: string | null; email: string | null; domain?: string | null; agent?: PublicAgent | null; edition?: 'agence' | 'agent' };
+export type PublicOffice = { name: string; slug: string; city: string | null; whatsapp: string | null; phone: string | null; email: string | null; domain?: string | null; agent?: PublicAgent | null; edition?: 'agence' | 'agent'; links?: Partial<Record<'avito' | 'mubawab' | 'facebook' | 'instagram' | 'tiktok', string>> };
 
 export type PublicCard = {
   reference: string; title: string; property_type: PropertyType; purpose: DealPurpose; status: PropertyStatus;
