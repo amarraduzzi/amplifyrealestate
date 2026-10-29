@@ -80,11 +80,12 @@ export function SiteHeader({ office, overlay }: { office: PublicOffice; overlay:
   const items: { label: string; run: () => void }[] = [
     { label: t('Buy'), run: () => goSection(office.slug, 'biens', 'sale') },
     { label: t('Rent'), run: () => goSection(office.slug, 'biens', 'rent_long') },
-    { label: t('Estimate my property'), run: () => navigate(estimationPath(office.slug)) },
+    { label: t('Estimate'), run: () => navigate(estimationPath(office.slug)) },
     ...(info.areas ? [{ label: t('Neighborhoods'), run: () => goSection(office.slug, 'quartiers') }] : []),
     ...(info.blog ? [{ label: t('Blog'), run: () => navigate(blogPath(office.slug)) }] : []),
-    { label: t('Contact'), run: () => goSection(office.slug, 'contact') },
   ];
+  // the full menu on a phone also has Contact (there is no WhatsApp button in the bar there)
+  const phoneItems = [...items, { label: t('Contact'), run: () => goSection(office.slug, 'contact') }];
   const logo = office.style?.logo;
 
   return (
@@ -103,16 +104,11 @@ export function SiteHeader({ office, overlay }: { office: PublicOffice; overlay:
 
           <nav className="ms-auto hidden items-center gap-1 lg:flex" aria-label={t('Menu')}>
             {items.map(x => (
-              <button key={x.label} type="button" onClick={x.run} className="rounded-full px-3 py-2 text-sm font-semibold text-white/85 transition hover:bg-white/10 hover:text-white">{x.label}</button>
+              <button key={x.label} type="button" onClick={x.run} className="whitespace-nowrap rounded-full px-3 py-2 text-sm font-semibold text-white/85 transition hover:bg-white/10 hover:text-white">{x.label}</button>
             ))}
           </nav>
 
           <div className="ms-auto flex items-center gap-2 lg:ms-2">
-            {office.phone && (
-              <a href={telLink(office.phone)} onClick={() => logEvent(office.slug, null, 'call')} className="hidden items-center gap-1.5 text-sm font-semibold text-white/85 hover:text-white xl:inline-flex">
-                <Phone className="h-4 w-4" /><span dir="ltr">{office.phone}</span>
-              </a>
-            )}
             {office.whatsapp && (
               <a href={waLink(office.whatsapp, hello)} target="_blank" rel="noreferrer" onClick={() => logEvent(office.slug, null, 'whatsapp')}
                 className="gold-fill hidden items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-brand-ink transition hover:brightness-105 sm:inline-flex">
@@ -131,7 +127,7 @@ export function SiteHeader({ office, overlay }: { office: PublicOffice; overlay:
       {open && (
         <div className="night fixed inset-0 z-[25] flex flex-col px-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-24 lg:hidden">
           <nav className="flex flex-col" aria-label={t('Menu')}>
-            {items.map(x => (
+            {phoneItems.map(x => (
               <button key={x.label} type="button" onClick={() => go(x.run)} className="border-b border-white/10 py-4 text-start font-display text-2xl font-bold text-white">{x.label}</button>
             ))}
           </nav>
