@@ -52,3 +52,11 @@ body { background: rgb(var(--bg)); color: rgb(var(--ink)); -webkit-font-smoothin
 /* a phone never scrolls sideways */
 html, body { overflow-x: hidden; }
 @supports (overflow: clip) { html, body { overflow-x: clip; } }
+
+/* Amplify Vitrine: a page in the style of the office. The header follows the office color too. */
+.themed .night { --brand: var(--theme-night-brand); --brand-hi: var(--theme-night-brand); }
+@keyframes slowzoom { from { transform: scale(1.02); } to { transform: scale(1.12); } }
+.slowzoom { animation: slowzoom 18s ease-out both; }
+.reveal { opacity: 0; transform: translateY(14px); transition: opacity .7s cubic-bezier(.16, 1, .3, 1), transform .7s cubic-bezier(.16, 1, .3, 1); }
+.reveal.shown { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .slowzoom { animation: none; } .reveal { opacity: 1; transform: none; transition: none; } }

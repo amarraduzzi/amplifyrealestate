@@ -4,7 +4,7 @@ import type { DealPurpose, PropertyStatus, PropertyType } from '@vastgoed/shared
 // Visitors have no access to any table. Only the public anon key is used here.
 
 export type PublicAgent = { name: string; role: string | null; photo: string | null; langs: string[] };
-export type PublicOffice = { name: string; slug: string; city: string | null; whatsapp: string | null; phone: string | null; email: string | null; domain?: string | null; agent?: PublicAgent | null; edition?: 'agence' | 'agent'; links?: Partial<Record<'avito' | 'mubawab' | 'facebook' | 'instagram' | 'tiktok', string>> };
+export type PublicOffice = { name: string; slug: string; city: string | null; whatsapp: string | null; phone: string | null; email: string | null; domain?: string | null; agent?: PublicAgent | null; edition?: 'agence' | 'agent'; links?: Partial<Record<'avito' | 'mubawab' | 'facebook' | 'instagram' | 'tiktok', string>>; style?: { theme?: 'moderne' | 'riad' | 'noir' | null; color?: string | null; logo?: string | null } };
 
 export type PublicCard = {
   reference: string; title: string; property_type: PropertyType; purpose: DealPurpose; status: PropertyStatus;
@@ -19,7 +19,13 @@ export type PublicProperty = PublicCard & {
   syndic_cents?: number | null; near?: Partial<Record<NearKey, number>>;
 };
 
-export type OfficeSite = { tagline: string | null; about: string | null; services: string | null; areas: string | null; done: number };
+export type SiteMember = { name: string; role: string | null; photo: string | null; whatsapp: string | null; langs: string[] };
+export type SiteReview = { author: string; place: string | null; body: string; rating: number };
+export type SiteBlock = 'hero' | 'listings' | 'projects' | 'about' | 'team' | 'reviews' | 'areas' | 'contact';
+export type OfficeSite = {
+  tagline: string | null; about: string | null; services: string | null; areas: string | null; done: number;
+  hero?: string | null; hero_title?: string | null; hero_sub?: string | null; blocks?: SiteBlock[]; team?: SiteMember[]; reviews?: SiteReview[];
+};
 export type OfficePage = { office: PublicOffice; site?: OfficeSite; listings: PublicCard[] };
 export type PropertyPage = { office: PublicOffice; property: PublicProperty; similar?: PublicCard[] };
 

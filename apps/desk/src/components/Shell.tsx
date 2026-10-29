@@ -10,7 +10,7 @@ import { isSolo, type Office } from '../lib/types';
 // 'tasks', 'team' and 'plan' are no longer separate tabs (tasks live in the Agenda, team and plan in Settings),
 // but other screens may still send the user there: App opens the right place.
 export type View = 'today' | 'agenda' | 'overview' | 'properties' | 'leads' | 'viewings' | 'deals' | 'invoices' | 'leases' | 'stays' | 'syndic' | 'projects' | 'maintenance'
-  | 'network' | 'settings' | 'tasks' | 'team' | 'plan' | 'site' | 'billing' | 'vouchers';
+  | 'network' | 'settings' | 'tasks' | 'team' | 'plan' | 'site' | 'billing' | 'vouchers' | 'website';
 
 /** The overview with the numbers is for the owner and managers. */
 export const canSeeOverview = (role: Office['role']) => role === 'owner' || role === 'manager';
@@ -30,7 +30,7 @@ function groups(role: Office['role'], solo = false): Group[] {
     { title: t('My business'), items: [
       i('properties', t('My properties'), <Building2 className={ic} />), i('leads', t('My clients'), <Users className={ic} />),
       i('vouchers', t('Visit vouchers'), <FileSignature className={ic} />), i('network', t('Colleagues'), <Network className={ic} />),
-      i('site', t('My showcase'), <Globe className={ic} />),
+      i('website', t('My showcase'), <Globe className={ic} />),
     ] },
   ];
   return [
@@ -40,6 +40,7 @@ function groups(role: Office['role'], solo = false): Group[] {
       i('viewings', t('Viewings'), <CalendarClock className={ic} />), i('deals', t('Deals'), <Handshake className={ic} />),
       i('network', t('Network'), <Network className={ic} />),
     ] },
+    { title: 'Amplify Vitrine', items: [i('website', t('My website'), <Globe className={ic} />)] },
     { title: t('Rentals and management'), items: [i('leases', t('Rentals'), <KeyRound className={ic} />), i('stays', t('Short stays'), <BedDouble className={ic} />), i('maintenance', t('Maintenance'), <Wrench className={ic} />)] },
     { title: t('Syndic'), items: [i('syndic', t('Residences'), <Building className={ic} />)] },
     { title: t('New build'), items: [i('projects', t('Projects'), <HardHat className={ic} />)] },

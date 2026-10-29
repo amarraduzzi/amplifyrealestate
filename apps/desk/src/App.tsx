@@ -25,6 +25,7 @@ import { Leases } from './pages/Leases';
 import { Maintenance } from './pages/Maintenance';
 import { PlanBanner } from './components/PlanBanner';
 import { Vouchers } from './pages/Vouchers';
+import { SiteEditor } from './pages/SiteEditor';
 import { loadPlan, type PlanInfo } from './lib/plan';
 import { friendly } from './lib/errors';
 
@@ -106,6 +107,7 @@ function Workspace({ session }: { session: Session }) {
         : shown === 'maintenance' ? <Maintenance key={office.id} office={work} />
         : shown === 'viewings' ? <Viewings key={office.id} office={work} />
         : shown === 'vouchers' ? <Vouchers key={office.id} office={work} />
+        : shown === 'website' ? <SiteEditor key={office.id} office={work} onSelfChanged={load} />
         : shown === 'settings' || shown === 'team' || shown === 'plan' || shown === 'site' || shown === 'billing'
           ? <Settings key={`${office.id}-${shown}`} office={office} userId={session.user.id} onSelfChanged={load} initialTab={shown === 'plan' || shown === 'site' || shown === 'billing' ? shown : 'team'} />
         : <Properties key={office.id} office={work} userId={session.user.id} />}

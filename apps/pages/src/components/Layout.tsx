@@ -1,4 +1,6 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import { themeName, themeVars, type SiteStyle } from '../lib/theme';
+import { photoUrl } from '../lib/api';
 import { applyLang, getLang, LANGS, saveLang, t, type Lang } from '../lib/i18n';
 import { AmplifyLogo, AmplifyMark } from './Brand';
 import { Link, officePath } from '../lib/router';
@@ -25,16 +27,26 @@ function LangSwitch({ langs = LANGS }: { langs?: { id: Lang; name: string }[] })
 }
 
 /** Header (office name or the Amplify logo, language), the page, and a small footer. */
-export function Layout({ office, stickyBar, children, langs, wide }: {
+export function Layout({ office, stickyBar, children, langs, wide, brand, flush }: {
   office?: { name: string; slug: string; city: string | null }; stickyBar?: boolean; children: ReactNode; langs?: { id: Lang; name: string }[]; wide?: boolean;
+  /** the style the office chose in Amplify Vitrine */ brand?: SiteStyle | null;
+  /** the page starts right under the header (a full-width photo) */ flush?: boolean;
 }) {
+  const theme = themeName(brand);
+  // the area around the page (overscroll on a phone) takes the color of the style too
+  useEffect(() => {
+    document.body.style.background = theme === 'noir' ? 'rgb(12 16 22)' : theme === 'riad' ? 'rgb(250 246 240)' : '';
+    return () => { document.body.style.background = ''; };
+  }, [theme]);
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className={`themed flex min-h-screen flex-col bg-bg text-ink theme-${theme}`} style={themeVars(brand)}>
       <header className="night px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
         <div className={`mx-auto flex w-full ${wide ? 'max-w-6xl' : 'max-w-4xl'} items-center justify-between gap-3`}>
           {office ? (
             <Link to={officePath(office.slug)} className="flex min-w-0 items-center gap-2.5">
-              <AmplifyMark className="h-6 w-9 shrink-0" />
+              {brand?.logo
+                ? <span className="grid h-10 shrink-0 place-items-center rounded-xl bg-white px-2"><img src={photoUrl(brand.logo, true)} alt="" className="max-h-8 max-w-[120px] object-contain" /></span>
+                : <AmplifyMark className="h-6 w-9 shrink-0" />}
               <span className="min-w-0">
                 <span className="block truncate font-display text-base font-bold leading-tight">{office.name}</span>
                 {office.city && <span className="block truncate text-xs text-white/65">{office.city}</span>}
@@ -44,7 +56,7 @@ export function Layout({ office, stickyBar, children, langs, wide }: {
           <LangSwitch langs={langs} />
         </div>
       </header>
-      <main className="flex-1 pb-6">{children}</main>
+      <main className={`flex-1 ${flush ? '' : 'pb-6'}`}>{children}</main>
       <footer className="px-4 pb-6 text-center text-xs text-muted" style={stickyBar ? { paddingBottom: '6.5rem' } : undefined}>
         {t('Powered by Amplify Real Estate')}
       </footer>

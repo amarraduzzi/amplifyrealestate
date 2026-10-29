@@ -102,7 +102,7 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
   );
 
   return (
-    <Layout office={office} stickyBar wide>
+    <Layout office={office} stickyBar wide brand={office.style}>
       <div className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 sm:py-8">
         {/* direction 3: a short stay on a phone opens like a story */}
         {short && photos.length > 0 && (
