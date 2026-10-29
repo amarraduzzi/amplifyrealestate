@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ArrowRight, CheckCircle2, ExternalLink, HardHat, Heart, LayoutGrid, Map as MapIcon, Mail, MapPin, MessageCircle, Phone, Quote, Search, Star, UserRound } from 'lucide-react';
+import { ArrowRight, ExternalLink, HardHat, Heart, LayoutGrid, Map as MapIcon, Mail, MapPin, MessageCircle, Phone, Quote, Search, Star, UserRound } from 'lucide-react';
 import type { DealPurpose, PropertyType } from '@vastgoed/shared';
 import { formatMad } from '@vastgoed/shared';
-import { loadOffice, loadOfficeProjects, logEvent, photoUrl, type ProjectCard, type SiteBlock } from '../lib/api';
+import { loadOffice, loadOfficeProjects, localSite, logEvent, photoUrl, type ProjectCard, type SiteBlock } from '../lib/api';
 import { Link, areaPath, areaSlug, blogPath, estimationPath, navigate, projectPath, propertyPath } from '../lib/router';
 import { TileMap } from '../components/TileMap';
 import { PostCardView } from './BlogView';
@@ -12,7 +12,7 @@ import { EstimateBox } from '../components/EstimateBox';
 import { projectStatus } from './ProjectView';
 import { useFetch } from '../lib/useFetch';
 import { priceSuffix, purposeLabel, typeLabel } from '../lib/format';
-import { t } from '../lib/i18n';
+import { getLang, t } from '../lib/i18n';
 import { telLink, waLink } from '../lib/contact';
 import { Layout } from '../components/Layout';
 import { langLabel } from '../lib/vitrine';
@@ -21,6 +21,7 @@ import { PropertyCard } from '../components/PropertyCard';
 import { AlertBox } from '../components/AlertBox';
 import { ListingMap } from '../components/ListingMap';
 import { ParallaxImg } from '../components/Parallax';
+import { ProcessSteps, ServiceTiles, type ServiceAction } from '../components/AboutParts';
 import { FavButton } from '../components/FavButton';
 import { HeroBackdrop, HeroSearch, heroSlides } from '../components/HeroSlides';
 import { readFavs, selectionUrl, sharedSelection, useFavs } from '../lib/favorites';
@@ -169,7 +170,18 @@ export function OfficeView({ slug }: { slug: string }) {
   };
   const shareText = [t('My selection at {office}:', { office: office.name }), '',
     ...(pickedList ?? []).map(l => `• ${l.title} · ${formatMad(l.price_cents)}`), '', selectionUrl(office.slug, (pickedList ?? []).map(l => l.reference))].join('\n');
-  const site = data.site;
+  const site = localSite(data.site, getLang());
+  const aboutParts = (site?.about ?? '').split(/\n\s*\n/).map(x => x.trim()).filter(Boolean);
+  const serviceAction = (a: ServiceAction) => {
+    const scroll = (id: string) => window.setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
+    if (a.kind === 'listings') {
+      const p = present.includes(a.purpose) ? a.purpose : a.purpose === 'rent_long' && present.includes('rent_short') ? 'rent_short' : 'all';
+      setPurpose(p); setType('all'); setQ(''); setFavOnly(false); setMode('list'); setFilters(f => ({ ...NO_FILTERS, sort: f.sort })); scroll('biens');
+    } else if (a.kind === 'estimate') navigate(estimationPath(office.slug));
+    else if (a.kind === 'projects') scroll(projects.length > 0 ? 'projets' : 'biens');
+    else if (office.whatsapp) { logEvent(office.slug, null, 'whatsapp'); window.open(waLink(office.whatsapp, a.text), '_blank', 'noopener'); }
+    else scroll('contact');
+  };
   const services = (site?.services ?? '').split('\n').map(s => s.replace(/^[-•*\s]+/, '').trim()).filter(Boolean);
   const areas = (site?.areas ?? '').split(/[,·\n]/).map(s => s.trim()).filter(Boolean);
   const team = site?.team ?? [];
@@ -359,21 +371,33 @@ export function OfficeView({ slug }: { slug: string }) {
     ) : null,
     about: (site?.about || services.length > 0) ? (
       <Reveal>
-        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-          {site?.about && (
-            <div>
-              <Heading kicker={solo ? t('My story') : t('Our story')} title={solo ? t('About me') : t('About us')} />
-              <p className="whitespace-pre-line text-lg leading-relaxed text-ink/85">{site.about}</p>
-            </div>
-          )}
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-14">
+          <div>
+            <Heading kicker={solo ? t('My story') : t('Our story')} title={solo ? t('About me') : t('About us')} />
+            {aboutParts.length > 0 && (
+              <>
+                <p className="font-display text-2xl font-semibold leading-snug text-ink sm:text-[1.7rem]">{aboutParts[0]}</p>
+                {aboutParts.slice(1).map(x => <p key={x} className="mt-4 text-base leading-relaxed text-ink/75 sm:text-lg">{x}</p>)}
+              </>
+            )}
+            {office.whatsapp && (
+              <a href={waLink(office.whatsapp, hello)} target="_blank" rel="noreferrer" onClick={() => logEvent(office.slug, null, 'whatsapp')}
+                className="mt-7 inline-flex items-center gap-2 rounded-xl bg-ink px-5 py-3 text-sm font-bold text-bg transition hover:opacity-90">
+                <MessageCircle className="h-4 w-4" />{solo ? t('Talk to me') : t('Talk to us')}
+              </a>
+            )}
+          </div>
           {services.length > 0 && (
-            <div className="rounded-3xl bg-surface p-6 ring-1 ring-line/[0.08] sm:p-8">
-              <h3 className="font-display text-xl font-bold">{t('Our services')}</h3>
-              <ul className="mt-4 space-y-3">
-                {services.map(s => <li key={s} className="flex items-start gap-3"><CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-brand" /><span className="font-semibold">{s}</span></li>)}
-              </ul>
+            <div>
+              <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-brand">{t('Our services')}</p>
+              <ServiceTiles services={services} onAction={serviceAction} />
             </div>
           )}
+        </div>
+        <div className="mt-16 rounded-[2rem] bg-surface p-6 ring-1 ring-line/[0.08] sm:p-10">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">{t('How it works')}</p>
+          <h3 className="mt-1 font-display text-2xl font-bold sm:text-3xl">{t('From the first visit to the keys')}</h3>
+          <div className="mt-8"><ProcessSteps /></div>
         </div>
       </Reveal>
     ) : null,

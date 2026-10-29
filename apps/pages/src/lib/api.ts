@@ -32,6 +32,8 @@ export type OfficeSite = {
   hero?: string | null; hero_title?: string | null; hero_sub?: string | null; blocks?: SiteBlock[]; team?: SiteMember[]; reviews?: SiteReview[];
   points?: Record<string, [number, number]>; posts?: PostCard[];
   featured?: { reference: string; excerpt: string } | null;
+  /** Translations of the texts, per language; French is the main text. */
+  tr?: Partial<Record<'en' | 'ar' | 'nl', Partial<Record<'tagline' | 'hero_title' | 'hero_sub' | 'about' | 'services', string>>>>;
 };
 export type OfficePage = { office: PublicOffice; site?: OfficeSite; listings: PublicCard[] };
 export type PropertyPage = { office: PublicOffice; property: PublicProperty; similar?: PublicCard[] };
@@ -57,6 +59,15 @@ async function rpc<T>(fn: string, body: Record<string, string>): Promise<T | nul
 }
 
 /** null = this page does not exist (or is not online). An error is thrown when the server cannot be reached. */
+/** The texts of the site in the language of the visitor, or the French text when there is no translation. */
+export function localSite<S extends OfficeSite | undefined>(site: S, lang: string): S {
+  if (!site) return site;
+  const tr = site.tr?.[lang as 'en' | 'ar' | 'nl'];
+  if (!tr) return site;
+  const pick = (k: 'tagline' | 'hero_title' | 'hero_sub' | 'about' | 'services') => (tr[k]?.trim() ? tr[k] : (site as OfficeSite)[k]);
+  return { ...site, tagline: pick('tagline'), hero_title: pick('hero_title'), hero_sub: pick('hero_sub'), about: pick('about'), services: pick('services') };
+}
+
 export async function loadOffice(slug: string): Promise<OfficePage | null> {
   if (!SLUG.test(slug)) return null;
   return rpc<OfficePage>('public_office_page', { p_slug: slug });

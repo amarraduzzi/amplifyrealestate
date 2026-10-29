@@ -1,5 +1,7 @@
 // Texts of Amplify Agent (solo menu, plan, visit vouchers). The English text is the key.
 export const FR5: Record<string, string> = {
+  'Language of the texts': 'Langue des textes',
+  'Translate the French texts for visitors who choose this language. A field left empty shows the French text.': 'Traduisez les textes français pour les visiteurs qui choisissent cette langue. Un champ vide affiche le texte français.',
   'Our favorite (one property in the spotlight)': 'Coup de cœur (un bien mis en avant)',
   'Our favorite': 'Coup de cœur',
   'One property gets a large block with its photo, its figures and a button. Choose your most beautiful one.': 'Un bien reçoit un grand bloc avec sa photo, ses chiffres et un bouton. Choisissez le plus beau.',
@@ -172,6 +174,8 @@ export const FR5: Record<string, string> = {
   'This is not a {site} address. Copy the link of your profile from {site}.': 'Ce n’est pas une adresse {site}. Copiez le lien de votre profil depuis {site}.',
 };
 export const AR5: Record<string, string> = {
+  'Language of the texts': 'لغة النصوص',
+  'Translate the French texts for visitors who choose this language. A field left empty shows the French text.': 'ترجم النصوص الفرنسية للزوار الذين يختارون هذه اللغة. الحقل الفارغ يعرض النص الفرنسي.',
   'Our favorite (one property in the spotlight)': 'اختيارنا (عقار مميز)',
   'Our favorite': 'اختيارنا المفضل',
   'One property gets a large block with its photo, its figures and a button. Choose your most beautiful one.': 'يحصل عقار واحد على مساحة كبيرة بصورته وأرقامه وزر. اختر أجمل عقار لديك.',
