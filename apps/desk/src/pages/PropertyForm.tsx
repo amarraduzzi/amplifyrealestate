@@ -8,6 +8,7 @@ import { Btn, Field, Modal, inputCls } from '../components/ui';
 import { planError } from '../lib/plan';
 import { friendly } from '../lib/errors';
 import { findDuplicates, type DupRow } from '../lib/duplicates';
+import { FEATURES, NEAR, ORIENTATIONS, TITLE_STATUSES, featureLabel, nearLabel, orientationLabel, titleStatusLabel, type NearKey } from '../lib/showcase';
 
 const num = (s: string) => (s.trim() === '' ? null : Number(s));
 const str = (x: number | null | undefined) => (x === null || x === undefined ? '' : String(x));
@@ -29,6 +30,15 @@ export function PropertyForm({ orgId, property, onClose, onSaved }: {
   const [area, setArea] = useState(str(property?.area_m2 === undefined || property?.area_m2 === null ? null : Number(property.area_m2)));
   const [furnished, setFurnished] = useState(property?.furnished == null ? '' : property.furnished ? 'yes' : 'no');
   const [desc, setDesc] = useState(property?.description ?? '');
+  // Buyer sheet: what a Moroccan buyer asks first
+  const [titleStatus, setTitleStatus] = useState<string>(property?.title_status ?? '');
+  const [features, setFeatures] = useState<string[]>(property?.features ?? []);
+  const [floor, setFloor] = useState(str(property?.floor));
+  const [orientation, setOrientation] = useState(property?.orientation ?? '');
+  const [syndic, setSyndic] = useState(property?.syndic_cents == null ? '' : str(property.syndic_cents / 100));
+  const [near, setNear] = useState<Record<NearKey, string>>(() => Object.fromEntries(NEAR.map(k => [k, str(property?.[k])])) as Record<NearKey, string>);
+  const sheetFilled = !!(property?.title_status || property?.features?.length || property?.floor != null || property?.syndic_cents != null || NEAR.some(k => property?.[k] != null));
+  const toggleFeature = (f: string) => setFeatures(x => (x.includes(f) ? x.filter(y => y !== f) : [...x, f]));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [dups, setDups] = useState<DupRow[]>([]);
@@ -49,8 +59,11 @@ export function PropertyForm({ orgId, property, onClose, onSaved }: {
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    const p = num(price), b = num(beds), ba = num(baths), a = num(area);
-    if ([p, b, ba, a].some(x => x !== null && (!Number.isFinite(x) || x < 0))) { setError(t('Please check the numbers: they cannot be negative.')); return; }
+    const p = num(price), b = num(beds), ba = num(baths), a = num(area), sy = num(syndic), fl = num(floor);
+    const nearNums = NEAR.map(k => num(near[k]));
+    if ([p, b, ba, a, sy, ...nearNums].some(x => x !== null && (!Number.isFinite(x) || x < 0))) { setError(t('Please check the numbers: they cannot be negative.')); return; }
+    if (fl !== null && (!Number.isFinite(fl) || fl < -3 || fl > 80)) { setError(t('The floor must be between -3 and 80 (0 is the ground floor).')); return; }
+    if (nearNums.some(x => x !== null && x > 240)) { setError(t('Distances are in minutes, at most 240.')); return; }
     const priceCents = p === null ? null : dirhamToCents(p);
     const fields = {
       title: title.trim(),
@@ -63,6 +76,12 @@ export function PropertyForm({ orgId, property, onClose, onSaved }: {
       area_m2: a === null || a === 0 ? null : a,
       furnished: furnished === '' ? null : furnished === 'yes',
       description: desc.trim() || null,
+      title_status: purpose === 'sale' && titleStatus ? titleStatus : null,
+      features: FEATURES.filter(f => features.includes(f)),
+      floor: fl === null ? null : Math.round(fl),
+      orientation: orientation || null,
+      syndic_cents: sy === null ? null : dirhamToCents(sy),
+      ...Object.fromEntries(NEAR.map((k, i) => [k, nearNums[i] === null ? null : Math.round(nearNums[i] as number)])),
     };
     setBusy(true); setError(null);
 
@@ -129,6 +148,51 @@ export function PropertyForm({ orgId, property, onClose, onSaved }: {
         <Field label={t('Description')}>
           <textarea className={inputCls} rows={3} value={desc} onChange={e => setDesc(e.target.value)} />
         </Field>
+        <details className="rounded-2xl bg-surface-2 p-3.5" open={sheetFilled}>
+          <summary className="cursor-pointer text-sm font-semibold">{t('Buyer sheet')} <span className="font-normal text-muted">· {t('legal status, features, floor, syndic, distances')}</span></summary>
+          <div className="mt-3 space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              {purpose === 'sale' && (
+                <Field label={t('Legal status')}>
+                  <select className={inputCls} value={titleStatus} onChange={e => setTitleStatus(e.target.value)}>
+                    <option value="">{t('Not specified')}</option>
+                    {TITLE_STATUSES.map(x => <option key={x} value={x}>{titleStatusLabel(x)}</option>)}
+                  </select>
+                </Field>
+              )}
+              <Field label={t('Floor')} hint={t('0 is the ground floor')}><input className={inputCls} dir="ltr" inputMode="numeric" type="number" min="-3" max="80" value={floor} onChange={e => setFloor(e.target.value)} /></Field>
+              <Field label={t('Orientation')}>
+                <select className={inputCls} value={orientation} onChange={e => setOrientation(e.target.value)}>
+                  <option value="">{t('Not specified')}</option>
+                  {ORIENTATIONS.map(x => <option key={x} value={x}>{orientationLabel(x)}</option>)}
+                </select>
+              </Field>
+              <Field label={t('Syndic per month (DH)')}><input className={inputCls} dir="ltr" inputMode="decimal" type="number" min="0" step="any" value={syndic} onChange={e => setSyndic(e.target.value)} /></Field>
+            </div>
+            <div>
+              <p className="mb-1.5 text-sm font-semibold">{t('Features')}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {FEATURES.map(f => (
+                  <button key={f} type="button" aria-pressed={features.includes(f)} onClick={() => toggleFeature(f)}
+                    className={`rounded-full px-3 py-1.5 text-sm font-semibold transition ${features.includes(f) ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
+                    {featureLabel(f)}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="mb-1.5 text-sm font-semibold">{t('Minutes to')}</p>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+                {NEAR.map(k => (
+                  <label key={k} className="block">
+                    <span className="mb-1 block text-xs text-muted">{nearLabel(k)}</span>
+                    <input className={inputCls} dir="ltr" inputMode="numeric" type="number" min="0" max="240" value={near[k]} onChange={e => setNear(n => ({ ...n, [k]: e.target.value }))} />
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+        </details>
         {!editing && dups.length > 0 && (
           <p className="rounded-xl bg-warn/10 px-3 py-2 text-sm"><span className="font-semibold">{t('This may be a duplicate')}:</span> {dups.map(d => `${d.reference} · ${d.title}`).join(' | ')}</p>
         )}

@@ -24,6 +24,16 @@ export type PropertyRow = {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+  title_status?: 'titre' | 'melkia' | 'en_cours' | null;
+  features?: string[];
+  floor?: number | null;
+  orientation?: string | null;
+  syndic_cents?: number | null;
+  near_beach?: number | null;
+  near_transport?: number | null;
+  near_school?: number | null;
+  near_mosque?: number | null;
+  near_shops?: number | null;
 };
 
 export type HistoryRow = {

@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { Bath, BedDouble, CheckCircle2, Info, MapPin, MessageCircle, Phone, Ruler, Sofa } from 'lucide-react';
+import { Bath, BedDouble, CheckCircle2, Compass, Info, Layers, MapPin, MessageCircle, Phone, Ruler, Sofa, Wallet } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { loadProperty, logEvent } from '../lib/api';
 import { useFetch } from '../lib/useFetch';
@@ -13,6 +13,9 @@ import { InquiryForm } from '../components/InquiryForm';
 import { BookingBox } from '../components/BookingBox';
 import { PhotoMosaic, StoryHero } from '../components/PhotoHero';
 import { PropertyIcon } from '../components/PropertyIcon';
+import { PropertyCard } from '../components/PropertyCard';
+import { AgentBlock, AideBadge, EuroLine, Highlights, MortgageCalc, NearList, TitleBadge, VideoVisitButton } from '../components/Vitrine';
+import { orientationLabel } from '../lib/vitrine';
 import { Failed, Loading, NotFound } from './States';
 
 /**
@@ -34,10 +37,14 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
   if (!data) return <NotFound text={t('This property is no longer online, or the link is not correct.')} />;
 
   const { office, property: p } = data;
+  const similar = data.similar ?? [];
+  const sale = p.purpose === 'sale';
+  const euroSuffix = p.purpose === 'rent_long' ? ` ${t('/ month')}` : '';
   const photos = p.photos ?? [];
   const place = placeText(p);
   const confirmed = confirmedText(p.info_confirmed_at);
   const link = window.location.origin + window.location.pathname;
+  const videoMsg = t('Hello, I live abroad. Could I get a video visit of “{title}” ({ref})? {url}', { title: p.title, ref: p.reference, url: link });
   const message = t('Hello, I am interested in “{title}” ({ref}). {url}', { title: p.title, ref: p.reference, url: link });
   const short = p.purpose === 'rent_short' && p.status === 'available';
   const banner = p.status === 'reserved' ? t('This property is currently reserved. Contact us for similar properties.')
@@ -50,6 +57,9 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
   if (p.bathrooms !== null) specs.push({ icon: <Bath className="h-5 w-5" />, value: String(p.bathrooms), label: t('Bathrooms') });
   if (p.area_m2 !== null) specs.push({ icon: <Ruler className="h-5 w-5" />, value: `${Number(p.area_m2)} m²`, label: t('Area') });
   if (p.furnished !== null) specs.push({ icon: <Sofa className="h-5 w-5" />, value: p.furnished ? t('Furnished') : t('Unfurnished'), label: '' });
+  if (p.floor != null) specs.push({ icon: <Layers className="h-5 w-5" />, value: p.floor === 0 ? t('Ground floor') : p.floor < 0 ? t('Basement {n}', { n: -p.floor }) : t('Floor {n}', { n: p.floor }), label: (p.features ?? []).includes('elevator') ? t('With elevator') : '' });
+  if (p.orientation) specs.push({ icon: <Compass className="h-5 w-5" />, value: orientationLabel(p.orientation), label: t('Orientation') });
+  if (p.syndic_cents != null) specs.push({ icon: <Wallet className="h-5 w-5" />, value: formatMad(p.syndic_cents), label: t('Syndic per month') });
   const facts = [
     p.bedrooms !== null ? (p.bedrooms === 1 ? t('1 bedroom') : t('{n} bedrooms', { n: p.bedrooms })) : null,
     p.area_m2 !== null ? `${Number(p.area_m2)} m²` : null,
@@ -62,11 +72,13 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
       <div className="flex flex-wrap items-center gap-1.5">
         <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-semibold text-muted">{purposeLabel(p.purpose)}</span>
         {p.status !== 'available' && <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${statusCls(p.status)}`}>{statusLabel(p.status)}</span>}
+        {sale && <TitleBadge status={p.title_status} />}
       </div>
       <p className="mt-3 flex flex-wrap items-baseline gap-x-2">
         <span className="font-display tabular text-3xl font-bold">{formatMad(p.price_cents)}</span>
         <span className="text-sm text-muted">{priceSuffix(p.purpose)}</span>
       </p>
+      {!short && <EuroLine cents={p.price_cents} suffix={euroSuffix} />}
       {confirmed && <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-muted"><CheckCircle2 className="h-4 w-4 text-ok" />{t('Price and availability')} · {confirmed}</p>}
       <div className="mt-4 space-y-2">
         {short && bookable && <button type="button" onClick={toBooking} className="w-full rounded-xl bg-ink px-4 py-3 text-sm font-bold text-bg transition hover:opacity-90">{t('See the free dates')}</button>}
@@ -82,7 +94,9 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
             <Phone className="h-5 w-5" /> {t('Call')}
           </a>
         )}
+        {!short && office.whatsapp && <VideoVisitButton href={waLink(office.whatsapp, videoMsg)} onClick={() => logEvent(office.slug, p.reference, 'whatsapp')} />}
       </div>
+      {office.agent && <div className="mt-4 border-t border-line/[0.07] pt-4"><AgentBlock agent={office.agent} compact /></div>}
       <p className="mt-4 border-t border-line/[0.07] pt-3 text-xs text-muted">{office.name}{office.city ? ` · ${office.city}` : ''} · <span dir="ltr">{p.reference}</span></p>
     </div>
   );
@@ -112,7 +126,9 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
                 <span className="font-display tabular text-3xl font-bold">{formatMad(p.price_cents)}</span>
                 <span className="text-sm text-muted">{priceSuffix(p.purpose)}</span>
                 {p.status !== 'available' && <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${statusCls(p.status)}`}>{statusLabel(p.status)}</span>}
+                {sale && <TitleBadge status={p.title_status} />}
               </p>
+              <EuroLine cents={p.price_cents} suffix={euroSuffix} />
               {confirmed && <p className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-muted"><CheckCircle2 className="h-4 w-4 text-ok" />{t('Price and availability')} · {confirmed}</p>}
             </div>
 
@@ -129,6 +145,9 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
               </section>
             )}
 
+            <Highlights features={p.features} />
+            {sale && p.status === 'available' && <AideBadge cents={p.price_cents} />}
+
             {short && <BookingBox slug={office.slug} reference={p.reference} onReady={setBookable} onBook={tk => { window.location.href = `/b/${tk}?lang=${getLang()}`; }} />}
 
             {p.description && (
@@ -138,11 +157,21 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
               </section>
             )}
 
+            {sale && p.status === 'available' && <MortgageCalc priceCents={p.price_cents} />}
+
             <section>
               <h2 className="mb-2 font-display text-lg font-bold">{t('Location')}</h2>
               <p className="flex items-center gap-2"><MapPin className="h-5 w-5 shrink-0 text-brand" />{place || '—'}</p>
-              <p className="mt-1 text-sm text-muted">{t('The exact address is shared on request.')}</p>
+              <NearList near={p.near} />
+              <p className="mt-2 text-sm text-muted">{t('The exact address is shared on request.')}</p>
             </section>
+
+            {(office.agent || (!short && office.whatsapp)) && (
+              <div className="space-y-2 lg:hidden">
+                <AgentBlock agent={office.agent} />
+                {!short && office.whatsapp && <VideoVisitButton href={waLink(office.whatsapp, videoMsg)} onClick={() => logEvent(office.slug, p.reference, 'whatsapp')} />}
+              </div>
+            )}
 
             {!bookable && <InquiryForm slug={office.slug} reference={p.reference} />}
 
@@ -158,6 +187,18 @@ export function PropertyView({ slug, reference }: { slug: string; reference: str
           {/* direction 1: the fixed card on a computer */}
           <aside className="hidden lg:sticky lg:top-6 lg:block">{priceCard}</aside>
         </div>
+
+        {similar.length > 0 && (
+          <section className="mt-12 border-t border-line/[0.08] pt-8">
+            <div className="flex flex-wrap items-end justify-between gap-2">
+              <h2 className="font-display text-2xl font-bold">{t('Similar properties')}</h2>
+              <Link to={officePath(office.slug)} className="text-sm font-semibold text-brand hover:underline">{t('More properties from {office}', { office: office.name })}</Link>
+            </div>
+            <ul className="mt-5 grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+              {similar.map(c => <li key={c.reference}><PropertyCard slug={office.slug} p={c} /></li>)}
+            </ul>
+          </section>
+        )}
       </div>
       <div className="lg:hidden"><ContactBar office={office} message={message} reference={p.reference} sticky /></div>
     </Layout>

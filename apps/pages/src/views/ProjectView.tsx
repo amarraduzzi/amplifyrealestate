@@ -8,6 +8,7 @@ import { Link, officePath } from '../lib/router';
 import { Layout } from '../components/Layout';
 import { ContactBar } from '../components/ContactBar';
 import { PhotoMosaic } from '../components/PhotoHero';
+import { AideBadge, EuroLine } from '../components/Vitrine';
 import { logEvent } from '../lib/api';
 import { telLink, waLink } from '../lib/contact';
 import { InquiryForm } from '../components/InquiryForm';
@@ -65,6 +66,7 @@ export function ProjectView({ slug, project }: { slug: string; project: string }
       {from !== null
         ? <p className="mt-3"><span className="block text-sm text-muted">{t('Starting from')}</span><span className="font-display tabular text-3xl font-bold">{formatMad(from)}</span></p>
         : <p className="mt-3 text-sm text-muted">{t('Prices on request: leave your number and we will send you the price list.')}</p>}
+      {from !== null && <EuroLine cents={from} />}
       <div className="mt-4 grid grid-cols-2 gap-2">
         {facts.map(x => <div key={x.label} className="rounded-2xl bg-surface-2 p-3"><p className="font-display tabular text-xl font-bold">{x.n}</p><p className="text-xs text-muted">{x.label}</p></div>)}
       </div>
@@ -114,6 +116,8 @@ export function ProjectView({ slug, project }: { slug: string; project: string }
               {p.delivery_date && <div className="flex items-center gap-2.5"><CalendarClock className="h-5 w-5 text-brand" /><span><span className="block font-semibold leading-tight">{month(p.delivery_date)}</span><span className="block text-xs text-muted">{t('Delivery')}</span></span></div>}
               {place && <div className="flex items-center gap-2.5"><MapPin className="h-5 w-5 text-brand" /><span className="font-semibold">{place}</span></div>}
             </section>
+
+            <AideBadge cents={from} newBuild />
 
             {p.description && (
               <section>

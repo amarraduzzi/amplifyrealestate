@@ -8,6 +8,7 @@
 
 import { STAY_AR, STAY_FR, STAY_NL } from './i18nStay';
 import { BOOK_AR, BOOK_FR, BOOK_NL } from './i18nBooking';
+import { VIT_AR, VIT_FR, VIT_NL } from './i18nVitrine';
 
 export type Lang = 'fr' | 'ar' | 'en' | 'nl';
 export const LANGS: { id: Lang; name: string }[] = [
@@ -499,7 +500,8 @@ export function t(en: string, vars?: Record<string, string | number>): string {
   const dict = current === 'ar' ? AR : current === 'fr' ? FR : current === 'nl' ? NL : null;
   const extra = current === 'ar' ? STAY_AR : current === 'fr' ? STAY_FR : current === 'nl' ? STAY_NL : null;
   const book = current === 'ar' ? BOOK_AR : current === 'fr' ? BOOK_FR : current === 'nl' ? BOOK_NL : null;
-  let s = dict ? (dict[en] ?? extra?.[en] ?? book?.[en] ?? en) : en;
+  const vit = current === 'ar' ? VIT_AR : current === 'fr' ? VIT_FR : current === 'nl' ? VIT_NL : null;
+  let s = dict ? (dict[en] ?? extra?.[en] ?? book?.[en] ?? vit?.[en] ?? en) : en;
   if (vars) s = s.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
   return s;
 }

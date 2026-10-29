@@ -4,6 +4,7 @@ import type { Office } from '../lib/types';
 import { canSeeOverview } from '../components/Shell';
 import { Team } from './Team';
 import { Plan } from './Plan';
+import { AgentProfile } from '../components/AgentProfile';
 import { PublicProfile } from './PublicProfile';
 import { WebsiteSettings } from '../components/WebsiteSettings';
 import { FeedSettings } from '../components/FeedSettings';
@@ -38,6 +39,7 @@ export function Settings({ office, userId, onSelfChanged, initialTab = 'team' }:
         {tab === 'team' && <Team office={office} userId={userId} onSelfChanged={onSelfChanged} embedded />}
         {tab === 'site' && (<>
           <PublicProfile office={office} canManage={canManage} onSlugChanged={onSelfChanged} />
+          <AgentProfile office={office} canManage={canManage} />
           <WebsiteSettings office={office} canManage={canManage} />
           <FeedSettings office={office} canManage={canManage} />
         </>)}

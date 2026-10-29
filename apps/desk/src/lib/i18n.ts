@@ -8,6 +8,7 @@ import { FR } from './i18n/fr';
 import { AR } from './i18n/ar';
 import { AR2, FR2 } from './i18n/stays2';
 import { AR3, FR3 } from './i18n/booking';
+import { AR4, FR4 } from './i18n/showcase';
 
 export type Lang = 'en' | 'fr' | 'ar';
 const isLang = (x: unknown): x is Lang => x === 'en' || x === 'fr' || x === 'ar';
@@ -36,7 +37,8 @@ export function t(en: string, vars?: Record<string, string | number>): string {
   const dict = current === 'ar' ? AR : current === 'fr' ? FR : null;
   const extra = current === 'ar' ? AR2 : current === 'fr' ? FR2 : null;
   const more = current === 'ar' ? AR3 : current === 'fr' ? FR3 : null;
-  let s = dict ? (dict[en] ?? extra?.[en] ?? more?.[en] ?? en) : en;
+  const vitrine = current === 'ar' ? AR4 : current === 'fr' ? FR4 : null;
+  let s = dict ? (dict[en] ?? extra?.[en] ?? more?.[en] ?? vitrine?.[en] ?? en) : en;
   if (vars) s = s.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
   return s;
 }

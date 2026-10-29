@@ -3,7 +3,8 @@ import type { DealPurpose, PropertyStatus, PropertyType } from '@vastgoed/shared
 // The public pages read through two database functions (public_office_page, public_property_page).
 // Visitors have no access to any table. Only the public anon key is used here.
 
-export type PublicOffice = { name: string; slug: string; city: string | null; whatsapp: string | null; phone: string | null; email: string | null; domain?: string | null };
+export type PublicAgent = { name: string; role: string | null; photo: string | null; langs: string[] };
+export type PublicOffice = { name: string; slug: string; city: string | null; whatsapp: string | null; phone: string | null; email: string | null; domain?: string | null; agent?: PublicAgent | null };
 
 export type PublicCard = {
   reference: string; title: string; property_type: PropertyType; purpose: DealPurpose; status: PropertyStatus;
@@ -11,11 +12,16 @@ export type PublicCard = {
   bedrooms: number | null; bathrooms: number | null; area_m2: number | null;
   cover?: string | null;
 };
-export type PublicProperty = PublicCard & { furnished: boolean | null; description: string | null; info_confirmed_at: string | null; published_at: string | null; photos?: string[] };
+export type NearKey = 'beach' | 'transport' | 'school' | 'mosque' | 'shops';
+export type PublicProperty = PublicCard & {
+  furnished: boolean | null; description: string | null; info_confirmed_at: string | null; published_at: string | null; photos?: string[];
+  title_status?: 'titre' | 'melkia' | 'en_cours' | null; features?: string[]; floor?: number | null; orientation?: string | null;
+  syndic_cents?: number | null; near?: Partial<Record<NearKey, number>>;
+};
 
 export type OfficeSite = { tagline: string | null; about: string | null; services: string | null; areas: string | null; done: number };
 export type OfficePage = { office: PublicOffice; site?: OfficeSite; listings: PublicCard[] };
-export type PropertyPage = { office: PublicOffice; property: PublicProperty };
+export type PropertyPage = { office: PublicOffice; property: PublicProperty; similar?: PublicCard[] };
 
 const BASE = ((import.meta.env.VITE_SUPABASE_URL as string | undefined) ?? '').replace(/\/+$/, '');
 const KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined) ?? '';
