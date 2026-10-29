@@ -52,7 +52,7 @@ export function PostCardView({ slug, p }: { slug: string; p: Card }) {
 
 /** All articles of the office. */
 export function BlogView({ slug }: { slug: string }) {
-  const [state, retry] = useFetch(() => loadBlog(slug), slug);
+  const [state, retry] = useFetch(() => loadBlog(slug), slug, 'blog');
   const data = state.status === 'ready' ? state.data : null;
   useEffect(() => { document.title = data ? `${t('Blog')} · ${data.office.name}` : 'Amplify Real Estate'; }, [data]);
   if (state.status === 'loading') return <Loading />;
@@ -76,7 +76,7 @@ export function BlogView({ slug }: { slug: string }) {
 
 /** One article. */
 export function PostView({ slug, post }: { slug: string; post: string }) {
-  const [state, retry] = useFetch(() => loadPost(slug, post), `${slug}/${post}`);
+  const [state, retry] = useFetch(() => loadPost(slug, post), `${slug}/${post}`, 'post');
   const data = state.status === 'ready' ? state.data : null;
   useEffect(() => { document.title = data ? `${data.post.title} · ${data.office.name}` : 'Amplify Real Estate'; }, [data]);
   useEffect(() => { if (data) logEvent(data.office.slug, null, 'view'); }, [data]);

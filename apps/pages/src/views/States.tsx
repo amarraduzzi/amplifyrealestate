@@ -2,9 +2,24 @@ import { SearchX } from 'lucide-react';
 import { t } from '../lib/i18n';
 import { Link } from '../lib/router';
 import { officePath } from '../lib/router';
-import { Layout } from '../components/Layout';
+import { Layout, lastSite } from '../components/Layout';
 
 export function Loading() {
+  // still on an office website: keep its header and colors, so changing page does not flash the plain portal
+  const shell = lastSite && window.location.pathname.split('/')[1]?.toLowerCase() === lastSite.site.slug ? lastSite : null;
+  if (shell || (lastSite && officePath(lastSite.site.slug) === '/')) {
+    const sh = shell ?? lastSite!;
+    return (
+      <Layout site={sh.site} brand={sh.brand} wide>
+        <div className="mx-auto w-full max-w-6xl space-y-4 px-4 pb-10 pt-6 sm:px-6" aria-busy="true">
+          <div className="skeleton h-4 w-40 rounded-lg" />
+          <div className="skeleton h-9 w-2/3 rounded-xl" />
+          <div className="skeleton aspect-[16/9] w-full rounded-3xl sm:aspect-[21/9]" />
+          <div className="grid gap-4 sm:grid-cols-3"><div className="skeleton h-24 rounded-2xl" /><div className="skeleton h-24 rounded-2xl" /><div className="skeleton h-24 rounded-2xl" /></div>
+        </div>
+      </Layout>
+    );
+  }
   return (
     <Layout>
       <div className="mx-auto w-full max-w-3xl space-y-3 px-4 py-6" aria-busy="true">

@@ -13,7 +13,7 @@ export const splitAreas = (s: string | null | undefined) => (s ?? '').split(/[,Â
 
 /** "Combien vaut mon bien ?" as its own page: the link an office shares with owners. */
 export function EstimationView({ slug }: { slug: string }) {
-  const [state, retry] = useFetch(() => loadOffice(slug), slug);
+  const [state, retry] = useFetch(() => loadOffice(slug), slug, 'office');
   const data = state.status === 'ready' ? state.data : null;
   useEffect(() => { document.title = data ? `${t('Free estimate')} Â· ${data.office.name}` : 'Amplify Real Estate'; }, [data]);
   useEffect(() => { if (data) logEvent(data.office.slug, null, 'view'); }, [data]);

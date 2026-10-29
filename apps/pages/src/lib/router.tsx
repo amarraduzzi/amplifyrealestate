@@ -74,18 +74,28 @@ export function parse(pathname: string): Route {
 const NAV = 'pages:navigate';
 /** Go to a page of the site without reloading (for a tap on the map). */
 export function navigate(to: string) {
-  window.history.pushState(null, '', withLang(to));
+  // remember where the visitor was on this page, so "back" returns to the same spot
+  try { window.history.replaceState({ ...(window.history.state ?? {}), y: window.scrollY }, ''); } catch { /* ignore */ }
+  window.history.pushState({ y: 0 }, '', withLang(to));
   window.scrollTo(0, 0);
   window.dispatchEvent(new Event(NAV));
+}
+if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) window.history.scrollRestoration = 'manual';
+
+/** After "back" or "forward": scroll to where the visitor was, once the page has drawn (twice, for late photos and blocks). */
+function restoreScroll() {
+  const y = Number((window.history.state as { y?: number } | null)?.y ?? 0);
+  requestAnimationFrame(() => { window.scrollTo(0, y); window.setTimeout(() => window.scrollTo(0, y), 120); });
 }
 
 export function useRoute(): Route {
   const [route, setRoute] = useState<Route>(() => parse(window.location.pathname));
   useEffect(() => {
     const on = () => setRoute(parse(window.location.pathname));
-    window.addEventListener('popstate', on);
+    const back = () => { on(); restoreScroll(); };
+    window.addEventListener('popstate', back);
     window.addEventListener(NAV, on);
-    return () => { window.removeEventListener('popstate', on); window.removeEventListener(NAV, on); };
+    return () => { window.removeEventListener('popstate', back); window.removeEventListener(NAV, on); };
   }, []);
   return route;
 }
@@ -99,9 +109,7 @@ export function Link({ to, onClick, ...rest }: { to: string } & AnchorHTMLAttrib
     onClick?.(e);
     if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     e.preventDefault();
-    window.history.pushState(null, '', href);
-    window.scrollTo(0, 0);
-    window.dispatchEvent(new Event(NAV));
+    navigate(to);
   };
   return <a {...rest} href={href} onClick={go} />;
 }

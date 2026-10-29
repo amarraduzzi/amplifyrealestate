@@ -22,7 +22,7 @@ const unitLabel = (u: PublicUnit) => [u.reference, unitKind(u.kind), u.bedrooms 
 
 /** A new-build project: photos, what is still available by type, the list of units and a call-back form. */
 export function ProjectView({ slug, project }: { slug: string; project: string }) {
-  const [state, retry] = useFetch(() => loadProjectPage(slug, project), `${slug}/${project}`);
+  const [state, retry] = useFetch(() => loadProjectPage(slug, project), `${slug}/${project}`, 'project');
   const data = state.status === 'ready' ? state.data : null;
   const [kind, setKind] = useState<string>('all');
   const [pick, setPick] = useState<string | null>(null);

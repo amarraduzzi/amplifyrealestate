@@ -25,7 +25,7 @@ import { Failed, Loading, NotFound } from './States';
  * story (direction 3): the photos fill the screen with the price on them, and the free dates come right after.
  */
 export function PropertyView({ slug, reference }: { slug: string; reference: string }) {
-  const [state, retry] = useFetch(() => loadProperty(slug, reference), `${slug}/${reference}`);
+  const [state, retry] = useFetch(() => loadProperty(slug, reference), `${slug}/${reference}`, 'property');
   const data = state.status === 'ready' ? state.data : null;
   const [bookable, setBookable] = useState(false);
   useEffect(() => {

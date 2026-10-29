@@ -29,6 +29,8 @@ import { InquiryForm } from '../components/InquiryForm';
 import { Failed, Loading, NotFound } from './States';
 
 const PURPOSES: DealPurpose[] = ['sale', 'rent_long', 'rent_short'];
+/** The search per office for this visit, so coming back from a property keeps the filters. */
+const searchMemo = new Map<string, { purpose: DealPurpose | 'all'; type: PropertyType | 'all'; q: string; filters: Filters; mode: 'list' | 'map' }>();
 const SITE_NAME = { avito: 'Avito', mubawab: 'Mubawab', facebook: 'Facebook', instagram: 'Instagram', tiktok: 'TikTok' } as const;
 const DEFAULT_BLOCKS: SiteBlock[] = ['hero', 'listings', 'about', 'team', 'reviews', 'areas', 'estimate', 'contact'];
 const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
@@ -77,16 +79,24 @@ const Heading = ({ kicker, title }: { kicker?: string; title: string }) => (
 
 /** The office website (Amplify Vitrine): the blocks the office chose, in its own style. */
 export function OfficeView({ slug }: { slug: string }) {
-  const [state, retry] = useFetch(() => loadOffice(slug), slug);
-  const [purpose, setPurpose] = useState<DealPurpose | 'all'>('all');
-  const [type, setType] = useState<PropertyType | 'all'>('all');
-  const [q, setQ] = useState('');
-  const [filters, setFilters] = useState<Filters>(NO_FILTERS);
+  const [state, retry] = useFetch(() => loadOffice(slug), slug, 'office');
+  const kept = searchMemo.get(slug);
+  const [purpose, setPurpose] = useState<DealPurpose | 'all'>(kept?.purpose ?? 'all');
+  const [type, setType] = useState<PropertyType | 'all'>(kept?.type ?? 'all');
+  const [q, setQ] = useState(kept?.q ?? '');
+  const [filters, setFilters] = useState<Filters>(kept?.filters ?? NO_FILTERS);
   const favs = useFavs(slug);
   const [favOnly, setFavOnly] = useState(false);
-  const [mode, setMode] = useState<'list' | 'map'>('list');
+  const [mode, setMode] = useState<'list' | 'map'>(kept?.mode ?? 'list');
   const [shared, setShared] = useState<string[] | null>(() => sharedSelection());
-  useEffect(() => { setPurpose('all'); setType('all'); setQ(''); setFilters(NO_FILTERS); setFavOnly(false); }, [slug]);
+  // another office: start a fresh search; back on the same office: keep the search the visitor had
+  const seenSlug = useRef(slug);
+  useEffect(() => {
+    if (seenSlug.current === slug) return;
+    seenSlug.current = slug;
+    setPurpose('all'); setType('all'); setQ(''); setFilters(NO_FILTERS); setFavOnly(false); setMode('list');
+  }, [slug]);
+  useEffect(() => { searchMemo.set(slug, { purpose, type, q, filters, mode }); }, [slug, purpose, type, q, filters, mode]);
 
   const data = state.status === 'ready' ? state.data : null;
   useEffect(() => {

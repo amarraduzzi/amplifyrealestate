@@ -28,6 +28,9 @@ function LangSwitch({ langs = LANGS }: { langs?: { id: Lang; name: string }[] })
 }
 
 /** Header (office name or the Amplify logo, language), the page, and a small footer. */
+/** The office website the visitor is on, so a page that is still loading keeps the same header and style. */
+export let lastSite: { site: PublicOffice; brand: SiteStyle | null } | null = null;
+
 export function Layout({ office, stickyBar, children, langs, wide, brand, flush, site }: {
   office?: { name: string; slug: string; city: string | null }; stickyBar?: boolean; children: ReactNode; langs?: { id: Lang; name: string }[]; wide?: boolean;
   /** the style the office chose in Amplify Vitrine */ brand?: SiteStyle | null;
@@ -35,6 +38,7 @@ export function Layout({ office, stickyBar, children, langs, wide, brand, flush,
   /** an office website page (Amplify Vitrine): the full header with menu */ site?: PublicOffice;
 }) {
   const theme = themeName(brand);
+  if (site) lastSite = { site, brand: brand ?? null };
   // the area around the page (overscroll on a phone) takes the color of the style too
   useEffect(() => {
     document.body.style.background = theme === 'noir' ? 'rgb(12 16 22)' : theme === 'riad' ? 'rgb(250 246 240)' : '';

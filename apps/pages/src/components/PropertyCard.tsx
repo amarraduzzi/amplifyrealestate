@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
 import { Bath, BedDouble, ChevronLeft, ChevronRight, MapPin, Ruler } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
-import { photoUrl, type PublicCard } from '../lib/api';
+import { loadProperty, photoUrl, type PublicCard } from '../lib/api';
+import { prefetch } from '../lib/useFetch';
 import { placeText, priceSuffix, purposeLabel, statusCls, statusLabel, typeLabel } from '../lib/format';
 import { Link, propertyPath } from '../lib/router';
 import { t } from '../lib/i18n';
@@ -16,6 +17,7 @@ export function PropertyCard({ slug, p }: { slug: string; p: PublicCard }) {
   const drop = p.old_price_cents && p.price_cents !== null && p.old_price_cents > p.price_cents
     ? Math.round((1 - p.price_cents / p.old_price_cents) * 100) : 0;
   const fresh = !drop && !!p.published_at && Date.now() - new Date(p.published_at).getTime() < NEW_DAYS * 86_400_000;
+  const warm = () => prefetch('property', `${slug}/${p.reference}`, () => loadProperty(slug, p.reference));
   const pics = p.photos && p.photos.length > 0 ? p.photos : p.cover ? [p.cover] : [];
   const strip = useRef<HTMLSpanElement>(null);
   const [at, setAt] = useState(0);
@@ -30,7 +32,7 @@ export function PropertyCard({ slug, p }: { slug: string; p: PublicCard }) {
   const arrow = 'pointer-events-auto grid h-8 w-8 place-items-center rounded-full bg-white/90 text-night shadow transition hover:scale-105 disabled:opacity-0';
   return (
     <div className="group/card relative">
-    <Link to={propertyPath(slug, p.reference)}
+    <Link to={propertyPath(slug, p.reference)} onPointerEnter={warm} onTouchStart={warm} onFocus={warm}
       className="group block rounded-3xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand">
       <span className="relative block overflow-hidden rounded-3xl bg-surface-3">
         {pics.length > 1 ? (

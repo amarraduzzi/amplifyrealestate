@@ -16,7 +16,7 @@ import { Failed, Loading, NotFound } from './States';
 
 /** "Immobilier à Agdal": a page per neighborhood, filled with the office's own properties there. Good for Google. */
 export function AreaView({ slug, area }: { slug: string; area: string }) {
-  const [state, retry] = useFetch(() => loadOffice(slug), slug);
+  const [state, retry] = useFetch(() => loadOffice(slug), slug, 'office');
   const data = state.status === 'ready' ? state.data : null;
   const areas = useMemo(() => splitAreas(data?.site?.areas), [data]);
   const inArea = useMemo(() => (data?.listings ?? []).filter(l => l.neighborhood && areaSlug(l.neighborhood) === area), [data, area]);
