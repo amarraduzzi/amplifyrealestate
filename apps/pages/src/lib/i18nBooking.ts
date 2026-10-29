@@ -73,6 +73,13 @@ export const BOOK_FR: Record<string, string> = {
   'Please enter a valid phone number.': 'Merci d’indiquer un numéro valide.',
   'Sending failed. Check your connection and try again.': 'L’envoi a échoué. Vérifiez votre connexion et réessayez.',
   'Too many requests right now. Please try again in a moment, or contact us on WhatsApp.': 'Trop de demandes en ce moment. Réessayez dans un instant ou contactez-nous sur WhatsApp.',
+  'Photos coming soon': 'Photos bientôt disponibles',
+  'See the {n} photos': 'Voir les {n} photos',
+  'See the free dates': 'Voir les dates libres',
+  '{n} bedrooms': '{n} chambres',
+  'Contact on WhatsApp': 'Contacter sur WhatsApp',
+  'Call': 'Appeler',
+  '1 bedroom': '1 chambre',
 };
 export const BOOK_AR: Record<string, string> = {
   '1 night': 'ليلة واحدة',
@@ -147,6 +154,13 @@ export const BOOK_AR: Record<string, string> = {
   'Please enter a valid phone number.': 'المرجو إدخال رقم صالح.',
   'Sending failed. Check your connection and try again.': 'فشل الإرسال. تحقق من اتصالك وحاول مجددا.',
   'Too many requests right now. Please try again in a moment, or contact us on WhatsApp.': 'طلبات كثيرة حاليا. حاول بعد قليل أو تواصل معنا عبر واتساب.',
+  'Photos coming soon': 'الصور قريبا',
+  'See the {n} photos': 'شاهد {n} صور',
+  'See the free dates': 'شاهد التواريخ المتوفرة',
+  '{n} bedrooms': '{n} غرف',
+  'Contact on WhatsApp': 'تواصل عبر واتساب',
+  'Call': 'اتصل',
+  '1 bedroom': 'غرفة واحدة',
 };
 export const BOOK_NL: Record<string, string> = {
   '1 night': '1 nacht',
@@ -221,4 +235,11 @@ export const BOOK_NL: Record<string, string> = {
   'Please enter a valid phone number.': 'Vul een geldig telefoonnummer in.',
   'Sending failed. Check your connection and try again.': 'Versturen mislukt. Controleer je verbinding en probeer opnieuw.',
   'Too many requests right now. Please try again in a moment, or contact us on WhatsApp.': 'Te veel aanvragen op dit moment. Probeer het zo opnieuw of stuur ons een WhatsApp.',
+  'Photos coming soon': 'Foto’s volgen binnenkort',
+  'See the {n} photos': 'Bekijk de {n} foto’s',
+  'See the free dates': 'Bekijk de vrije data',
+  '{n} bedrooms': '{n} slaapkamers',
+  'Contact on WhatsApp': 'Contact via WhatsApp',
+  'Call': 'Bellen',
+  '1 bedroom': '1 slaapkamer',
 };

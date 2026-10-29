@@ -25,13 +25,13 @@ function LangSwitch({ langs = LANGS }: { langs?: { id: Lang; name: string }[] })
 }
 
 /** Header (office name or the Amplify logo, language), the page, and a small footer. */
-export function Layout({ office, stickyBar, children, langs }: {
-  office?: { name: string; slug: string; city: string | null }; stickyBar?: boolean; children: ReactNode; langs?: { id: Lang; name: string }[];
+export function Layout({ office, stickyBar, children, langs, wide }: {
+  office?: { name: string; slug: string; city: string | null }; stickyBar?: boolean; children: ReactNode; langs?: { id: Lang; name: string }[]; wide?: boolean;
 }) {
   return (
     <div className="flex min-h-screen flex-col">
       <header className="night px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
-        <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3">
+        <div className={`mx-auto flex w-full ${wide ? 'max-w-6xl' : 'max-w-4xl'} items-center justify-between gap-3`}>
           {office ? (
             <Link to={officePath(office.slug)} className="flex min-w-0 items-center gap-2.5">
               <AmplifyMark className="h-6 w-9 shrink-0" />
