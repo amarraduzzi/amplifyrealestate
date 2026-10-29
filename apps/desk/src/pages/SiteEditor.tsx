@@ -16,10 +16,10 @@ import { BlogTab, MapTab } from './SiteMapBlog';
 import { DEMO_SLUGS, DemoImport } from '../components/DemoImport';
 
 type Tab = 'style' | 'home' | 'blocks' | 'team' | 'reviews' | 'map' | 'blog' | 'texts' | 'contact';
-type Site = { site_theme: Theme; site_color: string | null; site_logo: string | null; site_hero: string | null; site_hero_title: string | null; site_hero_sub: string | null; site_blocks: Block[] };
+type Site = { site_theme: Theme; site_color: string | null; site_logo: string | null; site_hero: string | null; site_hero_title: string | null; site_hero_sub: string | null; site_blocks: Block[]; site_featured: string | null };
 type Member = { id: string; name: string; role: string | null; photo: string | null; whatsapp: string | null; langs: string[]; sort: number };
 type Review = { id: string; author: string; place: string | null; body: string; rating: number; sort: number };
-const COLS = 'site_theme, site_color, site_logo, site_hero, site_hero_title, site_hero_sub, site_blocks';
+const COLS = 'site_theme, site_color, site_logo, site_hero, site_hero_title, site_hero_sub, site_blocks, site_featured';
 
 const Msg = ({ error, saved }: { error: string | null; saved: boolean }) => (<>
   {error && <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
@@ -249,9 +249,16 @@ function BlocksTab({ office, site, setSite, canManage, onSaved }: TabProps) {
   const [on, setOn] = useState<Set<Block>>(() => new Set(site.site_blocks));
   const move = (i: number, d: -1 | 1) => setOrder(o => { const n = [...o]; const j = i + d; if (j < 0 || j >= n.length) return o; [n[i], n[j]] = [n[j], n[i]]; s.setSaved(false); return n; });
   const toggle = (b: Block) => setOn(x => { const n = new Set(x); if (n.has(b)) n.delete(b); else n.add(b); s.setSaved(false); return n; });
+  const [featured, setFeatured] = useState(site.site_featured ?? '');
+  const [online, setOnline] = useState<{ reference: string; title: string }[]>([]);
+  useEffect(() => {
+    supabase.from('properties').select('reference, title').eq('org_id', office.id).eq('is_published', true).in('status', ['available', 'reserved'])
+      .order('published_at', { ascending: false }).then(({ data }) => setOnline((data ?? []) as { reference: string; title: string }[]));
+  }, [office.id]);
   const saveBlocks = async () => {
     const blocks = order.filter(b => on.has(b) || b === 'listings');
-    if (await s.save({ site_blocks: blocks })) setSite({ ...site, site_blocks: blocks });
+    const f = { site_blocks: blocks, site_featured: featured || null };
+    if (await s.save(f)) setSite({ ...site, ...f });
   };
   return (
     <Card className="space-y-4">
@@ -269,6 +276,14 @@ function BlocksTab({ office, site, setSite, canManage, onSaved }: TabProps) {
           </li>
         ))}
       </ul>
+      {on.has('featured') && (
+        <Field label={t('Our favorite')} hint={t('One property gets a large block with its photo, its figures and a button. Choose your most beautiful one.')}>
+          <select className={inputCls} value={featured} onChange={e => { setFeatured(e.target.value); s.setSaved(false); }} disabled={!canManage}>
+            <option value="">{t('Choose a property')}</option>
+            {online.map(p => <option key={p.reference} value={p.reference}>{p.title} ({p.reference})</option>)}
+          </select>
+        </Field>
+      )}
       <Btn tone="brand" disabled={!canManage || s.busy} onClick={saveBlocks}>{s.busy ? '…' : t('Save the blocks')}</Btn>
       <Msg error={s.error} saved={s.saved} />
     </Card>

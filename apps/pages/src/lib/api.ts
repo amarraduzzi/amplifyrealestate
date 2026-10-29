@@ -25,12 +25,13 @@ export type PublicProperty = PublicCard & {
 
 export type SiteMember = { name: string; role: string | null; photo: string | null; whatsapp: string | null; langs: string[] };
 export type SiteReview = { author: string; place: string | null; body: string; rating: number };
-export type SiteBlock = 'hero' | 'listings' | 'projects' | 'about' | 'team' | 'reviews' | 'areas' | 'map' | 'blog' | 'estimate' | 'contact';
+export type SiteBlock = 'hero' | 'featured' | 'listings' | 'projects' | 'about' | 'team' | 'reviews' | 'areas' | 'map' | 'blog' | 'estimate' | 'contact';
 export type PostCard = { slug: string; title: string; excerpt: string | null; cover: string | null; published_at: string };
 export type OfficeSite = {
   tagline: string | null; about: string | null; services: string | null; areas: string | null; done: number;
   hero?: string | null; hero_title?: string | null; hero_sub?: string | null; blocks?: SiteBlock[]; team?: SiteMember[]; reviews?: SiteReview[];
   points?: Record<string, [number, number]>; posts?: PostCard[];
+  featured?: { reference: string; excerpt: string } | null;
 };
 export type OfficePage = { office: PublicOffice; site?: OfficeSite; listings: PublicCard[] };
 export type PropertyPage = { office: PublicOffice; property: PublicProperty; similar?: PublicCard[] };

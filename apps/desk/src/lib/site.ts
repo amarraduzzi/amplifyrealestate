@@ -12,10 +12,10 @@ export const themeText = (th: typeof THEMES[number]) => t(th.text);
 
 export const COLORS = ['#00874B', '#04419C', '#0F766E', '#B5562F', '#B08D57', '#8B1E3F', '#556B2F', '#1F2937'];
 
-export const BLOCKS = ['hero', 'listings', 'projects', 'about', 'team', 'reviews', 'areas', 'map', 'blog', 'estimate', 'contact'] as const;
+export const BLOCKS = ['hero', 'featured', 'listings', 'projects', 'about', 'team', 'reviews', 'areas', 'map', 'blog', 'estimate', 'contact'] as const;
 export type Block = typeof BLOCKS[number];
 export const blockLabel = (b: Block) => t(({
-  hero: 'Large photo at the top', listings: 'Your properties', projects: 'New-build projects', about: 'About us and services',
+  hero: 'Large photo at the top', featured: 'Our favorite (one property in the spotlight)', listings: 'Your properties', projects: 'New-build projects', about: 'About us and services',
   team: 'Your team', reviews: 'Client reviews', areas: 'Neighborhoods', map: 'Map of your neighborhoods', blog: 'Latest articles', estimate: 'How much is my property worth? (estimate)', contact: 'Contact and call-back form',
 } as const)[b]);
 

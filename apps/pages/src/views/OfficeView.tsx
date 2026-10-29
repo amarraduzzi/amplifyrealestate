@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { CheckCircle2, ExternalLink, HardHat, Heart, LayoutGrid, Map as MapIcon, Mail, MapPin, MessageCircle, Phone, Quote, Search, Star, UserRound } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ExternalLink, HardHat, Heart, LayoutGrid, Map as MapIcon, Mail, MapPin, MessageCircle, Phone, Quote, Search, Star, UserRound } from 'lucide-react';
 import type { DealPurpose, PropertyType } from '@vastgoed/shared';
 import { formatMad } from '@vastgoed/shared';
 import { loadOffice, loadOfficeProjects, logEvent, photoUrl, type ProjectCard, type SiteBlock } from '../lib/api';
-import { Link, areaPath, areaSlug, blogPath, estimationPath, navigate, projectPath } from '../lib/router';
+import { Link, areaPath, areaSlug, blogPath, estimationPath, navigate, projectPath, propertyPath } from '../lib/router';
 import { TileMap } from '../components/TileMap';
 import { PostCardView } from './BlogView';
 import { themeName } from '../lib/theme';
@@ -11,7 +11,7 @@ import { rememberSite, SECTION_EVENT, takePending } from '../components/SiteHead
 import { EstimateBox } from '../components/EstimateBox';
 import { projectStatus } from './ProjectView';
 import { useFetch } from '../lib/useFetch';
-import { purposeLabel, typeLabel } from '../lib/format';
+import { priceSuffix, purposeLabel, typeLabel } from '../lib/format';
 import { t } from '../lib/i18n';
 import { telLink, waLink } from '../lib/contact';
 import { Layout } from '../components/Layout';
@@ -20,6 +20,8 @@ import { ContactBar } from '../components/ContactBar';
 import { PropertyCard } from '../components/PropertyCard';
 import { AlertBox } from '../components/AlertBox';
 import { ListingMap } from '../components/ListingMap';
+import { ParallaxImg } from '../components/Parallax';
+import { FavButton } from '../components/FavButton';
 import { HeroBackdrop, HeroSearch, heroSlides } from '../components/HeroSlides';
 import { readFavs, selectionUrl, sharedSelection, useFavs } from '../lib/favorites';
 import { ListingFilters, NO_FILTERS, applyFilters, type Filters } from '../components/ListingFilters';
@@ -196,8 +198,62 @@ export function OfficeView({ slug }: { slug: string }) {
     </a>
   );
 
+  const star = site?.featured ? listings.find(l => l.reference === site.featured!.reference) ?? null : null;
+  const starPics = star ? (star.photos?.length ? star.photos : star.cover ? [star.cover] : []) : [];
   const sections: Record<SiteBlock, ReactNode> = {
     hero: null,
+    featured: star ? (
+      <Reveal>
+        <div className="relative isolate overflow-hidden rounded-[2rem] bg-night text-white shadow-2xl">
+          {starPics[0] && <ParallaxImg src={photoUrl(starPics[0])} className="absolute inset-0 -z-10 h-full w-full object-cover" />}
+          <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/55 to-black/40 lg:bg-gradient-to-r lg:from-black/80 lg:via-black/40 lg:to-transparent" />
+          <div className="grid min-h-[34rem] gap-8 p-6 sm:p-10 lg:min-h-[38rem] lg:grid-cols-[1.15fr_1fr] lg:items-end lg:p-14">
+            <div className="flex flex-col justify-end">
+              <p className="inline-flex w-fit items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.18em] ring-1 ring-white/25 backdrop-blur-md">
+                <Heart className="h-3.5 w-3.5 fill-current text-rose-400" /> {t('Our favorite')}
+              </p>
+              <h2 className="mt-4 font-display text-4xl font-bold leading-[1.05] sm:text-5xl lg:text-6xl">{star.title}</h2>
+              {(star.neighborhood || star.city) && <p className="mt-3 flex items-center gap-1.5 text-white/80"><MapPin className="h-4 w-4" />{[star.neighborhood, star.city].filter(Boolean).join(', ')}</p>}
+              {site?.featured?.excerpt && <p className="mt-4 max-w-xl text-base leading-relaxed text-white/85 sm:text-lg">{site.featured.excerpt}{site.featured.excerpt.length >= 240 ? '…' : ''}</p>}
+              <div className="mt-7 flex flex-wrap items-center gap-3">
+                <Link to={propertyPath(office.slug, star.reference)} className="gold-fill inline-flex items-center gap-2 rounded-xl px-6 py-3.5 text-sm font-bold text-brand-ink transition hover:brightness-105">
+                  {t('Discover this property')} <ArrowRight className="h-4 w-4 rtl:rotate-180" />
+                </Link>
+                <span className="relative block h-10 w-10 [&>button]:!static [&>button]:!h-10 [&>button]:!w-10"><FavButton slug={office.slug} reference={star.reference} /></span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-4 lg:items-end">
+              <div className="grid w-full max-w-md grid-cols-3 overflow-hidden rounded-2xl bg-white/10 ring-1 ring-white/20 backdrop-blur-md">
+                {[
+                  star.area_m2 !== null ? { n: Number(star.area_m2), label: 'm²' } : null,
+                  star.bedrooms !== null && star.bedrooms > 0 ? { n: star.bedrooms, label: t('Bedrooms') } : null,
+                  star.bathrooms !== null && star.bathrooms > 0 ? { n: star.bathrooms, label: t('Bathrooms') } : null,
+                ].filter((x): x is { n: number; label: string } => !!x).map(x => (
+                  <div key={x.label} className="border-e border-white/15 p-4 text-center last:border-e-0">
+                    <p className="font-display text-3xl font-bold"><CountUp n={x.n} /></p>
+                    <p className="mt-0.5 text-[11px] font-semibold uppercase tracking-wide text-white/70">{x.label}</p>
+                  </div>
+                ))}
+              </div>
+              <p className="w-full max-w-md rounded-2xl bg-white/10 px-5 py-4 ring-1 ring-white/20 backdrop-blur-md">
+                <span className="block text-[11px] font-semibold uppercase tracking-wide text-white/70">{purposeLabel(star.purpose)}</span>
+                <span className="font-display tabular text-3xl font-bold">{formatMad(star.price_cents)}</span>
+                <span className="ms-1.5 text-sm text-white/70">{priceSuffix(star.purpose)}</span>
+              </p>
+              {starPics.length > 1 && (
+                <div className="hidden w-full max-w-md grid-cols-3 gap-2 lg:grid">
+                  {starPics.slice(1, 4).map(ph => (
+                    <Link key={ph} to={propertyPath(office.slug, star.reference)} className="block overflow-hidden rounded-xl ring-1 ring-white/25">
+                      <img src={photoUrl(ph, true)} alt="" loading="lazy" className="aspect-[4/3] w-full object-cover transition duration-500 hover:scale-105" />
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Reveal>
+    ) : null,
     listings: (
       <Reveal id="biens">
         <Heading kicker={t('Our selection')} title={t('Available properties')} />

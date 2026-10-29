@@ -1,5 +1,9 @@
 // Texts of Amplify Agent (solo menu, plan, visit vouchers). The English text is the key.
 export const FR5: Record<string, string> = {
+  'Our favorite (one property in the spotlight)': 'Coup de cœur (un bien mis en avant)',
+  'Our favorite': 'Coup de cœur',
+  'One property gets a large block with its photo, its figures and a button. Choose your most beautiful one.': 'Un bien reçoit un grand bloc avec sa photo, ses chiffres et un bouton. Choisissez le plus beau.',
+  'Choose a property': 'Choisissez un bien',
   'WhatsApp alert': 'Alerte WhatsApp',
   'Send this property': 'Envoyer ce bien',
   'Hello, here is your copy of the visit voucher for “{title}”: {url}': 'Bonjour, voici votre copie du bon de visite pour « {title} » : {url}',
@@ -168,6 +172,10 @@ export const FR5: Record<string, string> = {
   'This is not a {site} address. Copy the link of your profile from {site}.': 'Ce n’est pas une adresse {site}. Copiez le lien de votre profil depuis {site}.',
 };
 export const AR5: Record<string, string> = {
+  'Our favorite (one property in the spotlight)': 'اختيارنا (عقار مميز)',
+  'Our favorite': 'اختيارنا المفضل',
+  'One property gets a large block with its photo, its figures and a button. Choose your most beautiful one.': 'يحصل عقار واحد على مساحة كبيرة بصورته وأرقامه وزر. اختر أجمل عقار لديك.',
+  'Choose a property': 'اختر عقارا',
   'WhatsApp alert': 'تنبيه واتساب',
   'Send this property': 'أرسل هذا العقار',
   'Hello, here is your copy of the visit voucher for “{title}”: {url}': 'السلام عليكم، هذه نسختك من وصل الزيارة لـ «{title}»: {url}',
