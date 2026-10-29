@@ -80,6 +80,29 @@ export function logEvent(slug: string, reference: string | null, kind: 'view' | 
 
 export type InquiryResult = 'ok' | 'invalid' | 'busy' | 'error';
 
+/** "Tell me about new properties": a lead with search criteria and the alert flag; the office sends matches on WhatsApp. */
+export async function submitAlert(o: {
+  slug: string; name: string; phone: string; purpose: string; type: string | null; neighborhood: string | null;
+  min: number | null; max: number | null; beds: number; area: number; lang: string; trap: string;
+}): Promise<InquiryResult> {
+  try {
+    const r = await fetch(`${BASE}/rest/v1/rpc/submit_alert`, {
+      method: 'POST',
+      headers: { apikey: KEY, 'content-type': 'application/json' },
+      body: JSON.stringify({
+        p_slug: o.slug, p_name: o.name, p_phone: o.phone, p_purpose: o.purpose, p_type: o.type, p_neighborhood: o.neighborhood,
+        p_min: o.min === null ? null : String(o.min), p_max: o.max === null ? null : String(o.max),
+        p_beds: o.beds > 0 ? String(o.beds) : null, p_area: o.area > 0 ? String(o.area) : null, p_lang: o.lang, p_trap: o.trap,
+      }),
+    });
+    if (r.ok) return 'ok';
+    const text = await r.text();
+    if (text.includes('alert_invalid')) return 'invalid';
+    if (text.includes('inquiry_busy')) return 'busy';
+    return 'error';
+  } catch { return 'error'; }
+}
+
 /** Leave name, number and a message for the office. The database makes the lead and a call-back task. */
 export async function submitInquiry(o: { slug: string; reference: string | null; name: string; phone: string; message: string; purpose?: string; trap: string }): Promise<InquiryResult> {
   try {

@@ -59,6 +59,8 @@ export type LeadRow = {
   purpose: DealPurpose;
   status: LeadStatus;
   source?: LeadSource | null;
+  wants_alerts?: boolean;
+  alert_lang?: 'fr' | 'ar' | 'en' | null;
   property_types: PropertyType[];
   city: string | null;
   neighborhoods: string[];

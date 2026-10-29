@@ -4,7 +4,9 @@ import { t } from '../lib/i18n';
 import type { LeadRow, Office, PersonRow, PropertyRow } from '../lib/types';
 import { OPEN_LEAD_STATUSES, leadStatusCls, leadStatusLabel } from '../lib/labels';
 import { matches } from '../lib/matching';
-import { ContactLinks } from '../components/ContactLinks';
+import { BellRing, MessageCircle } from 'lucide-react';
+import { ContactLinks, waLink } from '../components/ContactLinks';
+import { matchesMessage } from '../lib/leadMessage';
 import { ContactAge } from '../components/ContactAge';
 import { budgetText, criteriaText } from '../components/leadText';
 import { friendly } from '../lib/errors';
@@ -47,12 +49,23 @@ export function PropertyLeads({ office, property }: { office: Office; property: 
           {rows.map(({ lead, person }) => (
             <li key={lead.id} className="rounded-2xl bg-surface-2 px-3.5 py-3">
               <div className="flex items-start justify-between gap-3">
-                <p className="truncate text-sm font-semibold">{person?.full_name ?? '…'}</p>
+                <p className="flex min-w-0 items-center gap-2 text-sm font-semibold">
+                  <span className="truncate">{person?.full_name ?? '…'}</span>
+                  {lead.wants_alerts && <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-bold text-brand"><BellRing className="h-3 w-3" /> {t('WhatsApp alert')}</span>}
+                </p>
                 <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${leadStatusCls[lead.status]}`}>{leadStatusLabel(lead.status)}</span>
               </div>
               <p className="mt-0.5 text-sm text-muted">{budgetText(lead)} · {criteriaText(lead)}</p>
               <div className="mt-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
                 {person && <ContactLinks c={person} />}
+                {lead.wants_alerts && person && (person.whatsapp || person.phone) && (
+                  <a href={`${waLink((person.whatsapp || person.phone) as string)}?text=${encodeURIComponent(matchesMessage({
+                      lang: lead.alert_lang ?? 'fr', name: person.full_name.split(' ')[0], office, props: [property] }))}`}
+                    target="_blank" rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-[#25D366] px-3 py-1.5 text-xs font-bold text-white hover:brightness-95">
+                    <MessageCircle className="h-3.5 w-3.5" /> {t('Send this property')}
+                  </a>
+                )}
                 <ContactAge iso={lead.last_contact_at} stale />
               </div>
             </li>

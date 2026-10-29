@@ -18,6 +18,7 @@ import { Layout } from '../components/Layout';
 import { langLabel } from '../lib/vitrine';
 import { ContactBar } from '../components/ContactBar';
 import { PropertyCard } from '../components/PropertyCard';
+import { AlertBox } from '../components/AlertBox';
 import { ListingFilters, NO_FILTERS, applyFilters, type Filters } from '../components/ListingFilters';
 import { InquiryForm } from '../components/InquiryForm';
 import { Failed, Loading, NotFound } from './States';
@@ -108,6 +109,8 @@ export function OfficeView({ slug }: { slug: string }) {
 
   const present = useMemo(() => PURPOSES.filter(p => data?.listings.some(l => l.purpose === p)), [data]);
   const types = useMemo(() => Array.from(new Set((data?.listings ?? []).map(l => l.property_type))), [data]);
+  const hoods = useMemo(() => Array.from(new Set((data?.listings ?? []).map(l => l.neighborhood).filter((x): x is string => !!x))).sort(), [data]);
+  const hoodFromQ = useMemo(() => { const n = norm(q.trim()); return n ? hoods.find(h => norm(h) === n || norm(h).includes(n)) ?? null : null; }, [q, hoods]);
   // the budget only makes sense for one kind of deal: the chosen one, or the only one the office has
   const dealFor = purpose !== 'all' ? purpose : present.length === 1 ? present[0] : null;
   const shown = useMemo(() => {
@@ -204,6 +207,10 @@ export function OfficeView({ slug }: { slug: string }) {
         <ul className="mt-5 grid gap-x-5 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map(p => <li key={p.reference}><PropertyCard slug={office.slug} p={p} /></li>)}
         </ul>
+        {listings.length > 0 && (
+          <AlertBox slug={office.slug} purposes={present.length > 0 ? present : ['sale']} purpose={dealFor} type={type === 'all' ? null : type}
+            filters={filters} hoods={hoods} hood={hoodFromQ} strong={shown.length === 0} />
+        )}
       </Reveal>
     ),
     projects: projects.length > 0 ? (

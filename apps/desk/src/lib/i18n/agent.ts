@@ -1,5 +1,7 @@
 // Texts of Amplify Agent (solo menu, plan, visit vouchers). The English text is the key.
 export const FR5: Record<string, string> = {
+  'WhatsApp alert': 'Alerte WhatsApp',
+  'Send this property': 'Envoyer ce bien',
   'Hello, here is your copy of the visit voucher for “{title}”: {url}': 'Bonjour, voici votre copie du bon de visite pour « {title} » : {url}',
   'Please enter the visitor’s phone number (at least 8 digits).': 'Indiquez le numéro du visiteur (au moins 8 chiffres).',
   'The visitor has to sign first.': 'Le visiteur doit d’abord signer.',
@@ -166,6 +168,8 @@ export const FR5: Record<string, string> = {
   'This is not a {site} address. Copy the link of your profile from {site}.': 'Ce n’est pas une adresse {site}. Copiez le lien de votre profil depuis {site}.',
 };
 export const AR5: Record<string, string> = {
+  'WhatsApp alert': 'تنبيه واتساب',
+  'Send this property': 'أرسل هذا العقار',
   'Hello, here is your copy of the visit voucher for “{title}”: {url}': 'السلام عليكم، هذه نسختك من وصل الزيارة لـ «{title}»: {url}',
   'Please enter the visitor’s phone number (at least 8 digits).': 'أدخل رقم هاتف الزائر (8 أرقام على الأقل).',
   'The visitor has to sign first.': 'يجب أن يوقع الزائر أولا.',

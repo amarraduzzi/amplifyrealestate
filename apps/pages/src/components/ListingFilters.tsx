@@ -17,7 +17,7 @@ const STEPS: Record<DealPurpose, number[]> = {
 const AREAS = [50, 80, 100, 150, 200, 300, 500];
 const BEDS = [1, 2, 3, 4, 5];
 
-const short = (dh: number) => dh >= 1_000_000 ? `${String(dh / 1_000_000).replace('.', ',')} M DH`
+export const short = (dh: number) => dh >= 1_000_000 ? `${String(dh / 1_000_000).replace('.', ',')} M DH`
   : dh >= 10_000 ? `${dh / 1000}k DH` : `${dh.toLocaleString('fr-FR')} DH`;
 
 /** Applies the filters and the sort order to the listings that are already filtered on deal, type and text. */
