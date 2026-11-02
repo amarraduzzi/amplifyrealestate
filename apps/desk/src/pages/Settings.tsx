@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { t } from '../lib/i18n';
+import { readTheme, saveTheme, type Theme } from '../lib/theme';
 import { Hero, PhoneSheet } from '../components/Hero';
 import { isSolo, type Office } from '../lib/types';
 import { canSeeOverview } from '../components/Shell';
@@ -27,6 +28,7 @@ export function Settings({ office, userId, onSelfChanged, initialTab = 'team' }:
     ...(office.role !== 'viewer' ? [{ id: 'billing' as SettingsTab, label: t('Invoice details') }] : []),
     ...(canSeeOverview(office.role) ? [{ id: 'plan' as SettingsTab, label: t('Plan') }] : []),
   ];
+  const [theme, setTheme] = useState<Theme>(readTheme);
   const [tab, setTab] = useState<SettingsTab>(tabs.some(x => x.id === initialTab) ? initialTab : tabs[0].id);
 
   return (
@@ -42,6 +44,15 @@ export function Settings({ office, userId, onSelfChanged, initialTab = 'team' }:
       <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-surface px-4 py-3 ring-1 ring-line/10">
         <span className="text-sm font-semibold">{t('Language')}</span>
         <div className="rounded-full bg-surface-2 p-0.5"><LangSwitch light /></div>
+      </div>
+      <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl bg-surface px-4 py-3 ring-1 ring-line/10">
+        <span className="text-sm font-semibold">{t('Appearance')}</span>
+        <div className="flex rounded-full bg-surface-2 p-0.5" role="group" aria-label={t('Appearance')}>
+          {([['light', t('Light')], ['dark', t('Dark')], ['auto', t('Automatic')]] as [Theme, string][]).map(([k, label]) => (
+            <button key={k} type="button" aria-pressed={theme === k} onClick={() => { setTheme(k); saveTheme(k); }}
+              className={`rounded-full px-3 py-1 text-xs font-semibold transition ${theme === k ? 'bg-ink text-bg' : 'text-muted hover:text-ink'}`}>{label}</button>
+          ))}
+        </div>
       </div>
       <div className="-mx-4 mt-4 flex gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden" role="tablist">
         {tabs.map(x => (

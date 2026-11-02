@@ -28,6 +28,25 @@
   --night: 0 30 62;
   --night-2: 0 46 95;
 }
+
+/* Dark mode: the same names, a night palette. Set with data-theme="dark" on <html> (Settings > Appearance). */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --brand: 5 185 98; --brand-hi: 38 208 125; --brand-ink: 0 30 62;
+  --bg: 9 16 28; --surface: 19 30 47; --surface-2: 28 41 62; --surface-3: 40 56 82;
+  --ink: 232 238 246; --muted: 148 165 190; --line: 205 218 238;
+  --ok: 24 170 100; --warn: 240 170 60; --danger: 240 100 100; --qr: 110 160 255;
+}
+:root[data-theme="dark"] .lift { box-shadow: 0 1px 2px rgb(0 0 0 / .35), 0 8px 18px -12px rgb(0 0 0 / .7); }
+:root[data-theme="dark"] .card { box-shadow: none; }
+/* documents are paper: they stay light, also in dark mode (and so does what is printed) */
+:root[data-theme="dark"] .report-sheet {
+  color-scheme: light;
+  --brand: 0 135 75; --brand-hi: 5 185 98; --brand-ink: 255 255 255;
+  --bg: 231 236 244; --surface: 255 255 255; --surface-2: 236 241 247; --surface-3: 222 229 238;
+  --ink: 0 30 62; --muted: 86 104 130; --line: 0 30 62;
+  --ok: 0 135 75; --warn: 190 120 10; --danger: 200 45 45; --qr: 40 100 220;
+}
 html, body, #root { height: 100%; }
 /* app feel: no tap flash, no rubber-band, no double-tap zoom, no text selection on controls */
 html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
