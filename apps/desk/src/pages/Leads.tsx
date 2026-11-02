@@ -16,6 +16,7 @@ import { LeadDetail } from './LeadDetail';
 import { downloadCsv, leadsCsv } from '../lib/exportCsv';
 import { friendly } from '../lib/errors';
 import { Hero, PhoneSheet } from '../components/Hero';
+import { useCovers } from '../lib/covers';
 import { Avatar } from '../components/Avatar';
 
 type Filter = 'all' | LeadRow['status'];
@@ -83,6 +84,9 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
       return [p?.full_name, p?.phone, p?.whatsapp, p?.email, l.city, l.neighborhoods.join(' '), l.notes].some(x => x?.toLowerCase().includes(needle));
     });
   }, [leads, people, filter, q]);
+
+  const coverIds = useMemo(() => shown.flatMap(l => (matchMap[l.id] ?? []).slice(0, 3).map(p => p.id)), [shown, matchMap]);
+  const covers = useCovers(coverIds);
 
   const tabs: Filter[] = ['all', ...LEAD_STATUSES.filter(s => (counts[s] ?? 0) > 0 || s === 'new')];
 
@@ -206,7 +210,14 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
                       {l.source && <p className="mt-1 text-xs font-semibold text-muted">{t('Via {source}', { source: sourceLabel(l.source) })}</p>}
                       {step && (
                         <p className={`mt-3 flex items-center gap-2 text-sm font-semibold lg:hidden ${txt(step.cls)}`}>
-                          <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full ${step.cls}`}><step.icon className="h-3.5 w-3.5" /></span><span className="min-w-0 truncate">{step.text}</span>
+                          <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full ${step.cls}`}><step.icon className="h-3.5 w-3.5" /></span><span className="min-w-0 flex-1 truncate">{step.text}</span>
+                          {step.icon === Building2 && n > 0 && (
+                            <span className="flex shrink-0 -space-x-2 rtl:space-x-reverse" aria-hidden="true">
+                              {(matchMap[l.id] ?? []).slice(0, 3).map(p => covers[p.id]
+                                ? <img key={p.id} src={covers[p.id]} alt="" loading="lazy" className="h-8 w-8 rounded-full object-cover ring-2 ring-surface" />
+                                : <span key={p.id} className="grid h-8 w-8 place-items-center rounded-full bg-surface-3 text-muted ring-2 ring-surface"><Building2 className="h-3.5 w-3.5" /></span>)}
+                            </span>
+                          )}
                         </p>
                       )}
                       <div className="mt-3 flex items-center justify-between gap-3 border-t border-line/[0.07] pt-3 max-lg:hidden">

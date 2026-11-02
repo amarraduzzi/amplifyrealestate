@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ChevronRight, MessageCircle, Sparkles, X } from 'lucide-react';
+import { Building2, ChevronRight, MessageCircle, Sparkles, X } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { t } from '../lib/i18n';
 import type { Office } from '../lib/types';
@@ -8,6 +8,7 @@ import { matchesMessage } from '../lib/leadMessage';
 import { SHARE_LANGS, whatsappShareUrl, type ShareLang } from '../lib/publicSite';
 import { priceSuffix } from '../lib/labels';
 import { planError } from '../lib/plan';
+import { useCovers } from '../lib/covers';
 import { waLink } from './ContactLinks';
 import type { View } from './Shell';
 
@@ -28,6 +29,7 @@ export function NewMatches({ office, onGo, onCount }: { office: Office; onGo: (v
     catch { setRows([]); onCount(0); } // Today keeps working without this block
   }, [office.id, onCount]);
   useEffect(() => { load(); }, [load]);
+  const covers = useCovers((rows ?? []).flatMap(m => m.props.slice(0, 3).map(p => p.id)));
 
   if (!rows || rows.length === 0) return null;
 
@@ -105,11 +107,16 @@ export function NewMatches({ office, onGo, onCount }: { office: Office; onGo: (v
                 </span>
               )}
             </div>
-            <ul className="mt-2 space-y-1 border-t border-line/[0.07] pt-2">
+            <ul className="mt-3 space-y-2.5 border-t border-line/[0.07] pt-3">
               {m.props.slice(0, 3).map(p => (
-                <li key={p.id} className="flex items-baseline justify-between gap-3 text-sm">
-                  <span className="min-w-0 truncate text-muted">{p.title}</span>
-                  <span className="tabular shrink-0 font-semibold">{formatMad(p.price_cents)}{priceSuffix(p.purpose) ? ` ${priceSuffix(p.purpose)}` : ''}</span>
+                <li key={p.id} className="flex items-center gap-3">
+                  {covers[p.id]
+                    ? <img src={covers[p.id]} alt="" loading="lazy" decoding="async" className="h-14 w-14 shrink-0 rounded-xl bg-surface-2 object-cover" />
+                    : <span aria-hidden="true" className="grid h-14 w-14 shrink-0 place-items-center rounded-xl bg-surface-2 text-muted/60"><Building2 className="h-6 w-6" /></span>}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold">{p.title}</span>
+                    <span className="tabular mt-0.5 block text-sm font-bold text-brand">{formatMad(p.price_cents)}{priceSuffix(p.purpose) ? ` ${priceSuffix(p.purpose)}` : ''}</span>
+                  </span>
                 </li>
               ))}
               {m.props.length > 3 && <li className="text-xs text-muted">{t('And {n} more.', { n: m.props.length - 3 })}</li>}
