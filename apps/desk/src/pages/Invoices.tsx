@@ -6,6 +6,7 @@ import { Hero, madShort, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import { loadInvoices, type InvoiceRow, type InvoiceStatus } from '../lib/invoices';
 import { Btn, Card, inputCls, EmptyState } from '../components/ui';
+import { AccentRow, type Tone } from '../components/Rows';
 import { InvoiceForm } from './InvoiceForm';
 import { InvoiceDoc } from './InvoiceDoc';
 
@@ -82,10 +83,10 @@ export function Invoices({ office }: { office: Office }) {
           <EmptyState className="mt-6" icon={Receipt} title={t('No invoices yet')} text={t('Open a deal and tap "Make an invoice", or make one here. Fill in your invoice details under Settings first.')} />
         ) : (<>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div role="tablist" className="flex flex-wrap gap-1.5">
+            <div role="tablist" className="-mx-4 flex flex-nowrap gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
               {(['all', 'issued', 'paid', 'cancelled'] as const).map(f => (
                 <button key={f} role="tab" aria-selected={filter === f} onClick={() => setFilter(f)}
-                  className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${filter === f ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
+                  className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${filter === f ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
                   {f === 'all' ? t('All') : invoiceStatusLabel(f)}
                 </button>
               ))}
@@ -96,19 +97,17 @@ export function Invoices({ office }: { office: Office }) {
             </div>
           </div>
           <ul className="mt-4 space-y-2">
-            {shown.map(r => (
-              <li key={r.id}>
-                <button type="button" onClick={() => setOpenId(r.id)} className="card flex w-full flex-wrap items-center justify-between gap-3 rounded-2xl px-4 py-3 text-start transition hover:ring-2 hover:ring-brand/30">
-                  <span className="min-w-0">
-                    <span className="tabular block font-semibold">{r.number}</span>
-                    <span className="block truncate text-sm text-muted">{r.client_name} · {dateText(r.issued_on)}</span>
-                  </span>
-                  <span className="flex items-center gap-2">
-                    <span className="font-display tabular font-bold">{formatMad(r.total_cents)}</span>
-                    <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${invoiceStatusCls[r.status]}`}>{invoiceStatusLabel(r.status)}</span>
-                  </span>
-                </button>
-              </li>
+            {shown.map((r, n) => (
+              <AccentRow key={r.id} tone={(({ issued: 'warn', paid: 'ok', cancelled: 'muted' }) as Record<string, Tone>)[r.status] ?? 'muted'} index={n} label={r.number} onOpen={() => setOpenId(r.id)}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="tabular font-semibold">{r.number}</p>
+                    <p className="truncate text-sm text-muted">{r.client_name} · {dateText(r.issued_on)}</p>
+                  </div>
+                  <p className="font-display tabular shrink-0 text-lg font-bold leading-tight">{formatMad(r.total_cents)}</p>
+                </div>
+                <div className="mt-2.5"><span className={`rounded-full px-2.5 py-1 text-xs font-bold ${invoiceStatusCls[r.status]}`}>{invoiceStatusLabel(r.status)}</span></div>
+              </AccentRow>
             ))}
             {shown.length === 0 && <p className="mt-6 text-center text-muted">{t('Nothing matches.')}</p>}
           </ul>

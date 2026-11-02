@@ -12,6 +12,7 @@ import {
 import { planError } from '../lib/plan';
 import { downloadCsv, toCsv } from '../lib/exportCsv';
 import { Btn, Card, Field, Modal, inputCls, EmptyState } from '../components/ui';
+import { AccentRow } from '../components/Rows';
 import { ProjectMarketing } from './ProjectMarketing';
 import { ProjectReport } from './ProjectReport';
 import { SaleForm, SaleView, SalesTab, WorksPanel, type SaleData } from './DevSales';
@@ -537,13 +538,13 @@ export function Projects({ office }: { office: Office }) {
       {rows && rows.length > 0 && (
         <ul className="mt-5 grid gap-3 sm:grid-cols-2">
           {rows.map(p => { const s = stats(units.filter(u => u.project_id === p.id)); return (
-            <li key={p.id}><button type="button" onClick={() => setOpenId(p.id)} className="card w-full rounded-2xl p-4 text-start transition hover:ring-2 hover:ring-brand/25">
+            <AccentRow key={p.id} tone={s.total > 0 && s.sold >= s.total ? 'ok' : 'brand'} label={p.name} onOpen={() => setOpenId(p.id)}><div>
               <p className="font-display text-lg font-bold">{p.name}</p>
               <p className="text-xs text-muted">{[p.city, projectStatusLabel(p.status), p.delivery_date ? t('Delivery {date}', { date: day(p.delivery_date) }) : null].filter(Boolean).join(' · ')}</p>
               <div className="mt-3 flex h-2 overflow-hidden rounded-full bg-surface-2">{s.total > 0 && (['sold', 'reserved', 'option', 'available'] as const).map(x => { const n = x === 'sold' ? s.sold : x === 'reserved' ? s.reserved : x === 'option' ? s.option : s.available; return n ? <span key={x} className={UNIT_CLS[x].split(' ')[0]} style={{ width: `${n / s.total * 100}%` }} /> : null; })}</div>
               <p className="mt-2 text-sm">{t('{s} of {n} sold', { s: s.sold, n: s.total })} · <span className="text-muted">{t('{n} available', { n: s.available })}</span></p>
               {canWrite && s.soldCents > 0 && <p className="text-xs text-muted">{t('Sales')}: <span className="tabular font-semibold text-ink">{formatMad(s.soldCents)}</span></p>}
-            </button></li>); })}
+            </div></AccentRow>); })}
         </ul>
       )}
       {report && <ProjectReport office={office} onClose={() => setReport(false)} />}

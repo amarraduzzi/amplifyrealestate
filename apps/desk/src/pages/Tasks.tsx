@@ -73,15 +73,15 @@ export function Tasks({ office, userId, embedded = false }: { office: Office; us
       {rows !== null && rows.length > 0 && (
         <>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div role="tablist" className="flex flex-wrap gap-1.5">
+            <div role="tablist" className="-mx-4 flex flex-nowrap gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
               {tabs.map(f => (
                 <button key={f} role="tab" aria-selected={filter === f} onClick={() => setFilter(f)}
-                  className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${filter === f ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
+                  className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${filter === f ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
                   {f === 'all' ? t('All') : taskStatusLabel(f)} <span className="tabular opacity-60">{counts[f] ?? 0}</span>
                 </button>
               ))}
               <button type="button" aria-pressed={mine} onClick={() => setMine(m => !m)}
-                className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${mine ? 'bg-brand text-brand-ink' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
+                className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${mine ? 'bg-brand text-brand-ink' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
                 {t('Only mine')}
               </button>
             </div>

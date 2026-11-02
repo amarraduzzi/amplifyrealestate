@@ -113,10 +113,10 @@ export function Deals({ office }: { office: Office }) {
           {(rows ?? []).some(r => r.splits.length > 0) && <p className="mt-2 text-xs text-muted">{t('Totals show what stays with your office, after the shares for other agents.')}</p>}
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div role="tablist" className="flex flex-wrap gap-1.5">
+            <div role="tablist" className="-mx-4 flex flex-nowrap gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
               {tabs.map(f => (
                 <button key={f} role="tab" aria-selected={filter === f} onClick={() => setFilter(f)}
-                  className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${filter === f ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
+                  className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${filter === f ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
                   {f === 'all' ? t('All') : dealStageLabel(f)} <span className="tabular opacity-60">{counts[f] ?? 0}</span>
                 </button>
               ))}
@@ -141,16 +141,13 @@ export function Deals({ office }: { office: Office }) {
                         <h3 className="font-display truncate text-base font-semibold">{person?.full_name ?? '…'}</h3>
                         <p className="truncate text-sm text-muted">{property ? `${property.title} · ${property.reference}` : '…'}</p>
                       </div>
-                      <div className="shrink-0 text-end">
-                        <p className="font-display tabular text-lg font-bold leading-tight">{formatMad(d.price_cents)}</p>
-                        {property && priceSuffix(property.purpose) && <p className="text-xs font-semibold text-muted">{priceSuffix(property.purpose)}</p>}
-                      </div>
                     </div>
-                    <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
-                      <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${dealStageCls[d.stage]}`}>{dealStageLabel(d.stage)}</span>
-                      <span className="ms-auto text-xs font-semibold text-muted">{t('Commission')}: <span className="tabular">{d.commission_cents === null ? '—' : formatMad(d.commission_cents)}</span>
-                        {splits.length > 0 && d.commission_cents !== null && <> · {t('Your share')}: <span className="tabular">{formatMad(ourShareCents(d, splits) ?? 0)}</span></>}</span>
+                    <div className="mt-3 flex items-end justify-between gap-3">
+                      <p className="font-display tabular text-xl font-bold leading-none">{formatMad(d.price_cents)}{property && priceSuffix(property.purpose) && <span className="ms-1.5 text-xs font-semibold text-muted">{priceSuffix(property.purpose)}</span>}</p>
+                      <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${dealStageCls[d.stage]}`}>{dealStageLabel(d.stage)}</span>
                     </div>
+                    <p className="mt-2 text-xs font-semibold text-muted">{t('Commission')}: <span className="tabular">{d.commission_cents === null ? '—' : formatMad(d.commission_cents)}</span>
+                      {splits.length > 0 && d.commission_cents !== null && <> · {t('Your share')}: <span className="tabular">{formatMad(ourShareCents(d, splits) ?? 0)}</span></>}</p>
                   </AccentRow>
                   );
                 })}

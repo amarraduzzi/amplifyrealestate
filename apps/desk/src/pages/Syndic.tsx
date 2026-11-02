@@ -12,6 +12,7 @@ import {
 import { planError } from '../lib/plan';
 import { waLink } from '../components/ContactLinks';
 import { Btn, Card, Field, Modal, inputCls, EmptyState } from '../components/ui';
+import { AccentRow } from '../components/Rows';
 import { AnnouncementsTab, AssembliesTab, IncidentsTab, ResidentLink } from './SyndicExtras';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
@@ -386,13 +387,13 @@ export function Syndic({ office }: { office: Office }) {
           {rows.map(r => {
             const a = arrears.get(r.id) ?? 0;
             return (
-              <li key={r.id}>
-                <button type="button" onClick={() => setOpenId(r.id)} className="card w-full rounded-2xl p-4 text-start transition hover:ring-2 hover:ring-brand/30 sm:p-5">
+              <AccentRow key={r.id} tone={a ? 'danger' : 'ok'} label={r.name} onOpen={() => setOpenId(r.id)}>
+                <div>
                   <p className="font-display text-lg font-semibold">{r.name}</p>
                   <p className="text-sm text-muted">{r.city ?? '—'} · {t('{n} lots', { n: lots.get(r.id) ?? 0 })}</p>
                   {office.role !== 'viewer' && <p className={`mt-2 text-sm font-semibold ${a ? 'text-danger' : 'text-ok'}`}>{a ? t('{amount} unpaid', { amount: formatMad(a) }) : t('Everyone is up to date.')}</p>}
-                </button>
-              </li>
+                </div>
+              </AccentRow>
             );
           })}
         </ul>
