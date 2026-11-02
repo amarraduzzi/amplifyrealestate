@@ -1,6 +1,6 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import {
-  BarChart3, BedDouble, ListChecks, Plus, Building, Building2, FileSignature, Globe, HardHat, CalendarClock, CalendarDays, Handshake, KeyRound, LayoutGrid, LogOut, Network, Receipt, Settings, Sun, Users, Wrench, X,
+  BarChart3, BedDouble, ListChecks, Plus, Building, Building2, FileSignature, Globe, HardHat, CalendarClock, CalendarDays, Handshake, KeyRound, LayoutGrid, LogOut, Network, Receipt, Search, Settings, Sun, Users, Wrench, X,
 } from 'lucide-react';
 import { AmplifyLogo, AmplifyMark } from './Brand';
 import { LangSwitch } from './LangSwitch';
@@ -74,6 +74,8 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
   onQuickAdd?: (k: QuickKind) => void; onRefresh?: () => void; children: ReactNode;
 }) {
   const [more, setMore] = useState(false);
+  const [q, setQ] = useState('');
+  useEffect(() => { if (!more) setQ(''); }, [more]);
   const [quick, setQuick] = useState(false);
   const active = ownerOf(view, office.edition === 'agent');
   const solo = isSolo(office);
@@ -210,32 +212,63 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
       {onRefresh && <PullToRefresh onRefresh={onRefresh} disabled={more || quick} />}
 
       {/* ---- "More": everything, grouped ---- */}
-      {more && (
-        <div className="fixed inset-0 z-40 flex items-end bg-night/50 lg:hidden" onMouseDown={e => { if (e.target === e.currentTarget) setMore(false); }}>
-          <div className="pop max-h-[85vh] w-full overflow-y-auto rounded-t-3xl bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3" role="dialog" aria-label={t('More')}>
-            <div className="mb-2 flex items-center justify-between">
-              <p className="font-display text-lg font-bold">{t('All sections')}</p>
-              <button type="button" onClick={() => setMore(false)} aria-label={t('Close')} className="grid h-9 w-9 place-items-center rounded-full bg-surface-2"><X className="h-5 w-5" /></button>
-            </div>
-            {[...gs, { title: t('Office'), items: [settings] }].map(g => (
-              <div key={g.title} className="mb-3">
-                <p className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-muted">{g.title}</p>
-                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                  {g.items.map(x => (
-                    <button key={x.id} type="button" onClick={() => go(x.id)}
-                      className={`flex flex-col items-center gap-1.5 rounded-2xl px-2 py-3 text-xs font-semibold transition ${active === x.id ? 'bg-brand/10 text-brand' : 'bg-surface-2 text-ink hover:ring-2 hover:ring-brand/25'}`}>
-                      {x.icon}<span className="max-w-full truncate">{x.label}</span>
-                    </button>
-                  ))}
+      {more && (() => {
+        const needle = q.trim().toLowerCase();
+        const groups = [...gs, { title: t('Office'), items: [settings] }]
+          .map(g => ({ ...g, items: needle ? g.items.filter(x => x.label.toLowerCase().includes(needle)) : g.items }))
+          .filter(g => g.items.length > 0);
+        // one soft color per group, so the sheet is not a wall of the same grey tiles
+        const tones = ['bg-brand/15 text-brand', 'bg-qr/15 text-qr', 'bg-warn/15 text-warn', 'bg-ok/15 text-ok', 'bg-ink/10 text-ink'];
+        let n = 0;
+        return (
+          <div className="fixed inset-0 z-40 flex items-end bg-night/60 backdrop-blur-[2px] lg:hidden" onMouseDown={e => { if (e.target === e.currentTarget) setMore(false); }}>
+            <div className="pop flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-[2rem] bg-bg" role="dialog" aria-label={t('More')}>
+              <div className="night relative shrink-0 overflow-hidden px-5 pb-5 pt-3 text-white">
+                <span className="hero-glow" aria-hidden="true" />
+                <span className="relative mx-auto mb-3 block h-1 w-10 rounded-full bg-white/25" aria-hidden="true" />
+                <div className="relative flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-white/55">{t('All sections')}</p>
+                    <p className="font-display mt-1 truncate text-2xl font-bold">{office.name}</p>
+                  </div>
+                  <button type="button" onClick={() => setMore(false)} aria-label={t('Close')} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90"><X className="h-5 w-5" /></button>
                 </div>
+                <label className="relative mt-4 flex items-center gap-2 rounded-2xl bg-white/10 px-3.5 py-2.5 ring-1 ring-white/15 focus-within:ring-white/40">
+                  <Search className="h-4 w-4 shrink-0 text-white/60" />
+                  <input value={q} onChange={e => setQ(e.target.value)} placeholder={t('Search')} aria-label={t('Search')}
+                    className="min-w-0 flex-1 bg-transparent text-sm font-medium text-white outline-none placeholder:text-white/50" />
+                </label>
               </div>
-            ))}
-            <button type="button" onClick={onSignOut} className="mt-1 flex w-full items-center justify-center gap-2 rounded-xl bg-surface-2 py-3 text-sm font-semibold text-muted hover:text-ink">
-              <LogOut className="h-4 w-4" /> {t('Sign out')}
-            </button>
+              <div className="flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
+                {groups.map((g, gi) => (
+                  <div key={g.title} className="mb-4">
+                    <p className="mb-2 flex items-center gap-2 px-1 text-[11px] font-bold uppercase tracking-wider text-muted">
+                      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" aria-hidden="true" />{g.title}
+                    </p>
+                    <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
+                      {g.items.map(x => {
+                        const on = active === x.id;
+                        return (
+                          <button key={x.id} type="button" onClick={() => go(x.id)} style={{ '--i': n++ } as CSSProperties}
+                            className={`rise flex flex-col items-start gap-3 rounded-2xl p-3 text-start transition active:scale-95 ${on ? 'night text-white shadow-[0_10px_22px_-12px_rgb(0_30_62/.8)] ring-1 ring-white/10' : 'lift bg-surface text-ink hover:ring-2 hover:ring-brand/25'}`}>
+                            <span className={`grid h-11 w-11 place-items-center rounded-xl ${on ? 'bg-white/15 text-white' : tones[gi % tones.length]}`}>{x.icon}</span>
+                            <span className="max-w-full truncate text-[13px] font-semibold leading-tight">{x.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+                {!needle && (
+                  <button type="button" onClick={onSignOut} className="mt-1 flex w-full items-center justify-center gap-2 rounded-2xl bg-surface py-3 text-sm font-semibold text-muted lift hover:text-ink">
+                    <LogOut className="h-4 w-4" /> {t('Sign out')}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

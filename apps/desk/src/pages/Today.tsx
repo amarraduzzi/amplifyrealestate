@@ -156,7 +156,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
       const late = task.task.due_date !== null && daysUntil(task.task.due_date) < 0;
       return (
         <NextUp eyebrow={t('Up next')} title={task.task.title} warn={late} onOpen={() => canWrite && setEditId(task.task.id)}
-          sub={[task.task.due_date ? dueText(task.task.due_date) : null, task.leadName, task.propertyTitle].filter(Boolean).join(' · ')}
+          sub={[task.task.due_date ? dueText(task.task.due_date) : null, task.leadName, task.propertyTitle && !task.task.title.toLowerCase().includes(task.propertyTitle.toLowerCase()) ? task.propertyTitle : null].filter(Boolean).join(' · ')}
           actions={canWrite ? <button type="button" disabled={busyId === task.task.id} onClick={() => toggle(task)} className={nextPrimary}><Check className="h-4 w-4" strokeWidth={3} />{t('Mark as done')}</button> : undefined} />
       );
     }

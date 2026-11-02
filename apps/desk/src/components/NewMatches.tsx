@@ -69,8 +69,8 @@ export function NewMatches({ office, onGo, onCount }: { office: Office; onGo: (v
   return (
     <section>
       <div className="mb-1.5 flex items-center justify-between gap-3">
-        <h2 className="font-display flex min-w-0 items-center gap-2 text-lg font-semibold leading-tight">
-          <Sparkles className="h-4 w-4 shrink-0 text-brand" /> <span className="min-w-0">{t('New matches')}</span>
+        <h2 className="font-display flex min-w-0 items-center gap-2 text-base font-semibold leading-tight">
+          <Sparkles className="h-4 w-4 shrink-0 text-brand" /> <span className="min-w-0 truncate">{t('New matches')}</span>
           <span className="tabular rounded-full bg-brand/10 px-2 py-0.5 text-xs font-bold text-brand">{rows.length}</span>
         </h2>
         <button type="button" onClick={() => onGo('leads')} className="inline-flex shrink-0 items-center gap-0.5 text-sm font-semibold text-muted hover:text-ink">

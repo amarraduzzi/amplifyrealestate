@@ -216,7 +216,7 @@ function AgendaWeek({ office, userId, onGo, tabs, darkTabs }: { office: Office; 
         </button>
       }
       title={big.weekday}
-      sub={`${big.date} · ${selList.length === 0 ? t('Nothing planned') : t('{n} items', { n: selList.length })}`}
+      sub={selList.length === 0 ? big.date : `${big.date} · ${t('{n} items', { n: selList.length })}`}
       action={darkTabs}
       stats={[
         { value: items === null ? '–' : nViewings, label: t('Viewings') },
