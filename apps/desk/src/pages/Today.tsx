@@ -18,6 +18,7 @@ import { whatsappShareUrl } from '../lib/publicSite';
 import { GettingStarted } from '../components/GettingStarted';
 import { QuickIcons } from '../components/QuickActions';
 import { NextUp, nextPrimary, nextRound } from '../components/NextUp';
+import { useCovers } from '../lib/covers';
 import { waLink } from '../components/ContactLinks';
 import { NewMatches } from '../components/NewMatches';
 import { StaleAds } from '../components/StaleAds';
@@ -119,6 +120,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
     .filter(x => x.v.status === 'scheduled' && daysUntil(toInputValue(new Date(x.v.scheduled_at)).slice(0, 10)) <= AHEAD_DAYS)
     .sort((a, b) => a.v.scheduled_at.localeCompare(b.v.scheduled_at));
   const editing = tasks?.find(x => x.task.id === editId)?.task;
+  const covers = useCovers([due[0]?.task.property_id, ...upcoming.slice(0, 2).map(x => x.property?.id)].filter((x): x is string => !!x));
 
   const viewing = viewings?.find(x => x.v.id === viewId);
   const loading = tasks === null || viewings === null || leads === null || props === null || rent === null || repairs === null;
@@ -148,6 +150,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
     const viewingCard = (x: ViewingView, today0: boolean) => (
       <NextUp key="v" eyebrow={today0 ? t('Viewing today') : t('Next viewing')} when={today0 ? timeText(x.v.scheduled_at) : dayTime(x.v.scheduled_at)}
         warn={new Date(x.v.scheduled_at).getTime() < Date.now()} title={x.person?.full_name ?? '…'} sub={x.property?.title} onOpen={open(x.v.id)}
+        photo={x.property ? covers[x.property.id] : undefined}
         actions={contactActions(x.person, x.person?.full_name ?? '', <button type="button" onClick={open(x.v.id)} className={nextPrimary}>{t('Open')}</button>)} />
     );
     if (vToday) return viewingCard(vToday, true);
@@ -156,6 +159,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
       const late = task.task.due_date !== null && daysUntil(task.task.due_date) < 0;
       return (
         <NextUp eyebrow={t('Up next')} title={task.task.title} warn={late} onOpen={() => canWrite && setEditId(task.task.id)}
+          photo={task.task.property_id ? covers[task.task.property_id] : undefined}
           sub={[task.task.due_date ? dueText(task.task.due_date) : null, task.leadName, task.propertyTitle && !task.task.title.toLowerCase().includes(task.propertyTitle.toLowerCase()) ? task.propertyTitle : null].filter(Boolean).join(' · ')}
           actions={canWrite ? <button type="button" disabled={busyId === task.task.id} onClick={() => toggle(task)} className={nextPrimary}><Check className="h-4 w-4" strokeWidth={3} />{t('Mark as done')}</button> : undefined} />
       );

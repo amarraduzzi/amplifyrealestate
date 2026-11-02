@@ -2,8 +2,8 @@ import type { ReactNode } from 'react';
 import { t } from '../lib/i18n';
 
 /** The one thing to do now, on top of Today: a navy card with a big headline and one clear action. */
-export function NextUp({ eyebrow, when, title, sub, warn, actions, onOpen }: {
-  eyebrow: string; when?: string; title: string; sub?: string; warn?: boolean; actions?: ReactNode; onOpen?: () => void;
+export function NextUp({ eyebrow, when, title, sub, warn, actions, onOpen, photo }: {
+  eyebrow: string; when?: string; title: string; sub?: string; warn?: boolean; actions?: ReactNode; onOpen?: () => void; photo?: string;
 }) {
   const body = (
     <>
@@ -14,6 +14,12 @@ export function NextUp({ eyebrow, when, title, sub, warn, actions, onOpen }: {
   );
   return (
     <section className="night rise relative mb-6 overflow-hidden rounded-3xl p-5 text-white shadow-[0_14px_30px_-14px_rgb(0_30_62/.7)] ring-1 ring-white/10" aria-label={t('Up next')}>
+      {photo && (
+        <>
+          <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          <span className="absolute inset-0 bg-gradient-to-t from-night/95 via-night/75 to-night/35" aria-hidden="true" />
+        </>
+      )}
       <span className="hero-glow" aria-hidden="true" />
       <div className="relative">
         <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white/60">

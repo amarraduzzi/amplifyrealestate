@@ -5,6 +5,8 @@ import {
 import { AmplifyLogo, AmplifyMark } from './Brand';
 import { LangSwitch } from './LangSwitch';
 import { PullToRefresh } from './PullToRefresh';
+import { supabase } from '../lib/supabase';
+import { useCovers } from '../lib/covers';
 import { t } from '../lib/i18n';
 import { isSolo, type Office } from '../lib/types';
 
@@ -76,6 +78,17 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
   const [more, setMore] = useState(false);
   const [q, setQ] = useState('');
   useEffect(() => { if (!more) setQ(''); }, [more]);
+  // the Properties tile shows the photo of the newest property that has one
+  const [propIds, setPropIds] = useState<string[]>([]);
+  useEffect(() => {
+    if (!more) return;
+    let live = true;
+    supabase.from('properties').select('id').eq('org_id', office.id).order('created_at', { ascending: false }).limit(8)
+      .then(({ data }) => { if (live) setPropIds(((data ?? []) as { id: string }[]).map(r => r.id)); });
+    return () => { live = false; };
+  }, [more, office.id]);
+  const propCovers = useCovers(propIds);
+  const bienPhoto = propIds.map(id => propCovers[id]).find(Boolean);
   const [quick, setQuick] = useState(false);
   const active = ownerOf(view, office.edition === 'agent');
   const solo = isSolo(office);
@@ -255,17 +268,25 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
                       <div className={`grid gap-2.5 ${g.items.length <= 2 ? 'grid-cols-2' : 'grid-cols-3 sm:grid-cols-4'}`}>
                         {g.items.map(x => {
                           const on = active === x.id;
+                          const photo = x.id === 'properties' ? bienPhoto : undefined;
+                          const dark = on || !!photo;
                           return (
                             <button key={x.id} type="button" onClick={() => go(x.id)} style={{ '--i': n++ } as CSSProperties}
-                              className={`rise relative flex flex-col justify-between overflow-hidden rounded-2xl p-3 text-start transition active:scale-95 ${g.items.length <= 2 ? 'h-28' : 'h-24'} ${on ? 'night text-white shadow-[0_10px_22px_-12px_rgb(0_30_62/.8)] ring-1 ring-white/10' : 'lift bg-surface text-ink hover:ring-2 hover:ring-brand/25'}`}>
-                              {!on && <span className={`pointer-events-none absolute inset-0 bg-gradient-to-br to-transparent ${tone.wash}`} aria-hidden="true" />}
+                              className={`rise relative flex flex-col justify-between overflow-hidden rounded-2xl p-3 text-start transition active:scale-95 ${g.items.length <= 2 ? 'h-28' : 'h-24'} ${dark ? 'night text-white shadow-[0_10px_22px_-12px_rgb(0_30_62/.8)] ring-1 ring-white/10' : 'lift bg-surface text-ink hover:ring-2 hover:ring-brand/25'}`}>
+                              {photo && (
+                                <>
+                                  <img src={photo} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                                  <span className="absolute inset-0 bg-gradient-to-t from-night/90 via-night/45 to-night/10" aria-hidden="true" />
+                                </>
+                              )}
+                              {!dark && <span className={`pointer-events-none absolute inset-0 bg-gradient-to-br to-transparent ${tone.wash}`} aria-hidden="true" />}
                               {/* a large, faint copy of the icon that runs off the corner of the tile */}
-                              {isValidElement(x.icon) && (
+                              {isValidElement(x.icon) && !photo && (
                                 <span className={`pointer-events-none absolute -bottom-4 -end-4 rtl:-scale-x-100 ${on ? 'text-white opacity-[.10]' : `${tone.text} opacity-[.13]`}`} aria-hidden="true">
                                   {cloneElement(x.icon as ReactElement<{ className?: string; strokeWidth?: number }>, { className: 'h-20 w-20', strokeWidth: 1.25 })}
                                 </span>
                               )}
-                              <span className={`relative flex items-center justify-between ${on ? 'text-white' : tone.text}`}>
+                              <span className={`relative flex items-center justify-between ${dark ? 'text-white' : tone.text}`}>
                                 {x.icon}
                                 {on && <span className="h-2 w-2 rounded-full bg-brand motion-safe:animate-pulse" aria-hidden="true" />}
                               </span>
