@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { formatMad } from '@vastgoed/shared';
 import { getLang } from '../lib/i18n';
 
@@ -37,6 +37,28 @@ export function BarsMotif({ className = '', tone = 'dark' }: { className?: strin
   );
 }
 
+/** A whole number that counts up to its value. Shows the value at once for people who asked for less motion. */
+export function CountUp({ value, ms = 700 }: { value: number; ms?: number }) {
+  const [shown, setShown] = useState(0);
+  const from = useRef(0);
+  useEffect(() => {
+    const still = typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (still || !Number.isFinite(value) || value === from.current) { from.current = value; setShown(value); return; }
+    const start = from.current;
+    const t0 = performance.now();
+    let raf = 0;
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - t0) / ms);
+      const eased = 1 - Math.pow(1 - k, 3);
+      setShown(Math.round(start + (value - start) * eased));
+      if (k < 1) raf = requestAnimationFrame(tick); else from.current = value;
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value, ms]);
+  return <>{shown}</>;
+}
+
 export type HeroStat = { value: ReactNode; label: string; warn?: boolean };
 
 /** Phone and tablet only: the navy header grows into a hero with the headline of the screen and 2 or 3 numbers.
@@ -61,7 +83,7 @@ export function Hero({ eyebrow, title, sub, action, stats, children }: {
           <div className="mt-5 grid grid-cols-3 gap-2">
             {stats.map(s => (
               <div key={s.label} className="min-w-0 rounded-2xl bg-white/[0.07] px-3 py-2.5 ring-1 ring-white/10">
-                <p className={`tabular font-display truncate text-xl font-bold leading-tight ${s.warn ? 'text-[#FFB547]' : ''}`}>{s.value}</p>
+                <p className={`tabular font-display truncate text-xl font-bold leading-tight ${s.warn ? 'text-[#FFB547]' : ''}`}>{typeof s.value === 'number' ? <CountUp value={s.value} /> : s.value}</p>
                 <p className="mt-0.5 line-clamp-2 text-[11px] font-medium leading-tight text-white/60">{s.label}</p>
               </div>
             ))}

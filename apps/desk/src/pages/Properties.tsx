@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Bath, BedDouble, Building2, Download, ImageOff, Plus, Ruler, Search, Share2 } from 'lucide-react';
 import { formatMad, type PropertyStatus } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
@@ -162,11 +162,11 @@ export function Properties({ office, userId }: { office: Office; userId: string 
             ? <p className="mt-10 text-center text-muted">{t('Nothing matches.')}</p>
             : (
               <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {shown.map(r => (
+                {shown.map((r, i) => (
                   <li key={r.id} role="button" tabIndex={0} aria-label={r.title}
                     onClick={() => setOpenId(r.id)}
                     onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setOpenId(r.id); } }}
-                    className="card lift rise min-w-0 cursor-pointer overflow-hidden rounded-3xl outline-none transition active:scale-[.985] hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-brand">
+                    style={{ '--i': i } as CSSProperties} className="card lift rise min-w-0 cursor-pointer overflow-hidden rounded-3xl outline-none transition active:scale-[.985] hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-brand">
                     <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface-2 lg:aspect-[16/10]">
                       {covers[r.id]
                         ? <img src={covers[r.id]} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />

@@ -1,5 +1,5 @@
 import { EstimationRequests } from '../components/EstimationRequests';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Building2, CalendarClock, Check, Download, PhoneCall, Plus, Search, Upload, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
@@ -180,7 +180,7 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
             ? <p className="mt-10 text-center text-muted">{t('Nothing matches.')}</p>
             : (
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                {shown.map(l => {
+                {shown.map((l, i) => {
                   const n = matchMap[l.id]?.length ?? 0;
                   const open = OPEN_LEAD_STATUSES.includes(l.status);
                   const step = nextStep(l, n);
@@ -188,7 +188,7 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
                     <li key={l.id} role="button" tabIndex={0} aria-label={people[l.person_id]?.full_name ?? ''}
                       onClick={() => setOpenId(l.id)}
                       onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setOpenId(l.id); } }}
-                      className="card lift rise min-w-0 cursor-pointer rounded-3xl p-4 outline-none transition active:scale-[.985] hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
+                      style={{ '--i': i } as CSSProperties} className="card lift rise min-w-0 cursor-pointer rounded-3xl p-4 outline-none transition active:scale-[.985] hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
                       <div className="flex items-start gap-3">
                         <Avatar name={people[l.person_id]?.full_name} id={l.person_id} className="lg:hidden" />
                         <div className="min-w-0 flex-1">
