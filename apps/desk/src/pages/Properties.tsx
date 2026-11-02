@@ -95,7 +95,7 @@ export function Properties({ office, userId }: { office: Office; userId: string 
     <Hero
       title={t('Properties')}
       sub={loading ? undefined : t('{n} in total', { n: counts.all })}
-      action={shown.length > 0 ? exportBtn('grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90') : undefined}
+      action={shown.length > 0 ? exportBtn('grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90') : undefined}
       stats={[
         { value: loading ? '–' : counts.available ?? 0, label: statusLabel('available') },
         { value: loading ? '–' : counts.reserved ?? 0, label: statusLabel('reserved') },

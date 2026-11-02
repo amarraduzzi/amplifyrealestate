@@ -3,7 +3,7 @@ import { ArrowLeft, BarChart3, Check, Download, HardHat, Layers, MessageCircle, 
 import { formatMad, dirhamToCents } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { getLang, t } from '../lib/i18n';
-import { Hero, PhoneSheet } from '../components/Hero';
+import { Hero, madShort, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import {
   PROJECT_STATUSES, UNIT_CLS, UNIT_KINDS, UNIT_STATUSES, floorLabel, loadProject, loadProjects, projectError, projectStatusLabel, seriesRef,
@@ -368,11 +368,11 @@ function ProjectView({ office, project, onBack, onChanged }: { office: Office; p
       eyebrow={<button type="button" onClick={onBack} className="inline-flex items-center gap-1 text-sm font-semibold normal-case tracking-normal text-white/80"><ArrowLeft className="h-4 w-4 rtl:rotate-180" /> {t('All projects')}</button>}
       title={project.name}
       sub={[project.city, projectStatusLabel(project.status), project.delivery_date ? t('Delivery {date}', { date: day(project.delivery_date) }) : null].filter(Boolean).join(' · ') || undefined}
-      action={canWrite ? <button type="button" onClick={() => setEditProject(true)} aria-label={t('Edit')} title={t('Edit')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90"><Pencil className="h-5 w-5" /></button> : undefined}
+      action={canWrite ? <button type="button" onClick={() => setEditProject(true)} aria-label={t('Edit')} title={t('Edit')} className="grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90"><Pencil className="h-5 w-5" /></button> : undefined}
       stats={[
         { value: data ? s.total : '–', label: t('Units') },
         { value: data ? `${s.total ? Math.round(s.sold / s.total * 100) : 0}%` : '–', label: t('Sold') },
-        { value: data ? formatMad(s.soldCents) : '–', label: t('Sales') },
+        { value: data ? madShort(s.soldCents) : '–', label: t('Sales') },
       ]}
     />
     <PhoneSheet>
@@ -511,8 +511,8 @@ export function Projects({ office }: { office: Office }) {
       title={t('Projects')}
       action={(boss && rows && rows.length > 0) || (canWrite && rows) ? (
         <div className="flex items-center gap-2">
-          {boss && rows && rows.length > 0 && <button type="button" onClick={() => setReport(true)} aria-label={t('Sales report')} title={t('Sales report')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90"><BarChart3 className="h-5 w-5" /></button>}
-          {canWrite && rows && <button type="button" onClick={() => setAdding(true)} aria-label={t('New project')} title={t('New project')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90"><Plus className="h-5 w-5" /></button>}
+          {boss && rows && rows.length > 0 && <button type="button" onClick={() => setReport(true)} aria-label={t('Sales report')} title={t('Sales report')} className="grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90"><BarChart3 className="h-5 w-5" /></button>}
+          {canWrite && rows && <button type="button" onClick={() => setAdding(true)} aria-label={t('New project')} title={t('New project')} className="grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90"><Plus className="h-5 w-5" /></button>}
         </div>
       ) : undefined}
       stats={[

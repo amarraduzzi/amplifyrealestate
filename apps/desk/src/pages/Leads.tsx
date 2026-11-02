@@ -8,7 +8,7 @@ import { LEAD_STATUSES, OPEN_LEAD_STATUSES, daysSince, leadStatusCls, leadStatus
 import { MATCH_COLUMNS, matches, type MatchProp } from '../lib/matching';
 import { Btn, Card, inputCls } from '../components/ui';
 import { ContactAge } from '../components/ContactAge';
-import { QuickBar } from '../components/QuickActions';
+import { QuickBar, QuickIcons } from '../components/QuickActions';
 import { budgetText, criteriaText } from '../components/leadText';
 import { ImportContacts } from './ImportContacts';
 import { LeadForm } from './LeadForm';
@@ -30,6 +30,10 @@ function nextStep(l: LeadRow, matchCount: number): { text: string; icon: typeof 
   if (l.status === 'viewing') return { text: t('Follow up on the viewing'), icon: CalendarClock, cls: 'bg-qr/10 text-qr' };
   return { text: t('No action needed'), icon: Check, cls: 'bg-surface-2 text-muted' };
 }
+
+/** Only the text color of a pill class ('bg-ok/10 text-ok' becomes 'text-ok'). */
+const txt = (cls: string) => cls.split(' ').filter(c => c.startsWith('text-')).join(' ');
+const dotCls: Record<string, string> = { new: 'bg-qr', active: 'bg-ok', viewing: 'bg-warn', won: 'bg-ink', lost: 'bg-muted' };
 
 export function Leads({ office, userId }: { office: Office; userId: string }) {
   const [leads, setLeads] = useState<LeadRow[] | null>(null);
@@ -85,7 +89,7 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
   const loading = leads === null;
   const openCount = (leads ?? []).filter(l => OPEN_LEAD_STATUSES.includes(l.status)).length;
   const staleCount = (leads ?? []).filter(l => { const d = daysSince(l.last_contact_at); return OPEN_LEAD_STATUSES.includes(l.status) && d !== null && d > 14; }).length;
-  const roundDark = 'grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90';
+  const roundDark = 'grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90';
   const exportBtn = (cls: string) => (
     <button type="button" title={t('Export to Excel')} aria-label={t('Export to Excel')}
       onClick={() => downloadCsv(`leads-${new Date().toISOString().slice(0, 10)}.csv`, leadsCsv(shown, people))}
@@ -183,18 +187,26 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
                       className="card lift rise min-w-0 cursor-pointer rounded-3xl p-4 outline-none transition active:scale-[.985] hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
                       <div className="flex items-start gap-3">
                         <Avatar name={people[l.person_id]?.full_name} id={l.person_id} className="lg:hidden" />
-                        <h3 className="font-display min-w-0 flex-1 truncate text-lg font-semibold max-lg:pt-2">{people[l.person_id]?.full_name ?? '…'}</h3>
-                        <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${leadStatusCls[l.status]}`}>{leadStatusLabel(l.status)}</span>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-display truncate text-lg font-semibold">{people[l.person_id]?.full_name ?? '…'}</h3>
+                          {/* phone: a quiet line (a dot and a word) instead of two pills */}
+                          <p className="mt-0.5 flex items-center gap-1.5 text-xs font-semibold text-muted lg:hidden">
+                            <span className={`h-2 w-2 shrink-0 rounded-full ${dotCls[l.status] ?? 'bg-muted'}`} />
+                            <span className="truncate">{leadStatusLabel(l.status)} · {purposeLabel(l.purpose)}</span>
+                          </p>
+                        </div>
+                        <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold max-lg:hidden ${leadStatusCls[l.status]}`}>{leadStatusLabel(l.status)}</span>
+                        <span className="lg:hidden"><QuickIcons c={people[l.person_id] ?? { phone: null, whatsapp: null }} /></span>
                       </div>
                       <p className="mt-2 flex flex-wrap items-baseline gap-x-2">
                         <span className="font-display tabular text-base font-bold">{budgetText(l)}</span>
-                        <span className="ms-auto rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold text-muted">{purposeLabel(l.purpose)}</span>
+                        <span className="ms-auto rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold text-muted max-lg:hidden">{purposeLabel(l.purpose)}</span>
                       </p>
                       <p className="mt-1.5 text-sm text-muted">{criteriaText(l)}</p>
                       {l.source && <p className="mt-1 text-xs font-semibold text-muted">{t('Via {source}', { source: sourceLabel(l.source) })}</p>}
                       {step && (
-                        <p className={`mt-3 flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold lg:hidden ${step.cls}`}>
-                          <step.icon className="h-4 w-4 shrink-0" /><span className="min-w-0 truncate">{step.text}</span>
+                        <p className={`mt-3 flex items-center gap-2 text-sm font-semibold lg:hidden ${txt(step.cls)}`}>
+                          <span className={`grid h-6 w-6 shrink-0 place-items-center rounded-full ${step.cls}`}><step.icon className="h-3.5 w-3.5" /></span><span className="min-w-0 truncate">{step.text}</span>
                         </p>
                       )}
                       <div className="mt-3 flex items-center justify-between gap-3 border-t border-line/[0.07] pt-3 max-lg:hidden">
@@ -205,7 +217,7 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
                           </span>
                         )}
                       </div>
-                      <QuickBar c={people[l.person_id] ?? { phone: null, whatsapp: null }} />
+                      <div className="max-lg:hidden"><QuickBar c={people[l.person_id] ?? { phone: null, whatsapp: null }} /></div>
                     </li>
                   );
                 })}

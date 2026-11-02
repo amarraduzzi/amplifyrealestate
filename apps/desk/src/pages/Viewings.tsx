@@ -54,7 +54,7 @@ export function Viewings({ office }: { office: Office }) {
       title={t('Viewings')}
       sub={rows ? t('{n} in total', { n: counts.all }) : undefined}
       action={(<div className="flex items-center gap-2">
-        {canWrite && <button type="button" onClick={() => setAdding(true)} aria-label={t('Schedule a viewing')} title={t('Schedule a viewing')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><CalendarPlus className="h-5 w-5" /></button>}
+        {canWrite && <button type="button" onClick={() => setAdding(true)} aria-label={t('Schedule a viewing')} title={t('Schedule a viewing')} className="grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90 disabled:opacity-40"><CalendarPlus className="h-5 w-5" /></button>}
       </div>)}
       stats={[
         { value: (rows === null) ? '–' : counts.scheduled ?? 0, label: viewingStatusLabel('scheduled') },

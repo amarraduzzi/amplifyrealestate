@@ -3,7 +3,7 @@ import { ArrowLeft, Building, ChevronDown, MessageCircle, Pencil, Plus } from 'l
 import { formatMad, dirhamToCents } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { getLang, t } from '../lib/i18n';
-import { Hero, PhoneSheet } from '../components/Hero';
+import { Hero, madShort, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import {
   LOT_KINDS, loadArrears, loadResidence, loadResidences, previewSplit, syndicError,
@@ -190,11 +190,11 @@ function ResidenceView({ office, residence, onBack, onChanged }: { office: Offic
       eyebrow={<button type="button" onClick={onBack} className="inline-flex items-center gap-1 text-sm font-semibold normal-case tracking-normal text-white/80"><ArrowLeft className="h-4 w-4 rtl:rotate-180" /> {t('All residences')}</button>}
       title={residence.name}
       sub={[residence.address, residence.city].filter(Boolean).join(', ') || undefined}
-      action={canWrite ? <button type="button" onClick={() => setEditRes(true)} aria-label={t('Edit')} title={t('Edit')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90"><Pencil className="h-5 w-5" /></button> : undefined}
+      action={canWrite ? <button type="button" onClick={() => setEditRes(true)} aria-label={t('Edit')} title={t('Edit')} className="grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90"><Pencil className="h-5 w-5" /></button> : undefined}
       stats={[
         { value: data ? data.lots.length : '–', label: t('Lots') },
         { value: data ? totalTant : '–', label: t('Tantièmes') },
-        { value: !data || office.role === 'viewer' ? '–' : formatMad(totalArrears), label: t('Unpaid charges'), warn: !!data && office.role !== 'viewer' && totalArrears > 0 },
+        { value: !data || office.role === 'viewer' ? '–' : madShort(totalArrears), label: t('Unpaid charges'), warn: !!data && office.role !== 'viewer' && totalArrears > 0 },
       ]}
     />
     <PhoneSheet>
@@ -360,11 +360,11 @@ export function Syndic({ office }: { office: Office }) {
     <>
     <Hero
       title={t('Syndic')}
-      action={canWrite && rows ? <button type="button" onClick={() => setAdding(true)} aria-label={t('New residence')} title={t('New residence')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90"><Plus className="h-5 w-5" /></button> : undefined}
+      action={canWrite && rows ? <button type="button" onClick={() => setAdding(true)} aria-label={t('New residence')} title={t('New residence')} className="grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90"><Plus className="h-5 w-5" /></button> : undefined}
       stats={[
         { value: ready ? rows.length : '–', label: t('All residences') },
         { value: ready ? lotTotal : '–', label: t('Lots') },
-        { value: ready && office.role !== 'viewer' ? formatMad(arrearsTotal) : '–', label: t('Unpaid charges'), warn: ready && arrearsTotal > 0 },
+        { value: ready && office.role !== 'viewer' ? madShort(arrearsTotal) : '–', label: t('Unpaid charges'), warn: ready && arrearsTotal > 0 },
       ]}
     />
     <PhoneSheet>

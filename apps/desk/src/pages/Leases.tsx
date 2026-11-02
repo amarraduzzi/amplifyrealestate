@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Download, KeyRound, Plus, Search } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { t } from '../lib/i18n';
-import { Hero, PhoneSheet } from '../components/Hero';
+import { Hero, madShort, PhoneSheet } from '../components/Hero';
 import type { LeaseStatus, Office } from '../lib/types';
 import { daysTo, dateText, loadLeases, type LeaseView } from '../lib/leases';
 import { ensureRentDue, isOverdue, loadOpenPayments, type PaymentRow } from '../lib/payments';
@@ -83,13 +83,13 @@ export function Leases({ office }: { office: Office }) {
       title={t('Rentals')}
       sub={rows ? t('{n} in total', { n: counts.all }) : undefined}
       action={(<div className="flex items-center gap-2">
-        {shown.length > 0 && <button type="button" onClick={() => downloadCsv(`rentals-${new Date().toISOString().slice(0, 10)}.csv`, leasesCsv(shown, open))} aria-label={t('Export to Excel')} title={t('Export to Excel')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><Download className="h-5 w-5" /></button>}
-        {canWrite && <button type="button" onClick={() => setAdding(true)} aria-label={t('Start a lease')} title={t('Start a lease')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><Plus className="h-5 w-5" /></button>}
+        {shown.length > 0 && <button type="button" onClick={() => downloadCsv(`rentals-${new Date().toISOString().slice(0, 10)}.csv`, leasesCsv(shown, open))} aria-label={t('Export to Excel')} title={t('Export to Excel')} className="grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90 disabled:opacity-40"><Download className="h-5 w-5" /></button>}
+        {canWrite && <button type="button" onClick={() => setAdding(true)} aria-label={t('Start a lease')} title={t('Start a lease')} className="grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90 disabled:opacity-40"><Plus className="h-5 w-5" /></button>}
       </div>)}
       stats={[
         { value: (rows === null) ? '–' : stats.active, label: t('Running leases') },
-        { value: (rows === null) ? '–' : formatMad(stats.monthly), label: t('Monthly rent') },
-        { value: (rows === null) ? '–' : formatMad(overdue.cents), label: t('Rent overdue'), warn: !(rows === null) && overdue.n > 0 },
+        { value: (rows === null) ? '–' : madShort(stats.monthly), label: t('Monthly rent') },
+        { value: (rows === null) ? '–' : madShort(overdue.cents), label: t('Rent overdue'), warn: !(rows === null) && overdue.n > 0 },
       ]}
     />
     <PhoneSheet>

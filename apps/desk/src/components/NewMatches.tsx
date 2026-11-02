@@ -66,46 +66,50 @@ export function NewMatches({ office, onGo, onCount }: { office: Office; onGo: (v
 
   return (
     <section>
-      <div className="mb-2 flex items-center justify-between gap-3">
-        <h2 className="font-display flex min-w-0 items-center gap-2 text-lg font-semibold">
-          <Sparkles className="h-4 w-4 text-brand" /> {t('New matches')} <span className="tabular text-base opacity-60">{rows.length}</span>
+      <div className="mb-1.5 flex items-center justify-between gap-3">
+        <h2 className="font-display flex min-w-0 items-center gap-2 text-lg font-semibold leading-tight">
+          <Sparkles className="h-4 w-4 shrink-0 text-brand" /> <span className="min-w-0">{t('New matches')}</span>
+          <span className="tabular rounded-full bg-brand/10 px-2 py-0.5 text-xs font-bold text-brand">{rows.length}</span>
         </h2>
         <button type="button" onClick={() => onGo('leads')} className="inline-flex shrink-0 items-center gap-0.5 text-sm font-semibold text-muted hover:text-ink">
           {t('See all')}<ChevronRight className="h-4 w-4 rtl:rotate-180" />
         </button>
       </div>
-      <p className="mb-2 text-xs text-muted">{t('New properties of the last 14 days that fit what these leads are looking for.')}</p>
-      {canWrite && (
-        <div className="mb-2 flex flex-wrap items-center gap-1.5" role="group" aria-label={t('Language of the message')}>
-          <span className="me-1 text-xs font-semibold text-muted">{t('Language of the message')}</span>
-          {SHARE_LANGS.map(l => (
-            <button key={l} type="button" aria-pressed={lang === l} onClick={() => setLang(l)}
-              className={`rounded-full px-3 py-1 text-xs font-bold uppercase transition ${lang === l ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>{l}</button>
-          ))}
-        </div>
-      )}
-      <ul className="space-y-2">
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <p className="min-w-0 text-xs text-muted">{t('New properties of the last 14 days that fit what these leads are looking for.')}</p>
+        {canWrite && (
+          <div className="flex shrink-0 gap-1" role="group" aria-label={t('Language of the message')} title={t('Language of the message')}>
+            {SHARE_LANGS.map(l => (
+              <button key={l} type="button" aria-pressed={lang === l} onClick={() => setLang(l)}
+                className={`rounded-full px-2 py-0.5 text-[11px] font-bold uppercase transition ${lang === l ? 'bg-ink text-bg' : 'text-muted hover:text-ink'}`}>{l}</button>
+            ))}
+          </div>
+        )}
+      </div>
+      <ul className="space-y-2.5">
         {list.map(m => (
-          <li key={m.lead.id} className="rounded-2xl bg-surface-2 px-3.5 py-3">
-            <div className="flex flex-wrap items-start justify-between gap-2">
-              <p className="min-w-0 text-sm font-semibold">{m.person?.full_name ?? '…'}
-                <span className="ms-2 text-xs font-bold text-brand">{m.props.length === 1 ? t('1 new property') : t('{n} new properties', { n: m.props.length })}</span>
-              </p>
+          <li key={m.lead.id} className="lift rounded-2xl bg-surface px-4 py-3.5 ring-1 ring-line/[0.06]">
+            <div className="flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="font-display truncate text-base font-semibold">{m.person?.full_name ?? '…'}</p>
+                <p className="text-xs font-bold text-brand">{m.props.length === 1 ? t('1 new property') : t('{n} new properties', { n: m.props.length })}</p>
+              </div>
               {canWrite && (
-                <span className="flex shrink-0 gap-1.5">
-                  <button type="button" disabled={busy !== null} onClick={() => send(m)}
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-ok/10 px-3 py-1.5 text-sm font-semibold text-ok transition hover:bg-ok/15 disabled:opacity-40">
-                    <MessageCircle className="h-4 w-4" /> {t('Send')}
+                <span className="flex shrink-0 items-center gap-1">
+                  <button type="button" disabled={busy !== null} onClick={() => send(m)} aria-label={t('Send')} title={t('Send')}
+                    className="grid h-10 w-10 place-items-center rounded-full bg-ok text-white transition active:scale-90 disabled:opacity-40">
+                    <MessageCircle className="h-5 w-5" />
                   </button>
                   <button type="button" disabled={busy !== null} onClick={() => skip(m)} aria-label={t('Skip')} title={t('Skip')}
-                    className="grid h-8 w-8 place-items-center rounded-xl text-muted transition hover:bg-surface hover:text-ink disabled:opacity-40"><X className="h-4 w-4" /></button>
+                    className="grid h-8 w-8 place-items-center rounded-full text-muted transition hover:bg-surface-2 hover:text-ink disabled:opacity-40"><X className="h-4 w-4" /></button>
                 </span>
               )}
             </div>
-            <ul className="mt-1.5 space-y-0.5">
+            <ul className="mt-2 space-y-1 border-t border-line/[0.07] pt-2">
               {m.props.slice(0, 3).map(p => (
-                <li key={p.id} className="truncate text-sm text-muted">
-                  {p.title} <span className="tabular font-semibold text-ink">· {formatMad(p.price_cents)}{priceSuffix(p.purpose) ? ` ${priceSuffix(p.purpose)}` : ''}</span>
+                <li key={p.id} className="flex items-baseline justify-between gap-3 text-sm">
+                  <span className="min-w-0 truncate text-muted">{p.title}</span>
+                  <span className="tabular shrink-0 font-semibold">{formatMad(p.price_cents)}{priceSuffix(p.purpose) ? ` ${priceSuffix(p.purpose)}` : ''}</span>
                 </li>
               ))}
               {m.props.length > 3 && <li className="text-xs text-muted">{t('And {n} more.', { n: m.props.length - 3 })}</li>}

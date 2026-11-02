@@ -11,7 +11,7 @@ import { formatMad } from '@vastgoed/shared';
 import { OPEN_LEAD_STATUSES, daysSince, leadStatusCls, leadStatusLabel, viewingStatusCls, viewingStatusLabel } from '../lib/labels';
 import { daysUntil, toInputValue, todayStr, whenText } from '../lib/dates';
 import { Card } from '../components/ui';
-import { Hero, PhoneSheet, bigDay } from '../components/Hero';
+import { Hero, madShort, PhoneSheet, bigDay } from '../components/Hero';
 import { TaskItem } from '../components/TaskItem';
 import { briefingText } from '../lib/briefing';
 import { whatsappShareUrl } from '../lib/publicSite';
@@ -134,12 +134,12 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
       sub={loading ? undefined : quiet ? t('All clear') : undefined}
       action={!loading && !quiet ? (
         <button type="button" onClick={share} aria-label={t('Share briefing')} title={t('Share briefing')}
-          className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90"><MessageCircle className="h-5 w-5" /></button>
+          className="grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90"><MessageCircle className="h-5 w-5" /></button>
       ) : undefined}
       stats={[
         { value: loading ? '–' : due.length, label: t('Tasks due'), warn: !loading && due.length > 0 },
         { value: loading ? '–' : upcoming.length, label: t('Viewings this week') },
-        { value: loading ? '–' : formatMad(rentTotal), label: t('Rent overdue'), warn: !loading && rentTotal > 0 },
+        { value: loading ? '–' : madShort(rentTotal), label: t('Rent overdue'), warn: !loading && rentTotal > 0 },
       ]}
     />
     <PhoneSheet>

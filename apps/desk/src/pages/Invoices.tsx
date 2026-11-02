@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FilePlus2, Receipt, Search } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { getLang, t } from '../lib/i18n';
-import { Hero, PhoneSheet } from '../components/Hero';
+import { Hero, madShort, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import { loadInvoices, type InvoiceRow, type InvoiceStatus } from '../lib/invoices';
 import { Btn, Card, inputCls } from '../components/ui';
@@ -50,12 +50,12 @@ export function Invoices({ office }: { office: Office }) {
     <Hero
       title={t('Invoices')}
       action={(<div className="flex items-center gap-2">
-        {canWrite && rows !== null && <button type="button" onClick={() => setAdding(true)} aria-label={t('New invoice')} title={t('New invoice')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><FilePlus2 className="h-5 w-5" /></button>}
+        {canWrite && rows !== null && <button type="button" onClick={() => setAdding(true)} aria-label={t('New invoice')} title={t('New invoice')} className="grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90 disabled:opacity-40"><FilePlus2 className="h-5 w-5" /></button>}
       </div>)}
       stats={[
-        { value: (!rows) ? '–' : formatMad(sums.open), label: t('To be collected'), warn: !(!rows) && sums.overdue > 0 },
+        { value: (!rows) ? '–' : madShort(sums.open), label: t('To be collected'), warn: !(!rows) && sums.overdue > 0 },
         { value: (!rows) ? '–' : sums.overdue, label: t('Overdue'), warn: !(!rows) && sums.overdue > 0 },
-        { value: (!rows) ? '–' : formatMad(sums.paidYear), label: t('Paid in {year}', { year }) },
+        { value: (!rows) ? '–' : madShort(sums.paidYear), label: t('Paid in {year}', { year }) },
       ]}
     />
     <PhoneSheet>

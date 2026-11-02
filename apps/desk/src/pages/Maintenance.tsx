@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Plus, Search, Wrench } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { t } from '../lib/i18n';
-import { Hero, PhoneSheet } from '../components/Hero';
+import { Hero, madShort, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import { dateText } from '../lib/leases';
 import { isOpen, loadMaintenance, maintStatusCls, maintStatusLabel, priorityCls, priorityLabel, type MaintStatus, type MaintView } from '../lib/maintenance';
@@ -72,12 +72,12 @@ export function Maintenance({ office }: { office: Office }) {
       title={t('Maintenance')}
       sub={rows ? t('{n} in total', { n: counts.all }) : undefined}
       action={(<div className="flex items-center gap-2">
-        {canWrite && <button type="button" onClick={() => setAdding(true)} aria-label={t('Report a problem')} title={t('Report a problem')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><Plus className="h-5 w-5" /></button>}
+        {canWrite && <button type="button" onClick={() => setAdding(true)} aria-label={t('Report a problem')} title={t('Report a problem')} className="grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90 disabled:opacity-40"><Plus className="h-5 w-5" /></button>}
       </div>)}
       stats={[
         { value: (rows === null) ? '–' : stats.open, label: t('Open requests') },
         { value: (rows === null) ? '–' : stats.urgent, label: t('Urgent'), warn: !(rows === null) && stats.urgent > 0 },
-        { value: (rows === null) ? '–' : formatMad(stats.cost), label: t('Repair costs') },
+        { value: (rows === null) ? '–' : madShort(stats.cost), label: t('Repair costs') },
       ]}
     />
     <PhoneSheet>

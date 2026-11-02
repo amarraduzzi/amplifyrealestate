@@ -7,7 +7,7 @@ import { addDays, dayKey, dayLabel, loadAgenda, weekLabel, weekStart, type Agend
 import { viewingStatusCls, viewingStatusLabel } from '../lib/labels';
 import { toggleTask } from '../lib/tasks';
 import { Btn, Card } from '../components/ui';
-import { BarsMotif, Hero, PhoneSheet, bigDay } from '../components/Hero';
+import { BarsMotif, Hero, madShort, PhoneSheet, bigDay } from '../components/Hero';
 import { QuickIcons } from '../components/QuickActions';
 import { TaskForm } from './TaskForm';
 import { ViewingForm } from './ViewingForm';
@@ -221,7 +221,7 @@ function AgendaWeek({ office, userId, onGo, tabs, darkTabs }: { office: Office; 
       stats={[
         { value: items === null ? '–' : nViewings, label: t('Viewings') },
         { value: items === null ? '–' : nTasks, label: t('Tasks') },
-        { value: items === null ? '–' : formatMad(rentCents), label: t('Rent due'), warn: rentCents > 0 && days.some(d => dayKey(d) < today) },
+        { value: items === null ? '–' : madShort(rentCents), label: t('Rent due'), warn: rentCents > 0 && days.some(d => dayKey(d) < today) },
       ]}
     >
       <div className="mt-4 flex items-center gap-1">

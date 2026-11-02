@@ -37,7 +37,7 @@ export function Vouchers({ office }: { office: Office }) {
     <Hero
       title={t('Visit vouchers')}
       action={(<div className="flex items-center gap-2">
-        {canWrite && <button type="button" onClick={() => setOpen(true)} aria-label={t('New voucher')} title={t('New voucher')} disabled={props.length === 0} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><Plus className="h-5 w-5" /></button>}
+        {canWrite && <button type="button" onClick={() => setOpen(true)} aria-label={t('New voucher')} title={t('New voucher')} disabled={props.length === 0} className="grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90 disabled:opacity-40"><Plus className="h-5 w-5" /></button>}
       </div>)}
     />
     <PhoneSheet>

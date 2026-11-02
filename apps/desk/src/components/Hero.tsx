@@ -1,7 +1,18 @@
 import type { ReactNode } from 'react';
+import { formatMad } from '@vastgoed/shared';
 import { getLang } from '../lib/i18n';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
+
+/** A money amount short enough for a small card: 55.000.000 DH becomes 55 M DH, 120.000 DH becomes 120 k DH. */
+export function madShort(cents: number | null | undefined) {
+  if (cents === null || cents === undefined) return '-';
+  const dh = Math.abs(cents) / 100;
+  if (dh < 10_000) return formatMad(cents);
+  const nf = new Intl.NumberFormat(LOCALES[getLang()], { maximumFractionDigits: 1 });
+  const sign = cents < 0 ? '-' : '';
+  return dh >= 1_000_000 ? `${sign}${nf.format(dh / 1_000_000)} M DH` : `${sign}${nf.format(dh / 1000)} k DH`;
+}
 
 /** A day as a big headline: the weekday on its own, the date under it ("Tuesday" / "3 November"). */
 export function bigDay(d: Date) {

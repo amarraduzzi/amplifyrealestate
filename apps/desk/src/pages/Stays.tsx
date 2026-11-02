@@ -3,7 +3,7 @@ import { BedDouble, CalendarPlus, Check, ChevronLeft, ChevronRight, Link2 } from
 import { formatMad } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { getLang, t } from '../lib/i18n';
-import { Hero, PhoneSheet } from '../components/Hero';
+import { Hero, madShort, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import { channelCls, channelName, iso, loadStayProps, loadStays, nights, type Stay, type StayProp } from '../lib/stays';
 import { PUBLIC_SITE } from '../lib/publicSite';
@@ -73,12 +73,12 @@ export function Stays({ office }: { office: Office }) {
     <Hero
       title={t('Short stays')}
       action={(<div className="flex items-center gap-2">
-        {canWrite && props && props.length > 0 && <button type="button" onClick={() => setForm({})} aria-label={t('New booking')} title={t('New booking')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><CalendarPlus className="h-5 w-5" /></button>}
+        {canWrite && props && props.length > 0 && <button type="button" onClick={() => setForm({})} aria-label={t('New booking')} title={t('New booking')} className="grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90 disabled:opacity-40"><CalendarPlus className="h-5 w-5" /></button>}
       </div>)}
       stats={[
         { value: (!props) ? '–' : `${occupancy}%`, label: t('Occupancy') },
         { value: (!props) ? '–' : totalNights, label: t('Nights booked') },
-        { value: (!props) ? '–' : formatMad(totalRevenue), label: t('Net revenue') },
+        { value: (!props) ? '–' : madShort(totalRevenue), label: t('Net revenue') },
       ]}
     />
     <PhoneSheet>
