@@ -75,6 +75,11 @@ export function Stays({ office }: { office: Office }) {
       action={(<div className="flex items-center gap-2">
         {canWrite && props && props.length > 0 && <button type="button" onClick={() => setForm({})} aria-label={t('New booking')} title={t('New booking')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><CalendarPlus className="h-5 w-5" /></button>}
       </div>)}
+      stats={[
+        { value: (!props) ? '–' : `${occupancy}%`, label: t('Occupancy') },
+        { value: (!props) ? '–' : totalNights, label: t('Nights booked') },
+        { value: (!props) ? '–' : formatMad(totalRevenue), label: t('Net revenue') },
+      ]}
     />
     <PhoneSheet>
     <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">

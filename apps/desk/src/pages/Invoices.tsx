@@ -52,6 +52,11 @@ export function Invoices({ office }: { office: Office }) {
       action={(<div className="flex items-center gap-2">
         {canWrite && rows !== null && <button type="button" onClick={() => setAdding(true)} aria-label={t('New invoice')} title={t('New invoice')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><FilePlus2 className="h-5 w-5" /></button>}
       </div>)}
+      stats={[
+        { value: (!rows) ? '–' : formatMad(sums.open), label: t('To be collected'), warn: !(!rows) && sums.overdue > 0 },
+        { value: (!rows) ? '–' : sums.overdue, label: t('Overdue'), warn: !(!rows) && sums.overdue > 0 },
+        { value: (!rows) ? '–' : formatMad(sums.paidYear), label: t('Paid in {year}', { year }) },
+      ]}
     />
     <PhoneSheet>
     <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">

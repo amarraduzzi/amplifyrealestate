@@ -75,6 +75,11 @@ export function Deals({ office }: { office: Office }) {
         {shown.length > 0 && <button type="button" onClick={() => downloadCsv(`deals-${new Date().toISOString().slice(0, 10)}.csv`, dealsCsv(shown))} aria-label={t('Export to Excel')} title={t('Export to Excel')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><Download className="h-5 w-5" /></button>}
         {canWrite && <button type="button" onClick={() => setAdding(true)} aria-label={t('Start a deal')} title={t('Start a deal')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><Plus className="h-5 w-5" /></button>}
       </div>)}
+      stats={[
+        { value: (rows === null) ? '–' : formatMad(totals.pending), label: t('Expected') },
+        { value: (rows === null) ? '–' : formatMad(totals.toCollect), label: t('To collect') },
+        { value: (rows === null) ? '–' : formatMad(totals.earned), label: t('Earned') },
+      ]}
     />
     <PhoneSheet>
     <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">

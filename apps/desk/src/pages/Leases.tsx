@@ -86,6 +86,11 @@ export function Leases({ office }: { office: Office }) {
         {shown.length > 0 && <button type="button" onClick={() => downloadCsv(`rentals-${new Date().toISOString().slice(0, 10)}.csv`, leasesCsv(shown, open))} aria-label={t('Export to Excel')} title={t('Export to Excel')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><Download className="h-5 w-5" /></button>}
         {canWrite && <button type="button" onClick={() => setAdding(true)} aria-label={t('Start a lease')} title={t('Start a lease')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><Plus className="h-5 w-5" /></button>}
       </div>)}
+      stats={[
+        { value: (rows === null) ? '–' : stats.active, label: t('Running leases') },
+        { value: (rows === null) ? '–' : formatMad(stats.monthly), label: t('Monthly rent') },
+        { value: (rows === null) ? '–' : formatMad(overdue.cents), label: t('Rent overdue'), warn: !(rows === null) && overdue.n > 0 },
+      ]}
     />
     <PhoneSheet>
     <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">

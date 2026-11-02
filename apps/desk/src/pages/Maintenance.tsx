@@ -74,6 +74,11 @@ export function Maintenance({ office }: { office: Office }) {
       action={(<div className="flex items-center gap-2">
         {canWrite && <button type="button" onClick={() => setAdding(true)} aria-label={t('Report a problem')} title={t('Report a problem')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><Plus className="h-5 w-5" /></button>}
       </div>)}
+      stats={[
+        { value: (rows === null) ? '–' : stats.open, label: t('Open requests') },
+        { value: (rows === null) ? '–' : stats.urgent, label: t('Urgent'), warn: !(rows === null) && stats.urgent > 0 },
+        { value: (rows === null) ? '–' : formatMad(stats.cost), label: t('Repair costs') },
+      ]}
     />
     <PhoneSheet>
     <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
