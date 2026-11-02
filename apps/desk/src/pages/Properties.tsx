@@ -13,6 +13,7 @@ import { downloadCsv, propertiesCsv } from '../lib/exportCsv';
 import { friendly } from '../lib/errors';
 import { photoUrl } from '../lib/photos';
 import { PUBLIC_SITE, propertyUrl, whatsappShareUrl } from '../lib/publicSite';
+import { Hero, PhoneSheet } from '../components/Hero';
 
 /** Solid status colors for the label on top of a photo (readable on any picture). */
 const badgeCls: Record<PropertyStatus, string> = {
@@ -82,19 +83,34 @@ export function Properties({ office, userId }: { office: Office; userId: string 
 
   const tabs: Filter[] = ['all', ...STATUSES.filter(s => (counts[s] ?? 0) > 0 || s === 'available')];
 
+  const loading = rows === null;
+  const exportBtn = (cls: string) => (
+    <button type="button" title={t('Export to Excel')} aria-label={t('Export to Excel')}
+      onClick={() => downloadCsv(`properties-${new Date().toISOString().slice(0, 10)}.csv`, propertiesCsv(shown))}
+      className={cls}><Download className="h-4 w-4" /></button>
+  );
+
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="flex items-center justify-between gap-3">
+    <>
+    <Hero
+      title={t('Properties')}
+      sub={loading ? undefined : t('{n} in total', { n: counts.all })}
+      action={shown.length > 0 ? exportBtn('grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90') : undefined}
+      stats={[
+        { value: loading ? '–' : counts.available ?? 0, label: statusLabel('available') },
+        { value: loading ? '–' : counts.reserved ?? 0, label: statusLabel('reserved') },
+        { value: loading ? '–' : (rows ?? []).filter(r => r.is_published).length, label: t('Online') },
+      ]}
+    />
+    <PhoneSheet>
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+      <div className="flex items-center justify-between gap-3 max-lg:hidden">
         <div className="min-w-0">
           <h1 className="font-display truncate text-2xl font-bold sm:text-3xl">{t('Properties')}</h1>
           <p className="text-sm text-muted">{t('{n} in total', { n: counts.all })}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          {shown.length > 0 && (
-            <button type="button" title={t('Export to Excel')} aria-label={t('Export to Excel')}
-              onClick={() => downloadCsv(`properties-${new Date().toISOString().slice(0, 10)}.csv`, propertiesCsv(shown))}
-              className="grid h-10 w-10 place-items-center rounded-full border border-line/[0.12] bg-surface text-muted transition hover:text-ink active:scale-95"><Download className="h-4 w-4" /></button>
-          )}
+          {shown.length > 0 && exportBtn('grid h-10 w-10 place-items-center rounded-full border border-line/[0.12] bg-surface text-muted transition hover:text-ink active:scale-95')}
           {canWrite && <span className="hidden sm:block"><Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add property')}</Btn></span>}
         </div>
       </div>
@@ -105,7 +121,7 @@ export function Properties({ office, userId }: { office: Office; userId: string 
         <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
           {[0, 1, 2].map(i => (
             <li key={i} className="card overflow-hidden rounded-3xl">
-              <div className="skeleton aspect-[16/10] w-full" />
+              <div className="skeleton aspect-[4/3] w-full lg:aspect-[16/10]" />
               <div className="space-y-2.5 p-4 sm:p-5">
                 <div className="skeleton h-6 w-1/2 rounded-lg" />
                 <div className="skeleton h-4 w-3/4 rounded-lg" />
@@ -150,25 +166,33 @@ export function Properties({ office, userId }: { office: Office; userId: string 
                   <li key={r.id} role="button" tabIndex={0} aria-label={r.title}
                     onClick={() => setOpenId(r.id)}
                     onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setOpenId(r.id); } }}
-                    className="card rise min-w-0 cursor-pointer overflow-hidden rounded-3xl outline-none transition active:scale-[.985] hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-brand">
-                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-surface-2">
+                    className="card lift rise min-w-0 cursor-pointer overflow-hidden rounded-3xl outline-none transition active:scale-[.985] hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-brand">
+                    <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface-2 lg:aspect-[16/10]">
                       {covers[r.id]
                         ? <img src={covers[r.id]} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
                         : <div className="grid h-full w-full place-items-center bg-gradient-to-br from-surface-2 to-surface-3 text-muted/50"><ImageOff className="h-8 w-8" /></div>}
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-night/45 to-transparent" />
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-night/45 to-transparent max-lg:h-32 max-lg:from-night/80" />
                       <span className={`absolute start-3 top-3 rounded-full px-3 py-1 text-xs font-bold shadow-sm ${badgeCls[r.status]}`}>{statusLabel(r.status)}</span>
                       {PUBLIC_SITE && r.is_published && (r.status === 'available' || r.status === 'reserved') && (
                         <button type="button" onClick={e => { e.stopPropagation(); share(r); }} aria-label={t('Share')} title={t('Share')}
                           className="absolute end-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-ink shadow-sm backdrop-blur transition active:scale-90 hover:bg-white"><Share2 className="h-4 w-4" /></button>
                       )}
-                      <span className="absolute bottom-3 start-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-bold text-ink backdrop-blur">{purposeLabel(r.purpose)}</span>
+                      <span className="absolute bottom-3 start-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-bold text-ink backdrop-blur max-lg:hidden">{purposeLabel(r.purpose)}</span>
+                      {/* phone and tablet: the price sits on the photo */}
+                      <div className="pointer-events-none absolute inset-x-4 bottom-3.5 text-white lg:hidden">
+                        <p className="truncate text-[11px] font-semibold uppercase tracking-wider text-white/75">{purposeLabel(r.purpose)}</p>
+                        <p className="flex items-baseline gap-x-1.5">
+                          <span className="font-display tabular truncate text-[1.7rem] font-bold leading-tight">{formatMad(r.price_cents)}</span>
+                          {priceSuffix(r.purpose) && <span className="shrink-0 text-sm font-semibold text-white/80">{priceSuffix(r.purpose)}</span>}
+                        </p>
+                      </div>
                     </div>
                     <div className="min-w-0 p-4 sm:p-5">
-                      <p className="flex items-baseline gap-x-1.5">
+                      <p className="flex items-baseline gap-x-1.5 max-lg:hidden">
                         <span className="font-display tabular truncate text-2xl font-bold leading-none">{formatMad(r.price_cents)}</span>
                         {priceSuffix(r.purpose) && <span className="shrink-0 text-sm font-semibold text-muted">{priceSuffix(r.purpose)}</span>}
                       </p>
-                      <h3 className="font-display mt-2 truncate text-base font-semibold">{r.title}</h3>
+                      <h3 className="font-display truncate text-base font-semibold lg:mt-2">{r.title}</h3>
                       <p className="truncate text-sm text-muted">
                         {[r.neighborhood, r.city].filter(Boolean).join(', ') || '—'} · {typeLabel(r.property_type)}
                       </p>
@@ -202,5 +226,7 @@ export function Properties({ office, userId }: { office: Office; userId: string 
 
       {adding && <PropertyForm orgId={office.id} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); load(); }} />}
     </div>
+    </PhoneSheet>
+    </>
   );
 }

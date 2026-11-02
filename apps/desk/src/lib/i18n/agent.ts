@@ -172,6 +172,14 @@ export const FR5: Record<string, string> = {
   'Find me also on': 'Retrouvez-moi aussi sur',
   'The link of your profile or shop, not of one ad. Clients see these on your page.': 'Le lien de votre profil ou de votre boutique, pas d’une annonce. Vos clients le voient sur votre page.',
   'This is not a {site} address. Copy the link of your profile from {site}.': 'Ce n’est pas une adresse {site}. Copiez le lien de votre profil depuis {site}.',
+  // makeover step 10
+  'Still looking': 'En recherche',
+  'Make first contact': 'Premier contact à prendre',
+  'Call back, {n} days since contact': 'À rappeler, {n} jours sans contact',
+  'Send the matching property': 'Envoyer le bien qui correspond',
+  'Send {n} matching properties': 'Envoyer {n} biens qui correspondent',
+  'Follow up on the viewing': 'Relancer après la visite',
+  'No action needed': 'Rien à faire',
 };
 export const AR5: Record<string, string> = {
   'Language of the texts': 'لغة النصوص',
@@ -346,4 +354,12 @@ export const AR5: Record<string, string> = {
   'Find me also on': 'تجدونني أيضا على',
   'The link of your profile or shop, not of one ad. Clients see these on your page.': 'رابط ملفك أو متجرك، وليس إعلانا واحدا. يراه زبناؤك على صفحتك.',
   'This is not a {site} address. Copy the link of your profile from {site}.': 'هذا ليس عنوان {site}. انسخ رابط ملفك من {site}.',
+  // makeover step 10
+  'Still looking': 'لا يزال يبحث',
+  'Make first contact': 'ابدأ بالتواصل الأول',
+  'Call back, {n} days since contact': 'اتصل به، مرت {n} أيام دون تواصل',
+  'Send the matching property': 'أرسل العقار المناسب',
+  'Send {n} matching properties': 'أرسل {n} عقارات مناسبة',
+  'Follow up on the viewing': 'تابع بعد المعاينة',
+  'No action needed': 'لا شيء مطلوب',
 };

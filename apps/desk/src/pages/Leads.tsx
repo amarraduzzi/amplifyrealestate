@@ -1,10 +1,10 @@
 import { EstimationRequests } from '../components/EstimationRequests';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Download, Plus, Search, Upload, Users } from 'lucide-react';
+import { Building2, CalendarClock, Check, Download, PhoneCall, Plus, Search, Upload, Users } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import type { LeadRow, Office, PersonRow } from '../lib/types';
-import { LEAD_STATUSES, OPEN_LEAD_STATUSES, leadStatusCls, leadStatusLabel, purposeLabel, sourceLabel } from '../lib/labels';
+import { LEAD_STATUSES, OPEN_LEAD_STATUSES, daysSince, leadStatusCls, leadStatusLabel, purposeLabel, sourceLabel } from '../lib/labels';
 import { MATCH_COLUMNS, matches, type MatchProp } from '../lib/matching';
 import { Btn, Card, inputCls } from '../components/ui';
 import { ContactAge } from '../components/ContactAge';
@@ -15,8 +15,21 @@ import { LeadForm } from './LeadForm';
 import { LeadDetail } from './LeadDetail';
 import { downloadCsv, leadsCsv } from '../lib/exportCsv';
 import { friendly } from '../lib/errors';
+import { Hero, PhoneSheet } from '../components/Hero';
+import { Avatar } from '../components/Avatar';
 
 type Filter = 'all' | LeadRow['status'];
+
+/** The one thing to do next for a lead that is still looking, in one line. */
+function nextStep(l: LeadRow, matchCount: number): { text: string; icon: typeof Check; cls: string } | null {
+  if (!OPEN_LEAD_STATUSES.includes(l.status)) return null;
+  const d = daysSince(l.last_contact_at);
+  if (d === null) return { text: t('Make first contact'), icon: PhoneCall, cls: 'bg-qr/10 text-qr' };
+  if (d > 14) return { text: t('Call back, {n} days since contact', { n: d }), icon: PhoneCall, cls: 'bg-warn/10 text-warn' };
+  if (matchCount > 0) return { text: matchCount === 1 ? t('Send the matching property') : t('Send {n} matching properties', { n: matchCount }), icon: Building2, cls: 'bg-ok/10 text-ok' };
+  if (l.status === 'viewing') return { text: t('Follow up on the viewing'), icon: CalendarClock, cls: 'bg-qr/10 text-qr' };
+  return { text: t('No action needed'), icon: Check, cls: 'bg-surface-2 text-muted' };
+}
 
 export function Leads({ office, userId }: { office: Office; userId: string }) {
   const [leads, setLeads] = useState<LeadRow[] | null>(null);
@@ -69,23 +82,47 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
 
   const tabs: Filter[] = ['all', ...LEAD_STATUSES.filter(s => (counts[s] ?? 0) > 0 || s === 'new')];
 
+  const loading = leads === null;
+  const openCount = (leads ?? []).filter(l => OPEN_LEAD_STATUSES.includes(l.status)).length;
+  const staleCount = (leads ?? []).filter(l => { const d = daysSince(l.last_contact_at); return OPEN_LEAD_STATUSES.includes(l.status) && d !== null && d > 14; }).length;
+  const roundDark = 'grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90';
+  const exportBtn = (cls: string) => (
+    <button type="button" title={t('Export to Excel')} aria-label={t('Export to Excel')}
+      onClick={() => downloadCsv(`leads-${new Date().toISOString().slice(0, 10)}.csv`, leadsCsv(shown, people))}
+      className={cls}><Download className="h-4 w-4" /></button>
+  );
+  const importBtn = (cls: string) => (
+    <button type="button" title={t('Import contacts')} aria-label={t('Import contacts')} onClick={() => setImporting(true)}
+      className={cls}><Upload className="h-4 w-4" /></button>
+  );
+
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="flex items-center justify-between gap-3">
+    <>
+    <Hero
+      title={t('Leads')}
+      sub={loading ? undefined : t('{n} in total', { n: counts.all })}
+      action={(shown.length > 0 || canWrite) ? (
+        <div className="flex items-center gap-2">
+          {shown.length > 0 && exportBtn(roundDark)}
+          {canWrite && importBtn(roundDark)}
+        </div>
+      ) : undefined}
+      stats={[
+        { value: loading ? '–' : counts.new ?? 0, label: t('New') },
+        { value: loading ? '–' : openCount, label: t('Still looking') },
+        { value: loading ? '–' : staleCount, label: t('Leads to call back'), warn: !loading && staleCount > 0 },
+      ]}
+    />
+    <PhoneSheet>
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+      <div className="flex items-center justify-between gap-3 max-lg:hidden">
         <div className="min-w-0">
           <h1 className="font-display truncate text-2xl font-bold sm:text-3xl">{t('Leads')}</h1>
           <p className="text-sm text-muted">{t('{n} in total', { n: counts.all })}</p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          {shown.length > 0 && (
-            <button type="button" title={t('Export to Excel')} aria-label={t('Export to Excel')}
-              onClick={() => downloadCsv(`leads-${new Date().toISOString().slice(0, 10)}.csv`, leadsCsv(shown, people))}
-              className="grid h-10 w-10 place-items-center rounded-full border border-line/[0.12] bg-surface text-muted transition hover:text-ink active:scale-95"><Download className="h-4 w-4" /></button>
-          )}
-          {canWrite && (
-            <button type="button" title={t('Import contacts')} aria-label={t('Import contacts')} onClick={() => setImporting(true)}
-              className="grid h-10 w-10 place-items-center rounded-full border border-line/[0.12] bg-surface text-muted transition hover:text-ink active:scale-95"><Upload className="h-4 w-4" /></button>
-          )}
+          {shown.length > 0 && exportBtn('grid h-10 w-10 place-items-center rounded-full border border-line/[0.12] bg-surface text-muted transition hover:text-ink active:scale-95')}
+          {canWrite && importBtn('grid h-10 w-10 place-items-center rounded-full border border-line/[0.12] bg-surface text-muted transition hover:text-ink active:scale-95')}
           {canWrite && <span className="hidden sm:block"><Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add lead')}</Btn></span>}
         </div>
       </div>
@@ -138,13 +175,15 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
                 {shown.map(l => {
                   const n = matchMap[l.id]?.length ?? 0;
                   const open = OPEN_LEAD_STATUSES.includes(l.status);
+                  const step = nextStep(l, n);
                   return (
                     <li key={l.id} role="button" tabIndex={0} aria-label={people[l.person_id]?.full_name ?? ''}
                       onClick={() => setOpenId(l.id)}
                       onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setOpenId(l.id); } }}
-                      className="card rise min-w-0 cursor-pointer rounded-3xl p-4 outline-none transition active:scale-[.985] hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
-                      <div className="flex items-start justify-between gap-3">
-                        <h3 className="font-display min-w-0 truncate text-lg font-semibold">{people[l.person_id]?.full_name ?? '…'}</h3>
+                      className="card lift rise min-w-0 cursor-pointer rounded-3xl p-4 outline-none transition active:scale-[.985] hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
+                      <div className="flex items-start gap-3">
+                        <Avatar name={people[l.person_id]?.full_name} id={l.person_id} className="lg:hidden" />
+                        <h3 className="font-display min-w-0 flex-1 truncate text-lg font-semibold max-lg:pt-2">{people[l.person_id]?.full_name ?? '…'}</h3>
                         <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${leadStatusCls[l.status]}`}>{leadStatusLabel(l.status)}</span>
                       </div>
                       <p className="mt-2 flex flex-wrap items-baseline gap-x-2">
@@ -153,7 +192,12 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
                       </p>
                       <p className="mt-1.5 text-sm text-muted">{criteriaText(l)}</p>
                       {l.source && <p className="mt-1 text-xs font-semibold text-muted">{t('Via {source}', { source: sourceLabel(l.source) })}</p>}
-                      <div className="mt-3 flex items-center justify-between gap-3 border-t border-line/[0.07] pt-3">
+                      {step && (
+                        <p className={`mt-3 flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold lg:hidden ${step.cls}`}>
+                          <step.icon className="h-4 w-4 shrink-0" /><span className="min-w-0 truncate">{step.text}</span>
+                        </p>
+                      )}
+                      <div className="mt-3 flex items-center justify-between gap-3 border-t border-line/[0.07] pt-3 max-lg:hidden">
                         <ContactAge iso={l.last_contact_at} stale={open} />
                         {open && (
                           <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${n > 0 ? 'bg-ok/10 text-ok' : 'bg-surface-2 text-muted'}`}>
@@ -188,5 +232,7 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
       {importing && <ImportContacts orgId={office.id} onClose={() => setImporting(false)} onDone={load} />}
       {adding && <LeadForm orgId={office.id} onClose={() => setAdding(false)} onSaved={() => { setAdding(false); load(); }} />}
     </div>
+    </PhoneSheet>
+    </>
   );
 }
