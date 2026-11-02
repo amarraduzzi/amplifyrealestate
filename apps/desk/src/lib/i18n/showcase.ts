@@ -15,6 +15,9 @@ export const FR4: Record<string, string> = {
   'Buyers write more easily to a person than to an office. This name and photo appear next to the WhatsApp button on every property page.': 'Les acheteurs écrivent plus facilement à une personne qu’à une agence. Ce nom et cette photo apparaissent à côté du bouton WhatsApp sur chaque page de bien.',
   'Change photo': 'Changer la photo', 'Add a photo': 'Ajouter une photo', 'Remove': 'Retirer', 'Name': 'Nom', 'Role': 'Fonction',
   'Real estate advisor': 'Conseiller immobilier', 'Languages spoken': 'Langues parlées', 'Please enter a name of at least 2 letters.': 'Indiquez un nom d’au moins 2 lettres.',
+  'Interest in this property': 'Intérêt pour ce bien', 'Last 7 days': '7 derniers jours', 'Last 30 days': '30 derniers jours', 'Total': 'Total',
+  'Views': 'Vues', 'WhatsApp clicks': 'Clics WhatsApp', 'Calls': 'Appels', 'Forms': 'Formulaires',
+  'No visits yet. Put the page online and share the link: the numbers appear here.': 'Aucune visite pour l’instant. Mettez la page en ligne et partagez le lien : les chiffres apparaîtront ici.',
 };
 export const AR4: Record<string, string> = {
   'Gated residence': 'إقامة مغلقة', 'Guard 24/7': 'حارس 24/24', 'Elevator': 'مصعد', 'Parking': 'موقف سيارات',
@@ -32,4 +35,7 @@ export const AR4: Record<string, string> = {
   'Buyers write more easily to a person than to an office. This name and photo appear next to the WhatsApp button on every property page.': 'المشترون يراسلون شخصا بسهولة أكبر من وكالة. هذا الاسم وهذه الصورة يظهران بجانب زر واتساب في كل صفحة عقار.',
   'Change photo': 'تغيير الصورة', 'Add a photo': 'إضافة صورة', 'Remove': 'إزالة', 'Name': 'الاسم', 'Role': 'الوظيفة',
   'Real estate advisor': 'مستشار عقاري', 'Languages spoken': 'اللغات المتحدثة', 'Please enter a name of at least 2 letters.': 'أدخل اسما من حرفين على الأقل.',
+  'Interest in this property': 'الاهتمام بهذا العقار', 'Last 7 days': 'آخر 7 أيام', 'Last 30 days': 'آخر 30 يوما', 'Total': 'المجموع',
+  'Views': 'المشاهدات', 'WhatsApp clicks': 'نقرات واتساب', 'Calls': 'المكالمات', 'Forms': 'الاستمارات',
+  'No visits yet. Put the page online and share the link: the numbers appear here.': 'لا توجد زيارات بعد. انشر الصفحة وشارك الرابط: ستظهر الأرقام هنا.',
 };
