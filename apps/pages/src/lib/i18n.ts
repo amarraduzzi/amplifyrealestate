@@ -9,6 +9,7 @@
 import { STAY_AR, STAY_FR, STAY_NL } from './i18nStay';
 import { BOOK_AR, BOOK_FR, BOOK_NL } from './i18nBooking';
 import { VIT_AR, VIT_FR, VIT_NL } from './i18nVitrine';
+import { HOME_AR, HOME_FR } from './i18nHome';
 
 export type Lang = 'fr' | 'ar' | 'en' | 'nl';
 export const LANGS: { id: Lang; name: string }[] = [
@@ -501,7 +502,8 @@ export function t(en: string, vars?: Record<string, string | number>): string {
   const extra = current === 'ar' ? STAY_AR : current === 'fr' ? STAY_FR : current === 'nl' ? STAY_NL : null;
   const book = current === 'ar' ? BOOK_AR : current === 'fr' ? BOOK_FR : current === 'nl' ? BOOK_NL : null;
   const vit = current === 'ar' ? VIT_AR : current === 'fr' ? VIT_FR : current === 'nl' ? VIT_NL : null;
-  let s = dict ? (dict[en] ?? extra?.[en] ?? book?.[en] ?? vit?.[en] ?? en) : en;
+  const home = current === 'ar' ? HOME_AR : current === 'fr' ? HOME_FR : null;
+  let s = dict ? (dict[en] ?? extra?.[en] ?? book?.[en] ?? vit?.[en] ?? home?.[en] ?? en) : en;
   if (vars) s = s.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
   return s;
 }
