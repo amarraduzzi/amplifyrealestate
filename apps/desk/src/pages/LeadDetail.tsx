@@ -8,6 +8,7 @@ import { LEAD_STATUSES, leadStatusCls, leadStatusLabel, purposeLabel, sourceLabe
 import type { MatchProp } from '../lib/matching';
 import { Btn, Modal } from '../components/ui';
 import { ContactLinks } from '../components/ContactLinks';
+import { QuickBar } from '../components/QuickActions';
 import { SendMatches } from '../components/SendMatches';
 import { ContactAge } from '../components/ContactAge';
 import { budgetText, criteriaText } from '../components/leadText';
@@ -59,6 +60,7 @@ export function LeadDetail({ office, userId, lead, person, matches, onChanged, o
             {lead.source && <span className="rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">{t('Via {source}', { source: sourceLabel(lead.source) })}</span>}
           </div>
           {person && <div className="mt-3"><ContactLinks c={person} /></div>}
+          {person && <QuickBar c={person} />}
         </div>
 
         <div>
@@ -67,7 +69,7 @@ export function LeadDetail({ office, userId, lead, person, matches, onChanged, o
           {lead.notes && <p className="mt-3 whitespace-pre-line text-sm leading-relaxed">{lead.notes}</p>}
         </div>
 
-        <div className="rounded-2xl bg-surface-2 p-3.5 sm:p-4">
+        <div className="rounded-3xl bg-surface-2 p-3.5 sm:p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <ContactAge iso={lead.last_contact_at} stale={lead.status === 'new' || lead.status === 'active' || lead.status === 'viewing'} />
             {canWrite && <Btn tone="ghost" onClick={contacted} disabled={busy}><PhoneCall className="h-4 w-4" /> {t('Contacted today')}</Btn>}
@@ -80,7 +82,7 @@ export function LeadDetail({ office, userId, lead, person, matches, onChanged, o
             <div className="flex flex-wrap gap-1.5">
               {LEAD_STATUSES.map(s => (
                 <button key={s} type="button" disabled={busy} aria-pressed={lead.status === s} onClick={() => changeStatus(s)}
-                  className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition disabled:opacity-50 ${lead.status === s ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
+                  className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition active:scale-95 disabled:opacity-50 ${lead.status === s ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
                   {leadStatusLabel(s)}
                 </button>
               ))}

@@ -17,14 +17,15 @@ export function Modal({ title, onClose, children, footer }: { title: ReactNode; 
     return () => { window.removeEventListener('keydown', k); const i = openModals.indexOf(id); if (i >= 0) openModals.splice(i, 1); };
   }, []);
   return createPortal((
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-night/50 p-2 backdrop-blur-[2px] sm:p-3" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div role="dialog" className="pop flex max-h-full w-full max-w-xl flex-col overflow-hidden rounded-2xl bg-surface shadow-2xl sm:rounded-3xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-night/50 backdrop-blur-[2px] sm:items-center sm:p-3" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div role="dialog" aria-modal="true" className="sheet flex max-h-[94dvh] w-full max-w-xl flex-col overflow-hidden rounded-t-3xl bg-surface shadow-2xl sm:max-h-full sm:rounded-3xl">
+        <span aria-hidden="true" className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-line/15 sm:hidden" />
         <div className="flex items-center justify-between gap-3 border-b border-line/[0.07] px-4 py-3 sm:px-6 sm:py-4">
           <h2 className="font-display text-xl font-semibold">{title}</h2>
           <button onClick={onClose} aria-label={t('Close')} className="grid h-9 w-9 place-items-center rounded-full bg-surface-2 text-muted hover:text-ink"><X className="h-5 w-5" /></button>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">{children}</div>
-        {footer && <div className="border-t border-line/[0.07] bg-surface-2/50 px-4 py-3 sm:px-6 sm:py-4">{footer}</div>}
+        {footer && <div className="border-t border-line/[0.07] bg-surface-2/50 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-4">{footer}</div>}
       </div>
     </div>
   ), document.body);

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Bath, BedDouble, FileText, Pencil, Ruler, ShieldCheck } from 'lucide-react';
+import { Bath, BedDouble, FileText, ImageOff, Pencil, Ruler, Share2, ShieldCheck } from 'lucide-react';
 import { formatMad, type PropertyStatus } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { getLang, t } from '../lib/i18n';
@@ -24,6 +24,8 @@ import { NetworkShare } from '../components/NetworkShare';
 import { OwnerReport } from './OwnerReport';
 import { ViewingsSection } from './ViewingsSection';
 import { TasksSection } from './TasksSection';
+import { photoUrl } from '../lib/photos';
+import { PUBLIC_SITE, propertyUrl, whatsappShareUrl } from '../lib/publicSite';
 import { planError } from '../lib/plan';
 import { friendly } from '../lib/errors';
 
@@ -72,6 +74,25 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
 
   const events = useMemo(() => tidy(history ?? []), [history]);
 
+  // Cover photo on top: the cover first, otherwise the oldest. Reloads after photos change.
+  const [cover, setCover] = useState<string | null>(null);
+  useEffect(() => {
+    let live = true;
+    supabase.from('property_photos').select('id, org_id, property_id')
+      .eq('property_id', row.id).order('is_cover', { ascending: false }).order('created_at').order('id').limit(1)
+      .then(({ data }) => {
+        const x = (data ?? [])[0] as { id: string; org_id: string; property_id: string } | undefined;
+        if (live) setCover(x ? photoUrl(`${x.org_id}/${x.property_id}/${x.id}`) : null);
+      });
+    return () => { live = false; };
+  }, [row.id, photoTick]);
+
+  const canShare = !!PUBLIC_SITE && row.is_published && (row.status === 'available' || row.status === 'reserved');
+  const share = () => {
+    const price = row.price_cents === null ? '' : ` · ${formatMad(row.price_cents)} ${priceSuffix(row.purpose)}`.trimEnd();
+    window.open(whatsappShareUrl(`${row.title}${price}\n${propertyUrl(office.slug, row.reference, 'fr')}`), '_blank', 'noopener');
+  };
+
   const confirm = async () => {
     setBusy(true); setError(null);
     const { error } = await supabase.rpc('confirm_property_info', { p_property: row.id });
@@ -109,6 +130,17 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
         <Btn tone="brand" onClick={onClose}>{t('Close')}</Btn>
       </div>}>
       <div className="space-y-5">
+        <div className="relative -mx-4 -mt-4 aspect-[16/9] overflow-hidden bg-surface-2 sm:-mx-6 sm:-mt-5">
+          {cover
+            ? <img src={cover} alt="" decoding="async" className="h-full w-full object-cover" />
+            : <div className="grid h-full w-full place-items-center bg-gradient-to-br from-surface-2 to-surface-3 text-muted/50"><ImageOff className="h-8 w-8" /></div>}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-night/40 to-transparent" />
+          {canShare && (
+            <button type="button" onClick={share} aria-label={t('Share')} title={t('Share')}
+              className="absolute end-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-ink shadow-sm backdrop-blur transition active:scale-90 hover:bg-white"><Share2 className="h-4 w-4" /></button>
+          )}
+        </div>
+
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${statusCls[row.status]}`}>{statusLabel(row.status)}</span>
@@ -131,7 +163,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
 
         {row.description && <p className="whitespace-pre-line text-sm leading-relaxed">{row.description}</p>}
 
-        <div className="rounded-2xl bg-surface-2 p-3.5 sm:p-4">
+        <div className="rounded-3xl bg-surface-2 p-3.5 sm:p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <Confirmed iso={row.info_confirmed_at} />
@@ -147,7 +179,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
             <div className="flex flex-wrap gap-1.5">
               {STATUSES.map(s => (
                 <button key={s} type="button" disabled={busy} aria-pressed={row.status === s} onClick={() => changeStatus(s)}
-                  className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition disabled:opacity-50 ${row.status === s ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
+                  className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition active:scale-95 disabled:opacity-50 ${row.status === s ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
                   {statusLabel(s)}
                 </button>
               ))}

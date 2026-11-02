@@ -7,6 +7,7 @@ import { addDays, dayKey, dayLabel, loadAgenda, weekLabel, weekStart, type Agend
 import { viewingStatusCls, viewingStatusLabel } from '../lib/labels';
 import { toggleTask } from '../lib/tasks';
 import { Btn, Card } from '../components/ui';
+import { QuickIcons } from '../components/QuickActions';
 import { TaskForm } from './TaskForm';
 import { ViewingForm } from './ViewingForm';
 import { ViewingDetail } from './ViewingDetail';
@@ -70,6 +71,7 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
   const [openTask, setOpenTask] = useState<string | null>(null);
   const [adding, setAdding] = useState<Adding>(null);
   const [picking, setPicking] = useState<string | null>(null);
+  const [fabOpen, setFabOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -106,22 +108,23 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
   const task = items?.find(x => x.kind === 'task' && x.item.task.id === openTask);
 
   const line = (it: AgendaItem) => {
-    const base = 'flex w-full items-start gap-2 rounded-xl px-2.5 py-2 text-start text-sm transition hover:ring-2 hover:ring-brand/25';
+    const base = 'flex w-full items-start gap-2 rounded-2xl px-2.5 py-2.5 text-start text-sm transition active:scale-[.985] hover:ring-2 hover:ring-brand/25';
     const icon = <span className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-lg ${TONE[it.kind]}`}>{ICON[it.kind]}</span>;
     switch (it.kind) {
       case 'viewing': {
         const { v, person, property } = it.item;
         const late = v.status === 'scheduled' && new Date(v.scheduled_at).getTime() < Date.now();
         return (
-          <button key={`v${v.id}`} type="button" onClick={() => setOpenViewing(v.id)} className={`${base} bg-surface`}>
+          <div key={`v${v.id}`} className={`${base} bg-surface`}>
             {icon}
-            <span className="min-w-0 flex-1">
+            <button type="button" onClick={() => setOpenViewing(v.id)} className="min-w-0 flex-1 text-start">
               <span className={`tabular block text-xs font-bold ${late ? 'text-warn' : 'text-brand'}`}>{it.time} · {t('Viewing')}</span>
               <span className="block line-clamp-2 break-words font-semibold">{person?.full_name ?? '…'}</span>
               <span className="block truncate text-xs text-muted">{property?.title ?? '…'}</span>
               {v.status !== 'scheduled' && <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[11px] font-bold ${viewingStatusCls[v.status]}`}>{viewingStatusLabel(v.status)}</span>}
-            </span>
-          </button>
+            </button>
+            {v.status === 'scheduled' && person && <QuickIcons c={person} />}
+          </div>
         );
       }
       case 'task': {
@@ -169,14 +172,15 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
       }
       case 'lease_end':
         return (
-          <button key={`l${it.lease.l.id}`} type="button" onClick={() => onGo('leases')} className={`${base} bg-surface`}>
+          <div key={`l${it.lease.l.id}`} className={`${base} bg-surface`}>
             {icon}
-            <span className="min-w-0 flex-1">
+            <button type="button" onClick={() => onGo('leases')} className="min-w-0 flex-1 text-start">
               <span className="block text-xs font-bold text-warn">{t('Lease ends')}</span>
               <span className="block line-clamp-2 break-words font-semibold">{it.lease.person?.full_name ?? '…'}</span>
               <span className="block truncate text-xs text-muted">{it.lease.property?.title ?? '…'}</span>
-            </span>
-          </button>
+            </button>
+            {it.lease.person && <QuickIcons c={it.lease.person} />}
+          </div>
         );
     }
   };
@@ -190,15 +194,15 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
           {tabs}
         </div>
         {canWrite && (
-          <div className="flex flex-wrap gap-2">
+          <div className="hidden flex-wrap gap-2 sm:flex">
             <Btn onClick={() => setAdding({ kind: 'task', day: today })}><ListChecks className="h-4 w-4" /> {t('Add a task')}</Btn>
             <Btn tone="brand" onClick={() => setAdding({ kind: 'viewing', day: dayKey(addDays(new Date(), 1)) })}><CalendarPlus className="h-4 w-4" /> {t('Schedule a viewing')}</Btn>
           </div>
         )}
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-2">
-        <div className="flex items-center gap-1">
+      <div className="mt-5 flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1">
           <button type="button" onClick={() => setStart(s => addDays(s, -7))} aria-label={t('Previous week')}
             className="grid h-9 w-9 place-items-center rounded-full bg-surface ring-1 ring-line/10 hover:text-brand"><ChevronLeft className="h-4 w-4 rtl:rotate-180" /></button>
           <button type="button" onClick={() => setStart(weekStart(new Date()))}
@@ -207,11 +211,21 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
             className="grid h-9 w-9 place-items-center rounded-full bg-surface ring-1 ring-line/10 hover:text-brand"><ChevronRight className="h-4 w-4 rtl:rotate-180" /></button>
         </div>
         <button type="button" aria-pressed={mine} onClick={() => setMine(m => !m)}
-          className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition sm:ms-auto ${mine ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>{t('Only my tasks')}</button>
+          className={`ms-auto truncate rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition active:scale-95 ${mine ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>{t('Only my tasks')}</button>
       </div>
 
       {error && <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
-      {items === null && !error && <p className="mt-10 text-center text-muted">…</p>}
+      {items === null && !error && (
+        <div className="mt-4 grid gap-3 lg:grid-cols-7" aria-hidden="true">
+          {[0, 1, 2, 3].map(i => (
+            <div key={i} className="card rounded-3xl p-3 lg:min-h-[7rem]">
+              <div className="skeleton h-4 w-1/3 rounded-lg" />
+              <div className="skeleton mt-3 h-14 w-full rounded-2xl" />
+              {i % 2 === 0 && <div className="skeleton mt-2 h-14 w-full rounded-2xl" />}
+            </div>
+          ))}
+        </div>
+      )}
 
       {items !== null && (
         <>
@@ -229,7 +243,7 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
               const { weekday, date } = dayLabel(d);
               const isToday = key === today;
               return (
-                <section key={key} className={`card flex min-h-[7rem] flex-col rounded-2xl p-2.5 ${isToday ? 'ring-2 ring-brand' : ''} ${list.length === 0 ? 'max-lg:min-h-0' : ''}`}>
+                <section key={key} className={`card rise flex min-h-[7rem] flex-col rounded-3xl p-3 ${isToday ? 'ring-2 ring-brand' : ''} ${list.length === 0 ? 'max-lg:min-h-0' : ''}`}>
                   <div className="mb-1.5 flex items-center justify-between gap-1 px-1">
                     <p className="text-sm">
                       <span className={`font-bold capitalize ${isToday ? 'text-brand' : ''}`}>{weekday}</span>{' '}
@@ -266,6 +280,27 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
             ))}
           </p>
         </>
+      )}
+
+      {canWrite && items !== null && !viewing && !task && !adding && (
+        <div className="fixed end-4 z-20 flex flex-col items-end gap-2 sm:hidden" style={{ bottom: 'calc(4.75rem + env(safe-area-inset-bottom))' }}>
+          {fabOpen && (
+            <>
+              <button type="button" onClick={() => { setFabOpen(false); setAdding({ kind: 'viewing', day: dayKey(addDays(new Date(), 1)) }); }}
+                className="rise inline-flex items-center gap-2 rounded-full bg-surface px-4 py-2.5 text-sm font-semibold shadow-lg ring-1 ring-line/10 transition active:scale-95">
+                <CalendarPlus className="h-4 w-4 text-brand" />{t('Schedule a viewing')}
+              </button>
+              <button type="button" onClick={() => { setFabOpen(false); setAdding({ kind: 'task', day: today }); }}
+                className="rise inline-flex items-center gap-2 rounded-full bg-surface px-4 py-2.5 text-sm font-semibold shadow-lg ring-1 ring-line/10 transition active:scale-95">
+                <ListChecks className="h-4 w-4 text-brand" />{t('Add a task')}
+              </button>
+            </>
+          )}
+          <button type="button" onClick={() => setFabOpen(o => !o)} aria-expanded={fabOpen} aria-label={t('Add')} title={t('Add')}
+            className="gold-fill grid h-14 w-14 place-items-center rounded-full text-brand-ink transition active:scale-90">
+            <Plus className={`h-6 w-6 transition-transform ${fabOpen ? 'rotate-45' : ''}`} />
+          </button>
+        </div>
       )}
 
       {viewing && viewing.kind === 'viewing' && (
