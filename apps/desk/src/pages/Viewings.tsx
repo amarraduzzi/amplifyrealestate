@@ -8,6 +8,8 @@ import { loadViewings, type ViewingView } from '../lib/viewings';
 import { VIEWING_STATUSES, outcomeCls, outcomeLabel, viewingStatusCls, viewingStatusLabel } from '../lib/labels';
 import { whenText } from '../lib/dates';
 import { Btn, inputCls, EmptyState } from '../components/ui';
+import { Avatar } from '../components/Avatar';
+import { AccentRow, type Tone } from '../components/Rows';
 import { ViewingForm } from './ViewingForm';
 import { ViewingDetail } from './ViewingDetail';
 import { friendly } from '../lib/errors';
@@ -100,24 +102,27 @@ export function Viewings({ office }: { office: Office }) {
             ? <p className="mt-10 text-center text-muted">{filter === 'scheduled' && !q ? t('No viewings planned.') : t('Nothing matches.')}</p>
             : (
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                {shown.map(({ v, person, property }) => {
+                {shown.map(({ v, person, property }, i) => {
                   const overdue = v.status === 'scheduled' && new Date(v.scheduled_at).getTime() < Date.now();
+                  const tone: Tone = overdue ? 'warn' : v.status === 'scheduled' ? 'brand' : v.status === 'done' ? 'ok' : v.status === 'no_show' ? 'danger' : 'muted';
                   return (
-                    <li key={v.id} role="button" tabIndex={0} aria-label={person?.full_name ?? ''}
-                      onClick={() => setOpenId(v.id)}
-                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(v.id); } }}
-                      className="card rise cursor-pointer rounded-2xl p-4 outline-none transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
-                      <div className="flex items-start justify-between gap-3">
-                        <p className={`font-display tabular text-base font-bold ${overdue ? 'text-warn' : ''}`}>{whenText(v.scheduled_at)}</p>
-                        <span className="flex shrink-0 flex-wrap justify-end gap-1">
+                    <AccentRow key={v.id} tone={tone} index={i} label={person?.full_name ?? ''} onOpen={() => setOpenId(v.id)}>
+                      <div className="flex items-start gap-3">
+                        <Avatar name={person?.full_name} id={v.id} />
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-display truncate text-base font-semibold">{person?.full_name ?? '…'}</h3>
+                          <p className="truncate text-sm text-muted">{property ? `${property.title} · ${property.reference}` : '…'}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                        <span className={`tabular font-display text-sm font-bold ${overdue ? 'text-warn' : ''}`}>{whenText(v.scheduled_at)}</span>
+                        <span className="ms-auto flex flex-wrap justify-end gap-1">
                           {v.outcome && <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${outcomeCls[v.outcome]}`}>{outcomeLabel(v.outcome)}</span>}
                           <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${viewingStatusCls[v.status]}`}>{viewingStatusLabel(v.status)}</span>
                         </span>
                       </div>
-                      <h3 className="font-display mt-2 truncate text-lg font-semibold">{person?.full_name ?? '…'}</h3>
-                      <p className="truncate text-sm text-muted">{property ? `${property.title} · ${property.reference}` : '…'}</p>
                       {overdue && <p className="mt-2 text-xs font-semibold text-warn">{t('The time has passed. Mark how it went.')}</p>}
-                    </li>
+                    </AccentRow>
                   );
                 })}
               </ul>

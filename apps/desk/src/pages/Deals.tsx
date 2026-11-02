@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Download, Handshake, Plus, Search } from 'lucide-react';
 import type { DealStage } from '@vastgoed/shared';
 import { formatMad } from '@vastgoed/shared';
 import { t } from '../lib/i18n';
 import { Hero, madShort, PhoneSheet } from '../components/Hero';
+import { Avatar } from '../components/Avatar';
+import { AccentRow, type Tone } from '../components/Rows';
 import type { Office } from '../lib/types';
 import { loadDeals, type DealView } from '../lib/deals';
 import { DEAL_STAGES, dealStageCls, dealStageLabel, priceSuffix } from '../lib/labels';
@@ -103,7 +105,7 @@ export function Deals({ office }: { office: Office }) {
 
       {rows !== null && rows.length > 0 && (
         <>
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <div className="mt-5 grid gap-3 sm:grid-cols-3 max-lg:hidden">
             <Total label={t('Expected')} cents={totals.pending} hint={t('Offer and accepted')} />
             <Total label={t('To collect')} cents={totals.toCollect} hint={t('Signed, not paid yet')} />
             <Total label={t('Earned')} cents={totals.earned} hint={t('Paid')} />
@@ -129,21 +131,29 @@ export function Deals({ office }: { office: Office }) {
             ? <p className="mt-10 text-center text-muted">{t('Nothing matches.')}</p>
             : (
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                {shown.map(({ d, person, property, splits }, i) => (
-                  <li key={d.id} role="button" tabIndex={0} aria-label={person?.full_name ?? ''}
-                    onClick={() => setOpenId(d.id)}
-                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(d.id); } }}
-                    style={{ '--i': i } as CSSProperties} className="card rise cursor-pointer rounded-2xl p-4 outline-none transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <p className="font-display tabular text-base font-bold">{formatMad(d.price_cents)} <span className="text-sm font-semibold text-muted">{property ? priceSuffix(property.purpose) : ''}</span></p>
-                      <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${dealStageCls[d.stage]}`}>{dealStageLabel(d.stage)}</span>
+                {shown.map(({ d, person, property, splits }, i) => {
+                  const tone: Tone = ({ offer: 'brand', accepted: 'warn', signed: 'ok', paid: 'ok', lost: 'muted' } as const)[d.stage];
+                  return (
+                  <AccentRow key={d.id} tone={tone} index={i} label={person?.full_name ?? ''} onOpen={() => setOpenId(d.id)}>
+                    <div className="flex items-start gap-3">
+                      <Avatar name={person?.full_name} id={d.id} />
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-display truncate text-base font-semibold">{person?.full_name ?? '…'}</h3>
+                        <p className="truncate text-sm text-muted">{property ? `${property.title} · ${property.reference}` : '…'}</p>
+                      </div>
+                      <div className="shrink-0 text-end">
+                        <p className="font-display tabular text-lg font-bold leading-tight">{formatMad(d.price_cents)}</p>
+                        {property && priceSuffix(property.purpose) && <p className="text-xs font-semibold text-muted">{priceSuffix(property.purpose)}</p>}
+                      </div>
                     </div>
-                    <h3 className="font-display mt-2 truncate text-lg font-semibold">{person?.full_name ?? '…'}</h3>
-                    <p className="truncate text-sm text-muted">{property ? `${property.title} · ${property.reference}` : '…'}</p>
-                    <p className="mt-2 text-xs font-semibold text-muted">{t('Commission')}: <span className="tabular">{d.commission_cents === null ? '—' : formatMad(d.commission_cents)}</span>
-                      {splits.length > 0 && d.commission_cents !== null && <> · {t('Your share')}: <span className="tabular">{formatMad(ourShareCents(d, splits) ?? 0)}</span></>}</p>
-                  </li>
-                ))}
+                    <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${dealStageCls[d.stage]}`}>{dealStageLabel(d.stage)}</span>
+                      <span className="ms-auto text-xs font-semibold text-muted">{t('Commission')}: <span className="tabular">{d.commission_cents === null ? '—' : formatMad(d.commission_cents)}</span>
+                        {splits.length > 0 && d.commission_cents !== null && <> · {t('Your share')}: <span className="tabular">{formatMad(ourShareCents(d, splits) ?? 0)}</span></>}</span>
+                    </div>
+                  </AccentRow>
+                  );
+                })}
               </ul>
             )}
         </>

@@ -3,6 +3,7 @@ import { Plus, Search, Wrench } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { t } from '../lib/i18n';
 import { Hero, madShort, PhoneSheet } from '../components/Hero';
+import { AccentRow, type Tone } from '../components/Rows';
 import type { Office } from '../lib/types';
 import { dateText } from '../lib/leases';
 import { isOpen, loadMaintenance, maintStatusCls, maintStatusLabel, priorityCls, priorityLabel, type MaintStatus, type MaintView } from '../lib/maintenance';
@@ -99,7 +100,7 @@ export function Maintenance({ office }: { office: Office }) {
 
       {rows !== null && rows.length > 0 && (
         <>
-          <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <div className="mt-5 grid gap-3 sm:grid-cols-3 max-lg:hidden">
             <Total label={t('Open requests')} value={String(stats.open)} hint={t('Open or in progress')} />
             <Total label={t('Urgent')} value={String(stats.urgent)} hint={t('Open and marked urgent')} />
             <Total label={t('Repair costs')} value={formatMad(stats.cost)} hint={t('Of finished requests')} />
@@ -124,24 +125,21 @@ export function Maintenance({ office }: { office: Office }) {
             ? <p className="mt-10 text-center text-muted">{t('Nothing matches.')}</p>
             : (
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                {shown.map(({ m, property, contractor }) => (
-                  <li key={m.id} role="button" tabIndex={0} aria-label={m.title}
-                    onClick={() => setOpenId(m.id)}
-                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(m.id); } }}
-                    className="card rise cursor-pointer rounded-2xl p-4 outline-none transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-display min-w-0 truncate text-lg font-semibold">{m.title}</h3>
-                      <span className="flex shrink-0 flex-wrap justify-end gap-1.5">
-                        {m.priority === 'urgent' && isOpen(m.status) && <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${priorityCls.urgent}`}>{priorityLabel('urgent')}</span>}
-                        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${maintStatusCls[m.status]}`}>{maintStatusLabel(m.status)}</span>
-                      </span>
+                {shown.map(({ m, property, contractor }, i) => {
+                  const urgent = m.priority === 'urgent' && isOpen(m.status);
+                  const tone: Tone = urgent ? 'danger' : isOpen(m.status) ? 'warn' : m.status === 'done' ? 'ok' : 'muted';
+                  return (
+                  <AccentRow key={m.id} tone={tone} index={i} label={m.title} onOpen={() => setOpenId(m.id)}>
+                    <h3 className="font-display truncate text-base font-semibold">{m.title}</h3>
+                    <p className="mt-0.5 truncate text-sm text-muted">{property ? `${property.title} · ${property.reference}` : '…'}</p>
+                    <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                      {urgent && <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${priorityCls.urgent}`}>{priorityLabel('urgent')}</span>}
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${maintStatusCls[m.status]}`}>{maintStatusLabel(m.status)}</span>
+                      <span className="ms-auto min-w-0 truncate text-xs font-semibold text-muted">{t('Reported on')} {dateText(m.reported_on)}{contractor ? ` · ${contractor.full_name}` : ''}</span>
                     </div>
-                    <p className="mt-1 truncate text-sm text-muted">{property ? `${property.title} · ${property.reference}` : '…'}</p>
-                    <p className="mt-2 text-xs font-semibold text-muted">
-                      {t('Reported on')} {dateText(m.reported_on)}{contractor ? ` · ${contractor.full_name}` : ''}
-                    </p>
-                  </li>
-                ))}
+                  </AccentRow>
+                  );
+                })}
               </ul>
             )}
         </>

@@ -85,7 +85,7 @@ export function Hero({ eyebrow, title, sub, action, stats, children }: {
           <div className="mt-5 grid grid-cols-3 gap-2">
             {stats.map(s => (
               <div key={s.label} className="min-w-0 rounded-2xl bg-white/[0.07] px-3 py-2.5 ring-1 ring-white/10">
-                <p className={`tabular font-display truncate text-xl font-bold leading-tight ${s.warn ? 'text-[#FFB547]' : ''}`}>{typeof s.value === 'number' ? <CountUp value={s.value} /> : s.value}</p>
+                <p className={`tabular font-display truncate ${typeof s.value === 'string' && s.value.length > 7 ? 'text-base' : 'text-xl'} font-bold leading-tight ${s.warn ? 'text-[#FFB547]' : ''}`}>{typeof s.value === 'number' ? <CountUp value={s.value} /> : s.value}</p>
                 <p className="mt-0.5 line-clamp-2 text-[11px] font-medium leading-tight text-white/60">{s.label}</p>
               </div>
             ))}

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Download, KeyRound, Plus, Search } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { t } from '../lib/i18n';
@@ -8,6 +8,8 @@ import { daysTo, dateText, loadLeases, type LeaseView } from '../lib/leases';
 import { ensureRentDue, isOverdue, loadOpenPayments, type PaymentRow } from '../lib/payments';
 import { LEASE_STATUSES, leaseStatusCls, leaseStatusLabel } from '../lib/labels';
 import { Btn, inputCls, EmptyState } from '../components/ui';
+import { Avatar } from '../components/Avatar';
+import { AccentRow, Attention, Progress } from '../components/Rows';
 import { LeaseForm } from './LeaseForm';
 import { LeaseDetail } from './LeaseDetail';
 import { downloadCsv, leasesCsv } from '../lib/exportCsv';
@@ -114,7 +116,11 @@ export function Leases({ office }: { office: Office }) {
 
       {rows !== null && rows.length > 0 && (
         <>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <Attention items={[
+            ...(overdue.n > 0 ? [{ tone: 'danger' as const, text: `${t('Rent overdue')} · ${t('{n} unpaid months', { n: overdue.n })}` }] : []),
+            ...(stats.ending > 0 ? [{ tone: 'warn' as const, text: `${t('Ending soon')} · ${stats.ending}` }] : []),
+          ]} />
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 max-lg:hidden lg:grid-cols-4">
             <Total label={t('Running leases')} value={String(stats.active)} hint={t('Properties that are rented out now')} />
             <Total label={t('Monthly rent')} value={formatMad(stats.monthly)} hint={t('Total of the running leases')} />
             <Total label={t('Rent overdue')} value={formatMad(overdue.cents)} hint={overdue.n === 0 ? t('Nothing overdue') : t('{n} unpaid months', { n: overdue.n })} />
@@ -142,24 +148,32 @@ export function Leases({ office }: { office: Office }) {
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
                 {shown.map(({ l, person, property }, i) => {
                   const left = l.status === 'active' && l.end_date ? daysTo(l.end_date) : null;
+                  const late = overdue.byLease.has(l.id);
+                  const tone = late ? 'danger' : left !== null && left <= 60 ? 'warn' : l.status === 'active' ? 'ok' : 'muted';
+                  const total = l.end_date ? Date.parse(l.end_date) - Date.parse(l.start_date) : 0;
+                  const pct = l.status === 'active' && total > 0 ? ((Date.now() - Date.parse(l.start_date)) / total) * 100 : null;
                   return (
-                    <li key={l.id} role="button" tabIndex={0} aria-label={person?.full_name ?? ''}
-                      onClick={() => setOpenId(l.id)}
-                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(l.id); } }}
-                      style={{ '--i': i } as CSSProperties} className="card rise cursor-pointer rounded-2xl p-4 outline-none transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
-                      <div className="flex items-start justify-between gap-3">
-                        <p className="font-display tabular text-base font-bold">{formatMad(l.rent_cents)} <span className="text-sm font-semibold text-muted">{t('/ month')}</span></p>
-                        <span className="flex shrink-0 flex-wrap justify-end gap-1.5">
-                          {overdue.byLease.has(l.id) && <span className="rounded-full bg-danger/10 px-2.5 py-1 text-xs font-bold text-danger">{t('Overdue')}</span>}
-                          <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${leaseStatusCls[l.status]}`}>{leaseStatusLabel(l.status)}</span>
+                    <AccentRow key={l.id} tone={tone} index={i} label={person?.full_name ?? ''} onOpen={() => setOpenId(l.id)}>
+                      <div className="flex items-start gap-3">
+                        <Avatar name={person?.full_name} id={l.id} />
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-display truncate text-base font-semibold">{person?.full_name ?? '…'}</h3>
+                          <p className="truncate text-sm text-muted">{property ? `${property.title} · ${property.reference}` : '…'}</p>
+                        </div>
+                        <div className="shrink-0 text-end">
+                          <p className="font-display tabular text-lg font-bold leading-tight">{formatMad(l.rent_cents)}</p>
+                          <p className="text-xs font-semibold text-muted">{t('/ month')}</p>
+                        </div>
+                      </div>
+                      {pct !== null && <div className="mt-3"><Progress pct={pct} tone={tone} /></div>}
+                      <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                        {late && <span className="rounded-full bg-danger/10 px-2.5 py-1 text-xs font-bold text-danger">{t('Overdue')}</span>}
+                        <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${leaseStatusCls[l.status]}`}>{leaseStatusLabel(l.status)}</span>
+                        <span className={`ms-auto text-xs font-semibold ${left !== null && left <= 60 ? 'text-warn' : 'text-muted'}`}>
+                          {l.end_date ? t('Until {date}', { date: dateText(l.end_date) }) : t('From {date}', { date: dateText(l.start_date) })}
                         </span>
                       </div>
-                      <h3 className="font-display mt-2 truncate text-lg font-semibold">{person?.full_name ?? '…'}</h3>
-                      <p className="truncate text-sm text-muted">{property ? `${property.title} · ${property.reference}` : '…'}</p>
-                      <p className={`mt-2 text-xs font-semibold ${left !== null && left <= 60 ? 'text-warn' : 'text-muted'}`}>
-                        {l.end_date ? t('Until {date}', { date: dateText(l.end_date) }) : t('From {date}', { date: dateText(l.start_date) })}
-                      </p>
-                    </li>
+                    </AccentRow>
                   );
                 })}
               </ul>
