@@ -211,21 +211,45 @@ function StyleTab({ office, site, setSite, canManage, onSaved }: TabProps) {
     <Card className="space-y-5">
       <div>
         <p className="text-sm font-semibold">{t('Style of your website')}</p>
-        <div className="mt-2 grid gap-2 sm:grid-cols-3">
-          {THEMES.map(th => (
-            <button key={th.id} type="button" disabled={!canManage} onClick={() => { setTheme(th.id); s.setSaved(false); }} aria-pressed={theme === th.id}
-              className={`overflow-hidden rounded-2xl text-start ring-2 transition ${theme === th.id ? 'ring-brand' : 'ring-line/10 hover:ring-line/25'}`}>
-              <span className="block p-3" style={{ background: th.bg }}>
-                <span className="block h-2 w-10 rounded-full" style={{ background: color ?? th.accent }} />
-                <span className="mt-2 block h-12 rounded-lg" style={{ background: th.surface, border: `1px solid ${th.ink}14` }} />
-                <span className="mt-2 block h-2 w-16 rounded-full" style={{ background: th.ink, opacity: 0.7 }} />
-              </span>
-              <span className="block bg-surface p-3">
-                <span className="flex items-center justify-between font-semibold">{th.name}{theme === th.id && <Check className="h-4 w-4 text-brand" />}</span>
-                <span className="block text-xs text-muted">{themeText(th)}</span>
-              </span>
-            </button>
-          ))}
+        {/* on a phone the styles are large cards you swipe sideways; from tablet size they sit next to each other */}
+        <div className="-mx-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
+          {THEMES.map(th => {
+            const on = theme === th.id;
+            const accent = color ?? th.accent;
+            return (
+              <button key={th.id} type="button" disabled={!canManage} onClick={() => { setTheme(th.id); s.setSaved(false); }} aria-pressed={on}
+                className={`relative w-[74%] shrink-0 snap-center overflow-hidden rounded-3xl text-start ring-2 transition active:scale-[.98] sm:w-auto ${on ? 'ring-brand shadow-[0_14px_28px_-16px_rgb(0_30_62/.55)]' : 'ring-line/10 hover:ring-line/25'}`}>
+                {/* a small drawing of the site in this style, in the chosen color */}
+                <span className="block aspect-[5/4] p-3" style={{ background: th.bg }}>
+                  <span className="flex items-center gap-1.5">
+                    <span className="h-3 w-3 rounded-full" style={{ background: accent }} />
+                    <span className="h-1.5 w-8 rounded-full" style={{ background: th.ink, opacity: 0.55 }} />
+                    <span className="ms-auto h-1 w-4 rounded-full" style={{ background: th.ink, opacity: 0.25 }} />
+                    <span className="h-1 w-4 rounded-full" style={{ background: th.ink, opacity: 0.25 }} />
+                  </span>
+                  <span className="mt-2.5 block rounded-xl p-2.5" style={{ background: `linear-gradient(135deg, ${accent}38, ${th.surface})`, border: `1px solid ${th.ink}12` }}>
+                    <span className="block h-2 w-3/4 rounded-full" style={{ background: th.ink }} />
+                    <span className="mt-1.5 block h-1.5 w-1/2 rounded-full" style={{ background: th.ink, opacity: 0.35 }} />
+                    <span className="mt-2.5 block h-4 w-14 rounded-full" style={{ background: accent }} />
+                  </span>
+                  <span className="mt-2.5 grid grid-cols-2 gap-2">
+                    {[0, 1].map(i => (
+                      <span key={i} className="block rounded-lg p-1.5" style={{ background: th.surface, border: `1px solid ${th.ink}12` }}>
+                        <span className="block h-7 rounded-md" style={{ background: `linear-gradient(160deg, ${accent}55, ${accent}14)` }} />
+                        <span className="mt-1.5 block h-1.5 w-3/4 rounded-full" style={{ background: th.ink, opacity: 0.6 }} />
+                        <span className="mt-1 block h-1.5 w-1/3 rounded-full" style={{ background: accent }} />
+                      </span>
+                    ))}
+                  </span>
+                </span>
+                <span className="block bg-surface p-3.5">
+                  <span className="font-display flex items-center justify-between text-base font-bold">{th.name}</span>
+                  <span className="mt-0.5 block text-xs text-muted">{themeText(th)}</span>
+                </span>
+                {on && <span className="absolute end-3 top-3 grid h-7 w-7 place-items-center rounded-full bg-brand text-white shadow-md"><Check className="h-4 w-4" strokeWidth={3} /></span>}
+              </button>
+            );
+          })}
         </div>
       </div>
       <div>
@@ -234,7 +258,7 @@ function StyleTab({ office, site, setSite, canManage, onSaved }: TabProps) {
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {COLORS.map(c => (
             <button key={c} type="button" disabled={!canManage} onClick={() => { setColor(c); s.setSaved(false); }} aria-label={c} aria-pressed={effective.toLowerCase() === c.toLowerCase()}
-              className={`grid h-9 w-9 place-items-center rounded-full ring-2 ring-offset-2 ring-offset-surface ${effective.toLowerCase() === c.toLowerCase() ? 'ring-ink' : 'ring-transparent'}`} style={{ background: c }}>
+              className={`grid h-10 w-10 place-items-center rounded-full ring-2 ring-offset-2 ring-offset-surface transition active:scale-90 ${effective.toLowerCase() === c.toLowerCase() ? 'ring-ink' : 'ring-transparent'}`} style={{ background: c }}>
               {effective.toLowerCase() === c.toLowerCase() && <Check className="h-4 w-4 text-white" />}
             </button>
           ))}
