@@ -239,20 +239,19 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
         return (
           <div className="fixed inset-0 z-40 flex items-end bg-night/60 backdrop-blur-[2px] lg:hidden" onMouseDown={e => { if (e.target === e.currentTarget) setMore(false); }}>
             <div className="pop flex max-h-[90vh] w-full flex-col overflow-hidden rounded-t-[2rem] bg-bg" role="dialog" aria-label={t('More')}>
-              <div className="night relative shrink-0 overflow-hidden px-5 pb-5 pt-3 text-white">
-                <span className="hero-glow" aria-hidden="true" />
-                <span className="relative mx-auto mb-3 block h-1 w-10 rounded-full bg-white/25" aria-hidden="true" />
-                <div className="relative flex items-start justify-between gap-3">
+              <div className="shrink-0 px-5 pb-3 pt-3">
+                <span className="mx-auto mb-3 block h-1 w-10 rounded-full bg-line/20" aria-hidden="true" />
+                <div className="flex items-center justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-white/55">{t('All sections')}</p>
-                    <p className="font-display mt-1 line-clamp-2 text-[1.6rem] font-bold leading-tight">{office.name}</p>
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-muted">{t('All sections')}</p>
+                    <p className="font-display truncate text-[1.4rem] font-bold leading-tight">{office.name}</p>
                   </div>
-                  <button type="button" onClick={() => setMore(false)} aria-label={t('Close')} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90"><X className="h-5 w-5" /></button>
+                  <button type="button" onClick={() => setMore(false)} aria-label={t('Close')} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-surface text-ink ring-1 ring-line/10 transition active:scale-90"><X className="h-5 w-5" /></button>
                 </div>
-                <label className="relative mt-4 flex items-center gap-2 rounded-2xl bg-white/10 px-3.5 py-2.5 ring-1 ring-white/15 focus-within:ring-white/40">
-                  <Search className="h-4 w-4 shrink-0 text-white/60" />
+                <label className="mt-3 flex items-center gap-2 rounded-2xl bg-surface px-3.5 py-2.5 ring-1 ring-line/10 focus-within:ring-2 focus-within:ring-brand/40">
+                  <Search className="h-4 w-4 shrink-0 text-muted" />
                   <input value={q} onChange={e => setQ(e.target.value)} placeholder={t('Search')} aria-label={t('Search')}
-                    className="min-w-0 flex-1 bg-transparent text-sm font-medium text-white outline-none placeholder:text-white/50" />
+                    className="min-w-0 flex-1 bg-transparent text-sm font-medium text-ink outline-none placeholder:text-muted" />
                 </label>
               </div>
               <div className="flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
