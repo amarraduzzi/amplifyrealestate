@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
+import { cloneElement, isValidElement, useEffect, useState, type CSSProperties, type ReactElement, type ReactNode } from 'react';
 import {
   BarChart3, BedDouble, ListChecks, Plus, Building, Building2, FileSignature, Globe, HardHat, CalendarClock, CalendarDays, Handshake, KeyRound, LayoutGrid, LogOut, Network, Receipt, Search, Settings, Sun, Users, Wrench, X,
 } from 'lucide-react';
@@ -218,7 +218,10 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
           .map(g => ({ ...g, items: needle ? g.items.filter(x => x.label.toLowerCase().includes(needle)) : g.items }))
           .filter(g => g.items.length > 0);
         // one soft color per group, so the sheet is not a wall of the same grey tiles
-        const tones = ['bg-brand/15 text-brand', 'bg-qr/15 text-qr', 'bg-warn/15 text-warn', 'bg-ok/15 text-ok', 'bg-ink/10 text-ink'];
+        const tones = [
+          { text: 'text-brand', wash: 'from-brand/20' }, { text: 'text-qr', wash: 'from-qr/20' }, { text: 'text-warn', wash: 'from-warn/25' },
+          { text: 'text-ok', wash: 'from-ok/20' }, { text: 'text-ink', wash: 'from-ink/10' },
+        ];
         let n = 0;
         return (
           <div className="fixed inset-0 z-40 flex items-end bg-night/60 backdrop-blur-[2px] lg:hidden" onMouseDown={e => { if (e.target === e.currentTarget) setMore(false); }}>
@@ -229,7 +232,7 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
                 <div className="relative flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold uppercase tracking-wider text-white/55">{t('All sections')}</p>
-                    <p className="font-display mt-1 truncate text-2xl font-bold">{office.name}</p>
+                    <p className="font-display mt-1 line-clamp-2 text-[1.6rem] font-bold leading-tight">{office.name}</p>
                   </div>
                   <button type="button" onClick={() => setMore(false)} aria-label={t('Close')} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90"><X className="h-5 w-5" /></button>
                 </div>
@@ -240,25 +243,40 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
                 </label>
               </div>
               <div className="flex-1 overflow-y-auto px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
-                {groups.map((g, gi) => (
-                  <div key={g.title} className="mb-4">
-                    <p className="mb-2 flex items-center gap-2 px-1 text-[11px] font-bold uppercase tracking-wider text-muted">
-                      <span className="h-1.5 w-1.5 rounded-full bg-current opacity-60" aria-hidden="true" />{g.title}
-                    </p>
-                    <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
-                      {g.items.map(x => {
-                        const on = active === x.id;
-                        return (
-                          <button key={x.id} type="button" onClick={() => go(x.id)} style={{ '--i': n++ } as CSSProperties}
-                            className={`rise flex flex-col items-start gap-3 rounded-2xl p-3 text-start transition active:scale-95 ${on ? 'night text-white shadow-[0_10px_22px_-12px_rgb(0_30_62/.8)] ring-1 ring-white/10' : 'lift bg-surface text-ink hover:ring-2 hover:ring-brand/25'}`}>
-                            <span className={`grid h-11 w-11 place-items-center rounded-xl ${on ? 'bg-white/15 text-white' : tones[gi % tones.length]}`}>{x.icon}</span>
-                            <span className="max-w-full truncate text-[13px] font-semibold leading-tight">{x.label}</span>
-                          </button>
-                        );
-                      })}
+                {groups.map((g, gi) => {
+                  const tone = tones[gi % tones.length];
+                  return (
+                    <div key={g.title} className="mb-5">
+                      <div className="mb-2.5 flex items-center gap-3 px-1">
+                        <p className={`font-display text-sm font-bold uppercase tracking-wider ${tone.text}`}>{g.title}</p>
+                        <span className="h-px flex-1 bg-line/10" aria-hidden="true" />
+                        <span className="tabular text-xs font-semibold text-muted">{g.items.length}</span>
+                      </div>
+                      <div className={`grid gap-2.5 ${g.items.length <= 2 ? 'grid-cols-2' : 'grid-cols-3 sm:grid-cols-4'}`}>
+                        {g.items.map(x => {
+                          const on = active === x.id;
+                          return (
+                            <button key={x.id} type="button" onClick={() => go(x.id)} style={{ '--i': n++ } as CSSProperties}
+                              className={`rise relative flex flex-col justify-between overflow-hidden rounded-2xl p-3 text-start transition active:scale-95 ${g.items.length <= 2 ? 'h-28' : 'h-24'} ${on ? 'night text-white shadow-[0_10px_22px_-12px_rgb(0_30_62/.8)] ring-1 ring-white/10' : 'lift bg-surface text-ink hover:ring-2 hover:ring-brand/25'}`}>
+                              {!on && <span className={`pointer-events-none absolute inset-0 bg-gradient-to-br to-transparent ${tone.wash}`} aria-hidden="true" />}
+                              {/* a large, faint copy of the icon that runs off the corner of the tile */}
+                              {isValidElement(x.icon) && (
+                                <span className={`pointer-events-none absolute -bottom-4 -end-4 rtl:-scale-x-100 ${on ? 'text-white opacity-[.10]' : `${tone.text} opacity-[.13]`}`} aria-hidden="true">
+                                  {cloneElement(x.icon as ReactElement<{ className?: string; strokeWidth?: number }>, { className: 'h-20 w-20', strokeWidth: 1.25 })}
+                                </span>
+                              )}
+                              <span className={`relative flex items-center justify-between ${on ? 'text-white' : tone.text}`}>
+                                {x.icon}
+                                {on && <span className="h-2 w-2 rounded-full bg-brand motion-safe:animate-pulse" aria-hidden="true" />}
+                              </span>
+                              <span className="font-display relative max-w-full truncate text-[0.95rem] font-bold leading-tight">{x.label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {!needle && (
                   <button type="button" onClick={onSignOut} className="mt-1 flex w-full items-center justify-center gap-2 rounded-2xl bg-surface py-3 text-sm font-semibold text-muted lift hover:text-ink">
                     <LogOut className="h-4 w-4" /> {t('Sign out')}
