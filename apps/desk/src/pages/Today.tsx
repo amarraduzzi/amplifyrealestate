@@ -15,6 +15,7 @@ import { TaskItem } from '../components/TaskItem';
 import { briefingText } from '../lib/briefing';
 import { whatsappShareUrl } from '../lib/publicSite';
 import { GettingStarted } from '../components/GettingStarted';
+import { QuickIcons } from '../components/QuickActions';
 import { NewMatches } from '../components/NewMatches';
 import { StaleAds } from '../components/StaleAds';
 import { WeakAds } from '../components/WeakAds';
@@ -24,7 +25,7 @@ import { ViewingDetail } from './ViewingDetail';
 import type { View } from '../components/Shell';
 import { friendly } from '../lib/errors';
 
-type StaleLead = { lead: LeadRow; name: string; days: number };
+type StaleLead = { lead: LeadRow; name: string; phone: string | null; whatsapp: string | null; days: number };
 type StaleProp = { id: string; title: string; reference: string; days: number };
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
@@ -69,18 +70,18 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
         loadTasks(office.id),
         loadViewings(office.id),
         supabase.from('leads').select('*').eq('org_id', office.id).in('status', OPEN_LEAD_STATUSES),
-        supabase.from('people').select('id, full_name').eq('org_id', office.id),
+        supabase.from('people').select('id, full_name, phone, whatsapp').eq('org_id', office.id),
         supabase.from('properties').select('id, title, reference, info_confirmed_at').eq('org_id', office.id).eq('status', 'available'),
         loadRentAlerts(office.id, canWrite),
         loadRepairAlerts(office.id),
       ]);
       const err = l.error ?? p.error ?? pr.error;
       if (err) throw new Error(err.message);
-      const names = new Map(((p.data ?? []) as Pick<PersonRow, 'id' | 'full_name'>[]).map(x => [x.id, x.full_name]));
+      const people = new Map(((p.data ?? []) as Pick<PersonRow, 'id' | 'full_name' | 'phone' | 'whatsapp'>[]).map(x => [x.id, x]));
       setTasks(sortTasks(tk.tasks));
       setViewings(vw);
       setLeads(((l.data ?? []) as LeadRow[])
-        .map(x => ({ lead: x, name: names.get(x.person_id) ?? '…', days: daysSince(x.last_contact_at) ?? 0 }))
+        .map(x => { const pe = people.get(x.person_id); return { lead: x, name: pe?.full_name ?? '…', phone: pe?.phone ?? null, whatsapp: pe?.whatsapp ?? null, days: daysSince(x.last_contact_at) ?? 0 }; })
         .filter(x => x.days > LEAD_DAYS).sort((a, b) => b.days - a.days));
       setProps(((pr.data ?? []) as { id: string; title: string; reference: string; info_confirmed_at: string | null }[])
         .map(x => ({ id: x.id, title: x.title, reference: x.reference, days: daysSince(x.info_confirmed_at) ?? 0 }))
@@ -138,7 +139,19 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
       <GettingStarted office={office} onGo={onGo} />
 
       {error && <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
-      {loading && !error && <p className="mt-10 text-center text-muted">…</p>}
+      {loading && !error && (
+        <div className="mt-6 space-y-8" aria-hidden="true">
+          {[0, 1].map(i => (
+            <div key={i}>
+              <div className="skeleton mb-3 h-6 w-1/3 rounded-lg" />
+              <div className="space-y-2">
+                <div className="skeleton h-14 w-full rounded-2xl" />
+                <div className="skeleton h-14 w-full rounded-2xl" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {quiet && <Card className="mt-6 text-center"><p className="font-display text-xl font-bold">{t('All clear')}</p><p className="mt-1 text-sm text-muted">{t('No tasks due, no viewings this week, nobody waiting for a call.')}</p></Card>}
 
@@ -218,11 +231,14 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
               <ul className="space-y-2">
                 {leads.slice(0, 6).map(x => (
                   <li key={x.lead.id} className="flex items-center justify-between gap-3 rounded-2xl bg-surface-2 px-3.5 py-3">
-                    <p className="truncate text-sm font-semibold">{x.name}</p>
-                    <span className="flex shrink-0 items-center gap-2">
-                      <span className="text-xs font-semibold text-warn">{t('{n} days without contact', { n: x.days })}</span>
-                      <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${leadStatusCls[x.lead.status]}`}>{leadStatusLabel(x.lead.status)}</span>
-                    </span>
+                    <div className="min-w-0">
+                      <p className="flex items-center gap-2">
+                        <span className="truncate text-sm font-semibold">{x.name}</span>
+                        <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${leadStatusCls[x.lead.status]}`}>{leadStatusLabel(x.lead.status)}</span>
+                      </p>
+                      <p className="mt-0.5 text-xs font-semibold text-warn">{t('{n} days without contact', { n: x.days })}</p>
+                    </div>
+                    <QuickIcons c={x} />
                   </li>
                 ))}
               </ul>

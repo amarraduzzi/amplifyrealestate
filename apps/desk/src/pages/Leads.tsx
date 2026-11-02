@@ -8,6 +8,7 @@ import { LEAD_STATUSES, OPEN_LEAD_STATUSES, leadStatusCls, leadStatusLabel, purp
 import { MATCH_COLUMNS, matches, type MatchProp } from '../lib/matching';
 import { Btn, Card, inputCls } from '../components/ui';
 import { ContactAge } from '../components/ContactAge';
+import { QuickBar } from '../components/QuickActions';
 import { budgetText, criteriaText } from '../components/leadText';
 import { ImportContacts } from './ImportContacts';
 import { LeadForm } from './LeadForm';
@@ -70,23 +71,39 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Leads')}</h1>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="font-display truncate text-2xl font-bold sm:text-3xl">{t('Leads')}</h1>
           <p className="text-sm text-muted">{t('{n} in total', { n: counts.all })}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {shown.length > 0 && <Btn tone="ghost" onClick={() => downloadCsv(`leads-${new Date().toISOString().slice(0, 10)}.csv`, leadsCsv(shown, people))}><Download className="h-4 w-4" /> {t('Export to Excel')}</Btn>}
-          {canWrite && (<>
-            <Btn tone="ghost" onClick={() => setImporting(true)}><Upload className="h-4 w-4" /> {t('Import contacts')}</Btn>
-            <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add lead')}</Btn>
-          </>)}
+        <div className="flex shrink-0 items-center gap-2">
+          {shown.length > 0 && (
+            <button type="button" title={t('Export to Excel')} aria-label={t('Export to Excel')}
+              onClick={() => downloadCsv(`leads-${new Date().toISOString().slice(0, 10)}.csv`, leadsCsv(shown, people))}
+              className="grid h-10 w-10 place-items-center rounded-full border border-line/[0.12] bg-surface text-muted transition hover:text-ink active:scale-95"><Download className="h-4 w-4" /></button>
+          )}
+          {canWrite && (
+            <button type="button" title={t('Import contacts')} aria-label={t('Import contacts')} onClick={() => setImporting(true)}
+              className="grid h-10 w-10 place-items-center rounded-full border border-line/[0.12] bg-surface text-muted transition hover:text-ink active:scale-95"><Upload className="h-4 w-4" /></button>
+          )}
+          {canWrite && <span className="hidden sm:block"><Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add lead')}</Btn></span>}
         </div>
       </div>
 
       <EstimationRequests office={office} />
       {error && <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
-      {leads === null && !error && <p className="mt-10 text-center text-muted">…</p>}
+      {leads === null && !error && (
+        <ul className="mt-6 grid gap-3 sm:grid-cols-2" aria-hidden="true">
+          {[0, 1, 2, 3].map(i => (
+            <li key={i} className="card rounded-3xl p-4 sm:p-5">
+              <div className="skeleton h-5 w-1/2 rounded-lg" />
+              <div className="skeleton mt-3 h-5 w-3/4 rounded-lg" />
+              <div className="skeleton mt-3 h-4 w-2/3 rounded-lg" />
+              <div className="skeleton mt-4 h-9 w-full rounded-full" />
+            </li>
+          ))}
+        </ul>
+      )}
 
       {leads !== null && leads.length === 0 && (
         <Card className="mt-6 text-center">
@@ -100,11 +117,11 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
       {leads !== null && leads.length > 0 && (
         <>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div role="tablist" className="flex flex-wrap gap-1.5">
+            <div role="tablist" className="-mx-4 flex flex-nowrap gap-1.5 px-4 sm:mx-0 sm:flex-wrap sm:px-0">
               {tabs.map(f => (
                 <button key={f} role="tab" aria-selected={filter === f} onClick={() => setFilter(f)}
-                  className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${filter === f ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
-                  {f === 'all' ? t('All') : leadStatusLabel(f)} <span className="tabular opacity-60">{counts[f] ?? 0}</span>
+                  className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition active:scale-95 ${filter === f ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
+                  {f === 'all' ? t('All') : leadStatusLabel(f)} <span className="tabular ms-0.5 text-[11px] opacity-60">{counts[f] ?? 0}</span>
                 </button>
               ))}
             </div>
@@ -124,10 +141,10 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
                   return (
                     <li key={l.id} role="button" tabIndex={0} aria-label={people[l.person_id]?.full_name ?? ''}
                       onClick={() => setOpenId(l.id)}
-                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(l.id); } }}
-                      className="card rise cursor-pointer rounded-2xl p-4 outline-none transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
+                      onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setOpenId(l.id); } }}
+                      className="card rise min-w-0 cursor-pointer rounded-3xl p-4 outline-none transition active:scale-[.985] hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
                       <div className="flex items-start justify-between gap-3">
-                        <h3 className="font-display truncate text-lg font-semibold">{people[l.person_id]?.full_name ?? '…'}</h3>
+                        <h3 className="font-display min-w-0 truncate text-lg font-semibold">{people[l.person_id]?.full_name ?? '…'}</h3>
                         <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${leadStatusCls[l.status]}`}>{leadStatusLabel(l.status)}</span>
                       </div>
                       <p className="mt-2 flex flex-wrap items-baseline gap-x-2">
@@ -144,12 +161,21 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
                           </span>
                         )}
                       </div>
+                      <QuickBar c={people[l.person_id] ?? { phone: null, whatsapp: null }} />
                     </li>
                   );
                 })}
               </ul>
             )}
         </>
+      )}
+
+      {canWrite && leads !== null && leads.length > 0 && !openId && !adding && !importing && (
+        <button type="button" onClick={() => setAdding(true)} aria-label={t('Add lead')} title={t('Add lead')}
+          className="gold-fill fixed end-4 z-20 grid h-14 w-14 place-items-center rounded-full text-brand-ink transition active:scale-90 sm:hidden"
+          style={{ bottom: 'calc(4.75rem + env(safe-area-inset-bottom))' }}>
+          <Plus className="h-6 w-6" />
+        </button>
       )}
 
       {openId && (() => {

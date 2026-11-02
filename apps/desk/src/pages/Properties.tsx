@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Bath, BedDouble, Building2, Download, ImageOff, Plus, Ruler, Search } from 'lucide-react';
+import { Bath, BedDouble, Building2, Download, ImageOff, Plus, Ruler, Search, Share2 } from 'lucide-react';
 import { formatMad, type PropertyStatus } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
@@ -12,6 +12,7 @@ import { PropertyDetail } from './PropertyDetail';
 import { downloadCsv, propertiesCsv } from '../lib/exportCsv';
 import { friendly } from '../lib/errors';
 import { photoUrl } from '../lib/photos';
+import { PUBLIC_SITE, propertyUrl, whatsappShareUrl } from '../lib/publicSite';
 
 /** Solid status colors for the label on top of a photo (readable on any picture). */
 const badgeCls: Record<PropertyStatus, string> = {
@@ -59,6 +60,12 @@ export function Properties({ office, userId }: { office: Office; userId: string 
     })();
     return () => { live = false; };
   }, [rows]);
+
+  /** WhatsApp message with the public link of one property (only for properties that are online). */
+  const share = (r: PropertyRow) => {
+    const price = r.price_cents === null ? '' : ` · ${formatMad(r.price_cents)} ${priceSuffix(r.purpose)}`.trimEnd();
+    window.open(whatsappShareUrl(`${r.title}${price}\n${propertyUrl(office.slug, r.reference, 'fr')}`), '_blank', 'noopener');
+  };
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: rows?.length ?? 0 };
@@ -142,7 +149,7 @@ export function Properties({ office, userId }: { office: Office; userId: string 
                 {shown.map(r => (
                   <li key={r.id} role="button" tabIndex={0} aria-label={r.title}
                     onClick={() => setOpenId(r.id)}
-                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(r.id); } }}
+                    onKeyDown={e => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); setOpenId(r.id); } }}
                     className="card rise min-w-0 cursor-pointer overflow-hidden rounded-3xl outline-none transition active:scale-[.985] hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-brand">
                     <div className="relative aspect-[16/10] w-full overflow-hidden bg-surface-2">
                       {covers[r.id]
@@ -150,6 +157,10 @@ export function Properties({ office, userId }: { office: Office; userId: string 
                         : <div className="grid h-full w-full place-items-center bg-gradient-to-br from-surface-2 to-surface-3 text-muted/50"><ImageOff className="h-8 w-8" /></div>}
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-night/45 to-transparent" />
                       <span className={`absolute start-3 top-3 rounded-full px-3 py-1 text-xs font-bold shadow-sm ${badgeCls[r.status]}`}>{statusLabel(r.status)}</span>
+                      {PUBLIC_SITE && r.is_published && (r.status === 'available' || r.status === 'reserved') && (
+                        <button type="button" onClick={e => { e.stopPropagation(); share(r); }} aria-label={t('Share')} title={t('Share')}
+                          className="absolute end-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-ink shadow-sm backdrop-blur transition active:scale-90 hover:bg-white"><Share2 className="h-4 w-4" /></button>
+                      )}
                       <span className="absolute bottom-3 start-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-bold text-ink backdrop-blur">{purposeLabel(r.purpose)}</span>
                     </div>
                     <div className="min-w-0 p-4 sm:p-5">
