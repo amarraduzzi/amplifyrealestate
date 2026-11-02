@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
 import { t } from './lib/i18n';
 import type { Office } from './lib/types';
 import { AmplifyMark } from './components/Brand';
-import { Shell, canSeeOverview, type View } from './components/Shell';
+import { Shell, canSeeOverview, type QuickKind, type View } from './components/Shell';
 import { Btn } from './components/ui';
 import { Login } from './pages/Login';
 import { Onboarding } from './pages/Onboarding';
@@ -26,6 +26,10 @@ import { Maintenance } from './pages/Maintenance';
 import { PlanBanner } from './components/PlanBanner';
 import { Vouchers } from './pages/Vouchers';
 import { SiteEditor } from './pages/SiteEditor';
+import { ViewingForm } from './pages/ViewingForm';
+import { TaskForm } from './pages/TaskForm';
+import { PropertyForm } from './pages/PropertyForm';
+import { LeadForm } from './pages/LeadForm';
 import { loadPlan, type PlanInfo } from './lib/plan';
 import { friendly } from './lib/errors';
 
@@ -39,6 +43,8 @@ function Workspace({ session }: { session: Session }) {
   const [offices, setOffices] = useState<Office[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [view, setView] = useState<View>('today');
+  const [quick, setQuick] = useState<QuickKind | null>(null);
+  const [rev, setRev] = useState(0);   // bump to load the open screen again (pull to refresh, after a quick add)
   const [plan, setPlan] = useState<{ orgId: string; info: PlanInfo | null } | null>(null);
   const [orgId, setOrgId] = useState<string | null>(() => { try { return localStorage.getItem(ORG_KEY); } catch { return null; } });
 
@@ -89,9 +95,14 @@ function Workspace({ session }: { session: Session }) {
   // Team, Overview and Plan keep the real role (the owner can still remove members and see the plan).
   const info = plan && plan.orgId === office.id ? plan.info : null;
   const work: Office = info && !info.is_open ? { ...office, role: 'viewer' } : office;
+  const canAdd = work.role !== 'viewer';
+  const quickDone = () => { setQuick(null); setRev(r => r + 1); };
+  const refresh = () => setRev(r => r + 1);
   return (
-    <Shell offices={offices} office={office} view={shown} onView={setView} onPick={pick} onSignOut={signOut}
+    <>
+    <Shell offices={offices} office={office} view={shown} onView={setView} onPick={pick} onSignOut={signOut} onQuickAdd={canAdd ? setQuick : undefined} onRefresh={refresh}
       banner={<PlanBanner plan={info} canSee={canSeeOverview(office.role)} onGo={setView} />}>
+      <Fragment key={rev}>
       {shown === 'today' ? <Today key={office.id} office={work} userId={session.user.id} onGo={setView} />
         : shown === 'agenda' ? <Agenda key={office.id} office={work} userId={session.user.id} onGo={setView} />
         : shown === 'overview' ? <Overview key={office.id} office={office} onGo={setView} />
@@ -111,7 +122,13 @@ function Workspace({ session }: { session: Session }) {
         : shown === 'settings' || shown === 'team' || shown === 'plan' || shown === 'site' || shown === 'billing'
           ? <Settings key={`${office.id}-${shown}`} office={office} userId={session.user.id} onSelfChanged={load} initialTab={shown === 'plan' || shown === 'site' || shown === 'billing' ? shown : 'team'} />
         : <Properties key={office.id} office={work} userId={session.user.id} />}
+      </Fragment>
     </Shell>
+    {quick === 'viewing' && <ViewingForm orgId={office.id} onClose={() => setQuick(null)} onSaved={quickDone} />}
+    {quick === 'task' && <TaskForm orgId={office.id} userId={session.user.id} onClose={() => setQuick(null)} onSaved={quickDone} />}
+    {quick === 'property' && <PropertyForm orgId={office.id} onClose={() => setQuick(null)} onSaved={quickDone} />}
+    {quick === 'lead' && <LeadForm orgId={office.id} onClose={() => setQuick(null)} onSaved={quickDone} />}
+    </>
   );
 }
 

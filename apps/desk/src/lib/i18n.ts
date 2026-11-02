@@ -10,6 +10,7 @@ import { AR2, FR2 } from './i18n/stays2';
 import { AR3, FR3 } from './i18n/booking';
 import { AR4, FR4 } from './i18n/showcase';
 import { AR5, FR5 } from './i18n/agent';
+import { AR6, FR6 } from './i18n/quick';
 
 export type Lang = 'en' | 'fr' | 'ar';
 const isLang = (x: unknown): x is Lang => x === 'en' || x === 'fr' || x === 'ar';
@@ -45,12 +46,13 @@ export function t(en: string, vars?: Record<string, string | number>): string {
   const more = current === 'ar' ? AR3 : current === 'fr' ? FR3 : null;
   const vitrine = current === 'ar' ? AR4 : current === 'fr' ? FR4 : null;
   const agent = current === 'ar' ? AR5 : current === 'fr' ? FR5 : null;
+  const quick = current === 'ar' ? AR6 : current === 'fr' ? FR6 : null;
   // singular: a count of exactly 1 uses the "<key>|one" entry when there is one ("1 élément", not "1 éléments")
   if (vars && Number(vars.n) === 1) {
     const one = ONE[current]?.[en] ?? (current === 'ar' || current === 'fr' ? undefined : ONE.en[en]);
     if (one) return one.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
   }
-  let s = dict ? (dict[en] ?? extra?.[en] ?? more?.[en] ?? vitrine?.[en] ?? agent?.[en] ?? en) : en;
+  let s = dict ? (dict[en] ?? extra?.[en] ?? more?.[en] ?? vitrine?.[en] ?? agent?.[en] ?? quick?.[en] ?? en) : en;
   if (vars) s = s.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
   return s;
 }

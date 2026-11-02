@@ -2,6 +2,7 @@ import { Check, Link2 } from 'lucide-react';
 import { t } from '../lib/i18n';
 import type { TaskView } from '../lib/tasks';
 import { daysUntil, dueText } from '../lib/dates';
+import { Swipe } from './Swipe';
 
 /** One task as a row: a tick circle, the title, the deadline and who/what it is for. */
 export function TaskItem({ item, canWrite, busy, showLinks = true, onToggle, onOpen }: {
@@ -12,7 +13,9 @@ export function TaskItem({ item, canWrite, busy, showLinks = true, onToggle, onO
   const late = open && task.due_date !== null && daysUntil(task.due_date) < 0;
   const links = [leadName, propertyTitle].filter(Boolean).join(' · ');
   return (
-    <li className="flex items-start gap-3 rounded-2xl bg-surface-2 px-3.5 py-3">
+    <li>
+    <Swipe label={t('Done')} icon={<Check className="h-4 w-4" strokeWidth={3} />} disabled={!canWrite || busy || !open} onTrigger={onToggle}>
+    <div className="flex items-start gap-3 rounded-2xl bg-surface-2 px-3.5 py-3">
       <button type="button" onClick={onToggle} disabled={!canWrite || busy || task.status === 'cancelled'}
         aria-label={task.status === 'done' ? t('Open this task again') : t('Mark as done')} aria-pressed={task.status === 'done'}
         className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 transition disabled:opacity-40 ${task.status === 'done' ? 'border-ok bg-ok text-white' : 'border-line/30 bg-surface text-transparent hover:border-ok hover:text-ok/50'}`}>
@@ -27,6 +30,8 @@ export function TaskItem({ item, canWrite, busy, showLinks = true, onToggle, onO
           {showLinks && links && <span className="inline-flex items-center gap-1"><Link2 className="h-3 w-3" />{links}</span>}
         </p>
       </button>
+    </div>
+    </Swipe>
     </li>
   );
 }

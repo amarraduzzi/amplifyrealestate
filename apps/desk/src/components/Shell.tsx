@@ -1,9 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import {
-  BarChart3, BedDouble, Building, Building2, FileSignature, Globe, HardHat, CalendarClock, CalendarDays, Handshake, KeyRound, LayoutGrid, LogOut, Network, Receipt, Settings, Sun, Users, Wrench, X,
+  BarChart3, BedDouble, ListChecks, Plus, Building, Building2, FileSignature, Globe, HardHat, CalendarClock, CalendarDays, Handshake, KeyRound, LayoutGrid, LogOut, Network, Receipt, Settings, Sun, Users, Wrench, X,
 } from 'lucide-react';
 import { AmplifyLogo, AmplifyMark } from './Brand';
 import { LangSwitch } from './LangSwitch';
+import { PullToRefresh } from './PullToRefresh';
 import { t } from '../lib/i18n';
 import { isSolo, type Office } from '../lib/types';
 
@@ -11,6 +12,8 @@ import { isSolo, type Office } from '../lib/types';
 // but other screens may still send the user there: App opens the right place.
 export type View = 'today' | 'agenda' | 'overview' | 'properties' | 'leads' | 'viewings' | 'deals' | 'invoices' | 'leases' | 'stays' | 'syndic' | 'projects' | 'maintenance'
   | 'network' | 'settings' | 'tasks' | 'team' | 'plan' | 'site' | 'billing' | 'vouchers' | 'website';
+
+export type QuickKind = 'viewing' | 'task' | 'property' | 'lead';
 
 /** The overview with the numbers is for the owner and managers. */
 export const canSeeOverview = (role: Office['role']) => role === 'owner' || role === 'manager';
@@ -65,10 +68,13 @@ function OfficePick({ offices, office, onPick }: { offices: Office[]; office: Of
   );
 }
 
-export function Shell({ offices, office, view, onView, onPick, onSignOut, banner, children }: {
-  offices: Office[]; office: Office; view: View; onView: (v: View) => void; onPick: (id: string) => void; onSignOut: () => void; banner?: ReactNode; children: ReactNode;
+export function Shell({ offices, office, view, onView, onPick, onSignOut, banner, onQuickAdd, onRefresh, children }: {
+  offices: Office[]; office: Office; view: View; onView: (v: View) => void; onPick: (id: string) => void; onSignOut: () => void; banner?: ReactNode;
+  /** Given: the phone bar gets the round "+" in the middle. Left out (read only): no "+". */
+  onQuickAdd?: (k: QuickKind) => void; onRefresh?: () => void; children: ReactNode;
 }) {
   const [more, setMore] = useState(false);
+  const [quick, setQuick] = useState(false);
   const active = ownerOf(view, office.edition === 'agent');
   const solo = isSolo(office);
   const gs = groups(office.role, solo);
@@ -79,11 +85,26 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
   const go = (v: View) => { setMore(false); onView(v); window.scrollTo(0, 0); };
 
   useEffect(() => {
-    if (!more) return;
-    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') setMore(false); };
+    if (!more && !quick) return;
+    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') { setMore(false); setQuick(false); } };
     window.addEventListener('keydown', k);
     return () => window.removeEventListener('keydown', k);
-  }, [more]);
+  }, [more, quick]);
+
+  const bottomItems = bottom.map(id => all.find(x => x.id === id)).filter((x): x is Item => !!x);
+  const half = Math.ceil(bottomItems.length / 2);
+  const tab = (x: Item) => (
+    <button key={x.id} type="button" onClick={() => go(x.id)} aria-current={active === x.id ? 'page' : undefined}
+      className={`flex flex-col items-center gap-0.5 pb-1.5 pt-2 text-[11px] font-semibold transition active:scale-95 ${active === x.id ? 'text-brand' : 'text-muted hover:text-ink'}`}>
+      <span className={`grid h-7 w-12 place-items-center rounded-full transition ${active === x.id ? 'bg-brand/10' : ''}`}>{x.icon}</span><span className="max-w-full truncate px-0.5">{x.label}</span>
+    </button>
+  );
+  const quickItems: { k: QuickKind; label: string; icon: ReactNode }[] = [
+    { k: 'viewing', label: t('New viewing'), icon: <CalendarClock className="h-6 w-6" /> },
+    { k: 'task', label: t('New task'), icon: <ListChecks className="h-6 w-6" /> },
+    { k: 'property', label: t('New property'), icon: <Building2 className="h-6 w-6" /> },
+    { k: 'lead', label: t('New lead'), icon: <Users className="h-6 w-6" /> },
+  ];
 
   const navButton = (x: Item) => (
     <button key={x.id} type="button" onClick={() => go(x.id)} aria-current={active === x.id ? 'page' : undefined}
@@ -143,19 +164,46 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
 
       {/* ---- Phone and tablet: bottom bar ---- */}
       <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-line/10 bg-surface/95 backdrop-blur lg:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }} aria-label={t('Sections')}>
-        <div className="mx-auto grid max-w-lg grid-cols-5">
-          {bottom.map(id => all.find(x => x.id === id)).filter((x): x is Item => !!x).map(x => (
-            <button key={x.id} type="button" onClick={() => go(x.id)} aria-current={active === x.id ? 'page' : undefined}
-              className={`flex flex-col items-center gap-0.5 pb-1.5 pt-2 text-[11px] font-semibold transition active:scale-95 ${active === x.id ? 'text-brand' : 'text-muted hover:text-ink'}`}>
-              <span className={`grid h-7 w-12 place-items-center rounded-full transition ${active === x.id ? 'bg-brand/10' : ''}`}>{x.icon}</span><span className="max-w-full truncate px-1">{x.label}</span>
-            </button>
-          ))}
+        <div className={`mx-auto grid max-w-lg ${onQuickAdd ? 'grid-cols-[1fr_1fr_auto_1fr_1fr_1fr]' : 'grid-cols-5'}`}>
+          {bottomItems.slice(0, onQuickAdd ? half : bottomItems.length).map(tab)}
+          {onQuickAdd && (
+            <div className="flex justify-center px-1.5">
+              <button type="button" onClick={() => setQuick(true)} aria-label={t('Add')} aria-haspopup="dialog"
+                className="gold-fill -mt-5 grid h-14 w-14 place-items-center rounded-full text-white shadow-[0_10px_20px_-6px_rgb(0_135_75/.6)] ring-4 ring-surface transition active:scale-90">
+                <Plus className="h-7 w-7" strokeWidth={2.5} />
+              </button>
+            </div>
+          )}
+          {onQuickAdd && bottomItems.slice(half).map(tab)}
           <button type="button" onClick={() => setMore(true)} aria-expanded={more}
             className={`flex flex-col items-center gap-0.5 pb-1.5 pt-2 text-[11px] font-semibold transition active:scale-95 ${!bottom.includes(active) ? 'text-brand' : 'text-muted hover:text-ink'}`}>
             <span className={`grid h-7 w-12 place-items-center rounded-full transition ${!bottom.includes(active) ? 'bg-brand/10' : ''}`}><LayoutGrid className="h-[18px] w-[18px]" /></span><span>{t('More')}</span>
           </button>
         </div>
       </nav>
+
+      {/* ---- The "+": the four things you add most ---- */}
+      {quick && onQuickAdd && (
+        <div className="fixed inset-0 z-40 flex items-end bg-night/50 lg:hidden" onMouseDown={e => { if (e.target === e.currentTarget) setQuick(false); }}>
+          <div className="pop w-full rounded-t-3xl bg-surface px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3" role="dialog" aria-label={t('Quick add')}>
+            <div className="mb-3 flex items-center justify-between">
+              <p className="font-display text-lg font-bold">{t('Quick add')}</p>
+              <button type="button" onClick={() => setQuick(false)} aria-label={t('Close')} className="grid h-9 w-9 place-items-center rounded-full bg-surface-2"><X className="h-5 w-5" /></button>
+            </div>
+            <div className="grid grid-cols-2 gap-2.5">
+              {quickItems.map(q => (
+                <button key={q.k} type="button" onClick={() => { setQuick(false); onQuickAdd(q.k); }}
+                  className="flex flex-col items-start gap-3 rounded-2xl bg-surface-2 p-4 text-start text-sm font-bold transition active:scale-95">
+                  <span className="grid h-11 w-11 place-items-center rounded-full bg-brand/10 text-brand">{q.icon}</span>
+                  {q.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {onRefresh && <PullToRefresh onRefresh={onRefresh} disabled={more || quick} />}
 
       {/* ---- "More": everything, grouped ---- */}
       {more && (
