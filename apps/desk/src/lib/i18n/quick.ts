@@ -11,6 +11,11 @@ export const FR6: Record<string, string> = {
   'Light': 'Clair',
   'Dark': 'Sombre',
   'Automatic': 'Automatique',
+  'Up next': 'À faire maintenant',
+  'Viewing today': 'Visite aujourd’hui',
+  'Next viewing': 'Prochaine visite',
+  'Call {name}': 'Appeler {name}',
+  '{n} days without contact': '{n} jours sans contact',
 };
 export const AR6: Record<string, string> = {
   'Add': 'إضافة',
@@ -24,4 +29,9 @@ export const AR6: Record<string, string> = {
   'Light': 'فاتح',
   'Dark': 'داكن',
   'Automatic': 'تلقائي',
+  'Up next': 'المهمة الآن',
+  'Viewing today': 'معاينة اليوم',
+  'Next viewing': 'المعاينة القادمة',
+  'Call {name}': 'اتصل بـ {name}',
+  '{n} days without contact': '{n} أيام بدون اتصال',
 };

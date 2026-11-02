@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import { ChevronRight, MessageCircle } from 'lucide-react';
+import { Check, ChevronRight, MessageCircle, Phone } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getLang, t } from '../lib/i18n';
 import type { LeadRow, Office, PersonRow } from '../lib/types';
@@ -9,7 +9,7 @@ import { loadRentAlerts, type RentAlert } from '../lib/payments';
 import { loadRepairAlerts, type RepairAlert } from '../lib/maintenance';
 import { formatMad } from '@vastgoed/shared';
 import { OPEN_LEAD_STATUSES, daysSince, leadStatusCls, leadStatusLabel, viewingStatusCls, viewingStatusLabel } from '../lib/labels';
-import { daysUntil, toInputValue, todayStr, whenText } from '../lib/dates';
+import { daysUntil, dueText, toInputValue, todayStr, whenText } from '../lib/dates';
 import { Card } from '../components/ui';
 import { Hero, madShort, PhoneSheet, bigDay } from '../components/Hero';
 import { TaskItem } from '../components/TaskItem';
@@ -17,6 +17,8 @@ import { briefingText } from '../lib/briefing';
 import { whatsappShareUrl } from '../lib/publicSite';
 import { GettingStarted } from '../components/GettingStarted';
 import { QuickIcons } from '../components/QuickActions';
+import { NextUp, nextPrimary, nextRound } from '../components/NextUp';
+import { waLink } from '../components/ContactLinks';
 import { NewMatches } from '../components/NewMatches';
 import { StaleAds } from '../components/StaleAds';
 import { WeakAds } from '../components/WeakAds';
@@ -117,10 +119,64 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
     .filter(x => x.v.status === 'scheduled' && daysUntil(toInputValue(new Date(x.v.scheduled_at)).slice(0, 10)) <= AHEAD_DAYS)
     .sort((a, b) => a.v.scheduled_at.localeCompare(b.v.scheduled_at));
   const editing = tasks?.find(x => x.task.id === editId)?.task;
+
   const viewing = viewings?.find(x => x.v.id === viewId);
   const loading = tasks === null || viewings === null || leads === null || props === null || rent === null || repairs === null;
   const dateLine = new Intl.DateTimeFormat(LOCALES[getLang()], { dateStyle: 'full' }).format(new Date());
   const quiet = !loading && matchCount === 0 && adCount === 0 && payCount === 0 && due.length === 0 && upcoming.length === 0 && leads.length === 0 && props.length === 0 && rent.length === 0 && repairs.length === 0;
+
+  // The one thing to do now: a viewing today first, then a task that is due, a lead to call back, rent that is overdue, the next viewing.
+  const telHref = (n: string) => `tel:${n.replace(/\s/g, '')}`;
+  const timeText = (iso: string) => new Intl.DateTimeFormat(LOCALES[getLang()], { hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
+  const dayTime = (iso: string) => new Intl.DateTimeFormat(LOCALES[getLang()], { weekday: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
+  const contactActions = (c: { phone: string | null; whatsapp: string | null } | undefined, name: string, primaryFallback: ReactNode) => {
+    const phone = c?.phone?.trim() || null;
+    const wa = c?.whatsapp?.trim() || phone;
+    const first = name.trim().split(/\s+/)[0] ?? '';
+    return (
+      <>
+        {phone ? <a href={telHref(phone)} className={nextPrimary}><Phone className="h-4 w-4" />{t('Call {name}', { name: first })}</a> : primaryFallback}
+        {wa && <a href={waLink(wa)} target="_blank" rel="noreferrer" aria-label={t('WhatsApp')} title={t('WhatsApp')} className={nextRound}><MessageCircle className="h-5 w-5" /></a>}
+      </>
+    );
+  };
+  const nextCard = (() => {
+    if (loading) return null;
+    const dayOf = (iso: string) => toInputValue(new Date(iso)).slice(0, 10);
+    const vToday = upcoming.find(x => dayOf(x.v.scheduled_at) === today);
+    const open = (id: string) => () => setViewId(id);
+    const viewingCard = (x: ViewingView, today0: boolean) => (
+      <NextUp key="v" eyebrow={today0 ? t('Viewing today') : t('Next viewing')} when={today0 ? timeText(x.v.scheduled_at) : dayTime(x.v.scheduled_at)}
+        warn={new Date(x.v.scheduled_at).getTime() < Date.now()} title={x.person?.full_name ?? '…'} sub={x.property?.title} onOpen={open(x.v.id)}
+        actions={contactActions(x.person, x.person?.full_name ?? '', <button type="button" onClick={open(x.v.id)} className={nextPrimary}>{t('Open')}</button>)} />
+    );
+    if (vToday) return viewingCard(vToday, true);
+    const task = due[0];
+    if (task) {
+      const late = task.task.due_date !== null && daysUntil(task.task.due_date) < 0;
+      return (
+        <NextUp eyebrow={t('Up next')} title={task.task.title} warn={late} onOpen={() => canWrite && setEditId(task.task.id)}
+          sub={[task.task.due_date ? dueText(task.task.due_date) : null, task.leadName, task.propertyTitle].filter(Boolean).join(' · ')}
+          actions={canWrite ? <button type="button" disabled={busyId === task.task.id} onClick={() => toggle(task)} className={nextPrimary}><Check className="h-4 w-4" strokeWidth={3} />{t('Mark as done')}</button> : undefined} />
+      );
+    }
+    const lead = (leads ?? [])[0];
+    if (lead) {
+      return (
+        <NextUp eyebrow={t('Leads to call back')} title={lead.name} sub={t('{n} days without contact', { n: lead.days })} onOpen={() => onGo('leads')}
+          actions={contactActions(lead, lead.name, <button type="button" onClick={() => onGo('leads')} className={nextPrimary}>{t('Open')}</button>)} />
+      );
+    }
+    const r = (rent ?? [])[0];
+    if (r) {
+      return (
+        <NextUp eyebrow={t('Rent overdue')} when={formatMad(r.cents)} warn title={r.name} sub={r.property} onOpen={() => onGo('leases')}
+          actions={<button type="button" onClick={() => onGo('leases')} className={nextPrimary}>{t('Open')}</button>} />
+      );
+    }
+    const v = upcoming[0];
+    return v ? viewingCard(v, false) : null;
+  })();
 
   const big = bigDay(new Date());
   const rentTotal = (rent ?? []).reduce((n, x) => n + x.cents, 0);
@@ -156,6 +212,8 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
           </button>
         )}
       </div>
+
+      {nextCard}
 
       <GettingStarted office={office} onGo={onGo} />
 
