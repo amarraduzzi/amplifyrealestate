@@ -14,7 +14,7 @@
   --brand: 0 135 75;
   --brand-hi: 5 185 98;
   --brand-ink: 255 255 255;
-  --bg: 243 246 250;
+  --bg: 231 236 244;
   --surface: 255 255 255;
   --surface-2: 236 241 247;
   --surface-3: 222 229 238;
@@ -53,6 +53,12 @@ body { background: rgb(var(--bg)); color: rgb(var(--ink)); -webkit-font-smoothin
 [dir="rtl"] body { font-size: 1.02rem; }
 [dir="rtl"] [class*="tracking-"], [dir="rtl"] .font-display { letter-spacing: 0 !important; }
 [dir="rtl"] .uppercase { text-transform: none; }
+/* hero: a soft green light in the navy, and cards that lift off the darker background */
+.hero-glow { position: absolute; inset-inline-end: -90px; top: -110px; width: 340px; height: 340px; border-radius: 9999px; pointer-events: none;
+  background: radial-gradient(closest-side, rgb(5 185 98 / .30), rgb(5 185 98 / .08) 55%, transparent); }
+.night.hdr-solid { background: rgb(var(--night)); }
+.lift { box-shadow: 0 1px 2px rgb(0 30 62 / .06), 0 8px 18px -12px rgb(0 30 62 / .35); }
+@media (min-width: 1024px) { .lift { box-shadow: none; } }
 .card { background: rgb(var(--surface)); border: 1px solid rgb(var(--line) / .07); box-shadow: 0 1px 1px rgb(15 21 36 / .03); }
 .skeleton { background: linear-gradient(100deg, rgb(var(--surface-2)) 30%, rgb(var(--surface-3) / .7) 50%, rgb(var(--surface-2)) 70%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
 @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }

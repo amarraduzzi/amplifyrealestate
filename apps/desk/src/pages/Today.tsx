@@ -11,6 +11,7 @@ import { formatMad } from '@vastgoed/shared';
 import { OPEN_LEAD_STATUSES, daysSince, leadStatusCls, leadStatusLabel, viewingStatusCls, viewingStatusLabel } from '../lib/labels';
 import { daysUntil, toInputValue, todayStr, whenText } from '../lib/dates';
 import { Card } from '../components/ui';
+import { Hero, PhoneSheet, bigDay } from '../components/Hero';
 import { TaskItem } from '../components/TaskItem';
 import { briefingText } from '../lib/briefing';
 import { whatsappShareUrl } from '../lib/publicSite';
@@ -121,15 +122,35 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
   const dateLine = new Intl.DateTimeFormat(LOCALES[getLang()], { dateStyle: 'full' }).format(new Date());
   const quiet = !loading && matchCount === 0 && adCount === 0 && payCount === 0 && due.length === 0 && upcoming.length === 0 && leads.length === 0 && props.length === 0 && rent.length === 0 && repairs.length === 0;
 
+  const big = bigDay(new Date());
+  const rentTotal = (rent ?? []).reduce((n, x) => n + x.cents, 0);
+  const share = () => window.open(whatsappShareUrl(briefingText({ office: office.name, date: dateLine, due, viewings: upcoming, leadsToCall: leads?.length ?? 0, rent: (rent ?? []).map(x => `${x.name} · ${x.property} — ${formatMad(x.cents)}`), repairs: (repairs ?? []).map(x => `${x.title} · ${x.property}`) })), '_blank', 'noopener');
+
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+    <>
+    <Hero
+      eyebrow={dateLine.split(' ').slice(1).join(' ')}
+      title={big.weekday}
+      sub={loading ? undefined : quiet ? t('All clear') : undefined}
+      action={!loading && !quiet ? (
+        <button type="button" onClick={share} aria-label={t('Share briefing')} title={t('Share briefing')}
+          className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90"><MessageCircle className="h-5 w-5" /></button>
+      ) : undefined}
+      stats={[
+        { value: loading ? '–' : due.length, label: t('Tasks due'), warn: !loading && due.length > 0 },
+        { value: loading ? '–' : upcoming.length, label: t('Viewings this week') },
+        { value: loading ? '–' : formatMad(rentTotal), label: t('Rent overdue'), warn: !loading && rentTotal > 0 },
+      ]}
+    />
+    <PhoneSheet>
+    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+      <div className="flex flex-wrap items-start justify-between gap-3 max-lg:hidden">
         <div>
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Today')}</h1>
           <p className="text-sm text-muted">{dateLine}</p>
         </div>
         {!loading && !quiet && (
-          <button type="button" onClick={() => window.open(whatsappShareUrl(briefingText({ office: office.name, date: dateLine, due, viewings: upcoming, leadsToCall: leads?.length ?? 0, rent: (rent ?? []).map(x => `${x.name} · ${x.property} — ${formatMad(x.cents)}`), repairs: (repairs ?? []).map(x => `${x.title} · ${x.property}`) })), '_blank', 'noopener')}
+          <button type="button" onClick={share}
             className="inline-flex items-center gap-2 rounded-xl border border-line/[0.12] bg-surface px-3.5 py-2 text-sm font-semibold text-ink transition hover:bg-surface-2">
             <MessageCircle className="h-4 w-4 text-ok" /> {t('Share briefing')}
           </button>
@@ -179,7 +200,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
                   const late = new Date(x.v.scheduled_at).getTime() < Date.now();
                   return (
                     <li key={x.v.id}>
-                      <button type="button" onClick={() => setViewId(x.v.id)} className="block w-full rounded-2xl bg-surface-2 px-3.5 py-3 text-start transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand">
+                      <button type="button" onClick={() => setViewId(x.v.id)} className="block w-full lift rounded-2xl bg-surface px-3.5 py-3 text-start transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand">
                         <div className="flex items-start justify-between gap-3">
                           <p className={`tabular text-sm font-semibold ${late ? 'text-warn' : ''}`}>{whenText(x.v.scheduled_at)}</p>
                           <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${viewingStatusCls[x.v.status]}`}>{viewingStatusLabel(x.v.status)}</span>
@@ -197,7 +218,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
             <Block title={t('Rent overdue')} count={rent.length} to="leases" onGo={onGo}>
               <ul className="space-y-2">
                 {rent.slice(0, 6).map(x => (
-                  <li key={x.id} className="flex items-center justify-between gap-3 rounded-2xl bg-surface-2 px-3.5 py-3">
+                  <li key={x.id} className="flex items-center justify-between gap-3 lift rounded-2xl bg-surface px-3.5 py-3">
                     <p className="min-w-0 truncate text-sm font-semibold">{x.name} <span className="font-normal text-muted">· {x.property}</span></p>
                     <span className="flex shrink-0 flex-col items-end text-xs font-semibold text-danger">
                       <span className="tabular">{formatMad(x.cents)}</span>
@@ -214,7 +235,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
             <Block title={t('Repairs that need attention')} count={repairs.length} to="maintenance" onGo={onGo}>
               <ul className="space-y-2">
                 {repairs.slice(0, 6).map(x => (
-                  <li key={x.id} className="flex items-center justify-between gap-3 rounded-2xl bg-surface-2 px-3.5 py-3">
+                  <li key={x.id} className="flex items-center justify-between gap-3 lift rounded-2xl bg-surface px-3.5 py-3">
                     <p className="min-w-0 truncate text-sm font-semibold">{x.title} <span className="font-normal text-muted">· {x.property}</span></p>
                     <span className={`shrink-0 text-xs font-semibold ${x.urgent ? 'text-danger' : 'text-warn'}`}>
                       {x.urgent ? t('Urgent') : x.days === 1 ? t('Open for 1 day') : t('Open for {n} days', { n: x.days })}
@@ -230,7 +251,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
             <Block title={t('Leads to call back')} count={leads.length} to="leads" onGo={onGo}>
               <ul className="space-y-2">
                 {leads.slice(0, 6).map(x => (
-                  <li key={x.lead.id} className="flex items-center justify-between gap-3 rounded-2xl bg-surface-2 px-3.5 py-3">
+                  <li key={x.lead.id} className="flex items-center justify-between gap-3 lift rounded-2xl bg-surface px-3.5 py-3">
                     <div className="min-w-0">
                       <p className="flex items-center gap-2">
                         <span className="truncate text-sm font-semibold">{x.name}</span>
@@ -250,7 +271,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
             <Block title={t('Check price and availability')} count={props.length} to="properties" onGo={onGo}>
               <ul className="space-y-2">
                 {props.slice(0, 6).map(x => (
-                  <li key={x.id} className="flex items-center justify-between gap-3 rounded-2xl bg-surface-2 px-3.5 py-3">
+                  <li key={x.id} className="flex items-center justify-between gap-3 lift rounded-2xl bg-surface px-3.5 py-3">
                     <p className="truncate text-sm font-semibold">{x.title} <span className="tabular font-normal text-muted">· {x.reference}</span></p>
                     <span className="shrink-0 text-xs font-semibold text-warn">{t('Confirmed {n} days ago', { n: x.days })}</span>
                   </li>
@@ -265,5 +286,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
       {editing && <TaskForm key={editing.id} orgId={office.id} userId={userId} task={editing} onClose={() => setEditId(null)} onSaved={() => { setEditId(null); load(); }} />}
       {viewing && <ViewingDetail key={viewing.v.id} office={office} item={viewing} onChanged={load} onClose={() => setViewId(null)} />}
     </div>
+    </PhoneSheet>
+    </>
   );
 }

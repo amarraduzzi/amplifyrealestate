@@ -7,6 +7,7 @@ import { addDays, dayKey, dayLabel, loadAgenda, weekLabel, weekStart, type Agend
 import { viewingStatusCls, viewingStatusLabel } from '../lib/labels';
 import { toggleTask } from '../lib/tasks';
 import { Btn, Card } from '../components/ui';
+import { BarsMotif, Hero, PhoneSheet, bigDay } from '../components/Hero';
 import { QuickIcons } from '../components/QuickActions';
 import { TaskForm } from './TaskForm';
 import { ViewingForm } from './ViewingForm';
@@ -32,13 +33,17 @@ const TONE: Record<AgendaItem['kind'], string> = {
   lease_end: 'bg-warn/10 text-warn',
 };
 
+const BAR: Record<AgendaItem['kind'], string> = {
+  viewing: 'border-brand', task: 'border-ink/25', mandate: 'border-warn', rent: 'border-ok', lease_end: 'border-warn',
+};
+
 /** The week at a glance: viewings, deadlines, mandates and leases that end, and rent that is due. */
-function AgendaTabs({ tab, onTab }: { tab: 'week' | 'tasks'; onTab: (t: 'week' | 'tasks') => void }) {
+function AgendaTabs({ tab, onTab, onDark = false }: { tab: 'week' | 'tasks'; onTab: (t: 'week' | 'tasks') => void; onDark?: boolean }) {
   return (
-    <div className="mt-3 inline-flex rounded-full bg-surface p-1 ring-1 ring-line/10" role="tablist">
+    <div className={`inline-flex rounded-full p-1 ${onDark ? 'bg-white/10 ring-1 ring-white/10' : 'mt-3 bg-surface ring-1 ring-line/10'}`} role="tablist">
       {(['week', 'tasks'] as const).map(x => (
         <button key={x} type="button" role="tab" aria-selected={tab === x} onClick={() => onTab(x)}
-          className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${tab === x ? 'bg-ink text-bg' : 'text-muted hover:text-ink'}`}>
+          className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${onDark ? (tab === x ? 'bg-white text-night' : 'text-white/70') : (tab === x ? 'bg-ink text-bg' : 'text-muted hover:text-ink')}`}>
           {x === 'week' ? t('Week') : t('Tasks')}
         </button>
       ))}
@@ -51,17 +56,24 @@ export function Agenda({ office, userId, onGo, initialTab = 'week' }: { office: 
   const [tab, setTab] = useState<'week' | 'tasks'>(initialTab);
   if (tab === 'tasks') {
     return (
-      <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-        <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Agenda')}</h1>
-        <AgendaTabs tab={tab} onTab={setTab} />
-        <Tasks office={office} userId={userId} embedded />
-      </div>
+      <>
+        <Hero title={t('Tasks')} action={<AgendaTabs tab={tab} onTab={setTab} onDark />} />
+        <PhoneSheet>
+          <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+            <div className="max-lg:hidden">
+              <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Agenda')}</h1>
+              <AgendaTabs tab={tab} onTab={setTab} />
+            </div>
+            <Tasks office={office} userId={userId} embedded />
+          </div>
+        </PhoneSheet>
+      </>
     );
   }
-  return <AgendaWeek office={office} userId={userId} onGo={onGo} tabs={<AgendaTabs tab={tab} onTab={setTab} />} />;
+  return <AgendaWeek office={office} userId={userId} onGo={onGo} tabs={<AgendaTabs tab={tab} onTab={setTab} />} darkTabs={<AgendaTabs tab={tab} onTab={setTab} onDark />} />;
 }
 
-function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: string; onGo: (v: View) => void; tabs: ReactNode }) {
+function AgendaWeek({ office, userId, onGo, tabs, darkTabs }: { office: Office; userId: string; onGo: (v: View) => void; tabs: ReactNode; darkTabs: ReactNode }) {
   const canWrite = office.role !== 'viewer';
   const [items, setItems] = useState<AgendaItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -73,6 +85,7 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
   const [picking, setPicking] = useState<string | null>(null);
   const [fabOpen, setFabOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [sel, setSel] = useState(() => dayKey(new Date()));
 
   const load = useCallback(async () => {
     try { setItems((await loadAgenda(office.id, canWrite)).items); setError(null); }
@@ -94,6 +107,16 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
   }, [items, mine, userId]);
 
   const weekCount = days.reduce((n, d) => n + (byDay.get(dayKey(d))?.length ?? 0), 0);
+  // phone: one day at a time. A day outside the shown week falls back to its first day.
+  const selKey = days.some(d => dayKey(d) === sel) ? sel : dayKey(days[0]);
+  const selDate = days.find(d => dayKey(d) === selKey) ?? days[0];
+  const selList = byDay.get(selKey) ?? [];
+  const weekItems = days.flatMap(d => byDay.get(dayKey(d)) ?? []);
+  const nViewings = weekItems.filter(x => x.kind === 'viewing' && x.item.v.status === 'scheduled').length;
+  const nTasks = weekItems.filter(x => x.kind === 'task' && x.item.task.status === 'open').length;
+  const rentCents = weekItems.reduce((n, x) => n + (x.kind === 'rent' ? x.payment.amount_cents : 0), 0);
+  const big = bigDay(selDate);
+  const isCurrentWeek = dayKey(start) === dayKey(weekStart(new Date()));
 
   const tick = async (id: string) => {
     const it = items?.find(x => x.kind === 'task' && x.item.task.id === id);
@@ -108,7 +131,7 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
   const task = items?.find(x => x.kind === 'task' && x.item.task.id === openTask);
 
   const line = (it: AgendaItem) => {
-    const base = 'flex w-full items-start gap-2 rounded-2xl px-2.5 py-2.5 text-start text-sm transition active:scale-[.985] hover:ring-2 hover:ring-brand/25';
+    const base = `lift flex w-full items-start gap-2 rounded-2xl border-s-4 ${BAR[it.kind]} px-2.5 py-2.5 text-start text-sm transition active:scale-[.985] hover:ring-2 hover:ring-brand/25`;
     const icon = <span className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-lg ${TONE[it.kind]}`}>{ICON[it.kind]}</span>;
     switch (it.kind) {
       case 'viewing': {
@@ -185,9 +208,52 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
     }
   };
 
+  const hero = (
+    <Hero
+      eyebrow={
+        <button type="button" onClick={() => { setStart(weekStart(new Date())); setSel(today); }} className="inline-flex items-center gap-1.5 uppercase">
+          {weekLabel(start)}{!isCurrentWeek && <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] normal-case tracking-normal">{t('This week')}</span>}
+        </button>
+      }
+      title={big.weekday}
+      sub={`${big.date} · ${selList.length === 0 ? t('Nothing planned') : t('{n} items', { n: selList.length })}`}
+      action={darkTabs}
+      stats={[
+        { value: items === null ? '–' : nViewings, label: t('Viewings') },
+        { value: items === null ? '–' : nTasks, label: t('Tasks') },
+        { value: items === null ? '–' : formatMad(rentCents), label: t('Rent due'), warn: rentCents > 0 && days.some(d => dayKey(d) < today) },
+      ]}
+    >
+      <div className="mt-4 flex items-center gap-1">
+        <button type="button" onClick={() => setStart(s => addDays(s, -7))} aria-label={t('Previous week')}
+          className="grid h-9 w-7 shrink-0 place-items-center rounded-full text-white/70 active:scale-90"><ChevronLeft className="h-5 w-5 rtl:rotate-180" /></button>
+        <div className="grid min-w-0 flex-1 grid-cols-7 gap-1">
+          {days.map(d => {
+            const key = dayKey(d);
+            const on = key === selKey;
+            const has = (byDay.get(key)?.length ?? 0) > 0;
+            return (
+              <button key={key} type="button" aria-pressed={on} onClick={() => setSel(key)}
+                className={`flex min-w-0 flex-col items-center gap-0.5 rounded-2xl px-0.5 py-2 transition active:scale-95 ${on ? 'bg-white text-night' : 'text-white/85'} ${key === today && !on ? 'ring-1 ring-brand-hi/70' : ''}`}>
+                <span className="max-w-full truncate text-[10px] font-semibold uppercase tracking-wide opacity-70">{dayLabel(d).weekday}</span>
+                <span className="tabular font-display text-base font-bold leading-none">{d.getDate()}</span>
+                <span className={`mt-0.5 h-1.5 w-1.5 rounded-full ${has ? (on ? 'bg-brand' : 'bg-brand-hi') : 'bg-transparent'}`} />
+              </button>
+            );
+          })}
+        </div>
+        <button type="button" onClick={() => setStart(s => addDays(s, 7))} aria-label={t('Next week')}
+          className="grid h-9 w-7 shrink-0 place-items-center rounded-full text-white/70 active:scale-90"><ChevronRight className="h-5 w-5 rtl:rotate-180" /></button>
+      </div>
+    </Hero>
+  );
+
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <>
+    {hero}
+    <PhoneSheet>
+    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+      <div className="flex flex-wrap items-center justify-between gap-3 max-lg:hidden">
         <div>
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Agenda')}</h1>
           <p className="text-sm text-muted">{weekLabel(start)} · {t('{n} items', { n: weekCount })}</p>
@@ -201,8 +267,9 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
         )}
       </div>
 
-      <div className="mt-5 flex items-center gap-2">
-        <div className="flex shrink-0 items-center gap-1">
+      <div className="mt-5 flex items-center gap-2 max-lg:mt-4">
+        <p className="min-w-0 truncate text-sm font-semibold text-muted lg:hidden">{big.weekday} {big.date}</p>
+        <div className="flex shrink-0 items-center gap-1 max-lg:hidden">
           <button type="button" onClick={() => setStart(s => addDays(s, -7))} aria-label={t('Previous week')}
             className="grid h-9 w-9 place-items-center rounded-full bg-surface ring-1 ring-line/10 hover:text-brand"><ChevronLeft className="h-4 w-4 rtl:rotate-180" /></button>
           <button type="button" onClick={() => setStart(weekStart(new Date()))}
@@ -236,15 +303,29 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
               <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('Viewings, tasks with a deadline, mandates and leases that end, and rent that is due appear here by themselves.')}</p>
             </Card>
           )}
-          <div className="mt-4 grid gap-3 lg:grid-cols-7">
+          <div className="mt-3 space-y-2 lg:hidden">
+            {selList.length === 0 ? (
+              <div className="rounded-3xl border border-dashed border-line/20 px-4 py-9 text-center">
+                <BarsMotif tone="light" className="mx-auto h-10 w-12" />
+                <p className="font-display mt-3 text-lg font-bold">{t('Nothing planned')}</p>
+                {canWrite && (
+                  <div className="mt-4 flex justify-center gap-2">
+                    <button type="button" onClick={() => setAdding({ kind: 'viewing', day: selKey })} className="rounded-xl bg-brand/10 px-3.5 py-2 text-sm font-semibold text-brand active:scale-95">{t('Viewing')}</button>
+                    <button type="button" onClick={() => setAdding({ kind: 'task', day: selKey })} className="rounded-xl bg-surface px-3.5 py-2 text-sm font-semibold ring-1 ring-line/10 active:scale-95">{t('Task')}</button>
+                  </div>
+                )}
+              </div>
+            ) : selList.map(line)}
+          </div>
+          <div className="mt-4 hidden gap-3 lg:grid lg:grid-cols-7">
             {days.map(d => {
               const key = dayKey(d);
               const list = byDay.get(key) ?? [];
               const { weekday, date } = dayLabel(d);
               const isToday = key === today;
               return (
-                <section key={key} className={`card rise flex min-h-[7rem] flex-col rounded-3xl p-3 ${isToday ? 'ring-2 ring-brand' : ''} ${list.length === 0 ? 'max-lg:min-h-0 max-lg:flex-row max-lg:items-center max-lg:justify-between max-lg:rounded-xl max-lg:border-0 max-lg:bg-transparent max-lg:px-1 max-lg:py-0.5 max-lg:shadow-none' : ''}`}>
-                  <div className={`flex items-center justify-between gap-1 px-1 ${list.length === 0 ? 'max-lg:mb-0 lg:mb-1.5' : 'mb-1.5'}`}>
+                <section key={key} className={`card rise flex min-h-[7rem] flex-col rounded-3xl p-3 ${isToday ? 'ring-2 ring-brand' : ''}`}>
+                  <div className="mb-1.5 flex items-center justify-between gap-1 px-1">
                     <p className="text-sm">
                       <span className={`font-bold capitalize ${isToday ? 'text-brand' : ''}`}>{weekday}</span>{' '}
                       <span className="tabular text-muted">{date}</span>
@@ -262,16 +343,16 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
                         className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-bold">{t('Task')}</button>
                     </div>
                   )}
-                  <div className={`flex flex-col gap-1.5 ${list.length === 0 ? 'max-lg:order-first max-lg:flex-1' : ''}`}>
+                  <div className="flex flex-col gap-1.5">
                     {list.length === 0
-                      ? <p className="px-1 text-xs text-muted/70 max-lg:text-end">{t('Nothing planned')}</p>
+                      ? <p className="px-1 text-xs text-muted/70">{t('Nothing planned')}</p>
                       : list.map(line)}
                   </div>
                 </section>
               );
             })}
           </div>
-          <p className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted">
+          <p className="mt-4 flex-wrap gap-x-4 gap-y-1 text-xs text-muted max-lg:hidden lg:flex">
             {(['viewing', 'task', 'rent', 'mandate', 'lease_end'] as const).map(k => (
               <span key={k} className="inline-flex items-center gap-1.5">
                 <span className={`grid h-5 w-5 place-items-center rounded-md ${TONE[k]}`}>{ICON[k]}</span>
@@ -317,5 +398,7 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
         <TaskForm orgId={office.id} userId={userId} defaultDue={adding.day} onClose={() => setAdding(null)} onSaved={() => { setAdding(null); load(); }} />
       )}
     </div>
+    </PhoneSheet>
+    </>
   );
 }

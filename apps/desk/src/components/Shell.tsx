@@ -120,7 +120,7 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
 
       <div className="flex min-w-0 flex-1 flex-col">
         {/* ---- Phone and tablet: slim header ---- */}
-        <header className="night sticky top-0 z-30 px-4 pb-2.5 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 lg:hidden">
+        <header className="night hdr-solid sticky top-0 z-30 px-4 pb-2.5 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 lg:hidden">
           <div className="flex items-center justify-between gap-3">
             <AmplifyLogo size="sm" className="hidden min-w-0 sm:flex" />
             {/* phone: the mark and the name of the screen you are on, like a native title bar */}
