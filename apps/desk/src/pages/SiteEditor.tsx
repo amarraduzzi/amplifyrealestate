@@ -10,6 +10,7 @@ import { LANGS, langLabel } from '../lib/showcase';
 import { friendly } from '../lib/errors';
 import { Btn, Card, Field, inputCls } from '../components/ui';
 import { WebsiteSettings } from '../components/WebsiteSettings';
+import { Hero, PhoneSheet } from '../components/Hero';
 import { AgentProfile } from '../components/AgentProfile';
 import { PublicProfile } from './PublicProfile';
 import { BlogTab, MapTab } from './SiteMapBlog';
@@ -25,6 +26,30 @@ const Msg = ({ error, saved }: { error: string | null; saved: boolean }) => (<>
   {error && <p className="rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
   {saved && <p className="rounded-xl bg-ok/10 px-3 py-2 text-sm font-semibold text-ok">{t('Saved. The preview is updated.')}</p>}
 </>);
+
+/** The public site in a phone frame, for phone and tablet. The site is drawn at 375 px wide and scaled to fit the frame; a tap opens it. */
+function PhonePreview({ src, title, open }: { src: string; title: string; open: string }) {
+  const box = useRef<HTMLDivElement>(null);
+  const [k, setK] = useState(0.9);
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const fit = () => setK(Math.max(0.5, el.clientWidth / 375));
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return (
+    <a href={src} target="_blank" rel="noreferrer" aria-label={open}
+      className="night mx-auto block w-full max-w-[22rem] rounded-[2.2rem] p-2 shadow-[0_18px_34px_-16px_rgb(0_30_62/.75)] ring-1 ring-white/10 transition active:scale-[.99]">
+      <div ref={box} className="relative w-full overflow-hidden rounded-[1.7rem] bg-white" style={{ height: 520 * k }}>
+        <iframe title={title} src={src} tabIndex={-1} loading="lazy" className="pointer-events-none absolute left-0 top-0 border-0 bg-white"
+          style={{ width: 375, height: 520, transform: `scale(${k})`, transformOrigin: 'top left' }} />
+      </div>
+    </a>
+  );
+}
 
 /** Amplify Vitrine: the office builds and keeps its own website, with a live preview next to it. */
 export function SiteEditor({ office, onSelfChanged }: { office: Office; onSelfChanged: () => void }) {
@@ -50,9 +75,26 @@ export function SiteEditor({ office, onSelfChanged }: { office: Office; onSelfCh
     { id: 'contact', label: isSolo(office) ? t('Your profile') : t('Contact') },
   ];
 
+  const host = (() => { try { return new URL(url).host; } catch { return ''; } })();
+  const demoCard = canManage && DEMO_SLUGS.includes(office.slug) ? <DemoImport office={office} /> : null;
+
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+    <>
+    <Hero
+      eyebrow="Amplify Vitrine"
+      title={t('My website')}
+      sub={host ? `${host}/${office.slug}` : undefined}
+      action={url ? <a href={url} target="_blank" rel="noreferrer" aria-label={t('Open my website')} title={t('Open my website')} className="grid h-11 w-11 place-items-center rounded-full bg-night-2 text-white ring-1 ring-white/20 transition active:scale-90"><ExternalLink className="h-5 w-5" /></a> : undefined}
+    />
+    <PhoneSheet>
+    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+      {url && (
+        <div className="mb-6 lg:hidden">
+          <PhonePreview key={tick} src={`${url}&preview=${tick}`} title={t('Preview')} open={t('Open my website')} />
+          <p className="mt-2 text-center text-xs text-muted">{t('The preview shows what is saved. Save to see a change.')}</p>
+        </div>
+      )}
+      <div className="flex flex-wrap items-end justify-between gap-3 max-lg:hidden">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-brand">Amplify Vitrine</p>
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('My website')}</h1>
@@ -61,7 +103,7 @@ export function SiteEditor({ office, onSelfChanged }: { office: Office; onSelfCh
         {url && <a href={url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-bg"><ExternalLink className="h-4 w-4" /> {t('Open my website')}</a>}
       </div>
       {!canManage && <p className="mt-4 rounded-xl bg-warn/10 px-3 py-2 text-sm font-semibold text-warn">{t('Only owners and managers can change the website.')}</p>}
-      {canManage && DEMO_SLUGS.includes(office.slug) && <DemoImport office={office} />}
+      {demoCard && <div className="max-lg:hidden">{demoCard}</div>}
 
       <div className="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-start">
         <div className="min-w-0">
@@ -104,7 +146,10 @@ export function SiteEditor({ office, onSelfChanged }: { office: Office; onSelfCh
           </div>
         )}
       </div>
+      {demoCard && <div className="lg:hidden">{demoCard}</div>}
     </div>
+    </PhoneSheet>
+    </>
   );
 }
 

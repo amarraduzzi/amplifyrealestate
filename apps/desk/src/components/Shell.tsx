@@ -100,7 +100,7 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
   const bottom = solo ? BOTTOM_SOLO : BOTTOM;
   const all = gs.flatMap(g => g.items);
   const settings: Item = { id: 'settings', label: t('Settings'), icon: <Settings className="h-[18px] w-[18px] shrink-0" /> };
-  const ownTitle = active !== 'today' && active !== 'website';
+  const ownTitle = active !== 'today';
   const title = (all.find(x => x.id === active) ?? (active === 'settings' ? settings : undefined))?.label ?? '';
   const go = (v: View) => { setMore(false); onView(v); window.scrollTo(0, 0); };
 
