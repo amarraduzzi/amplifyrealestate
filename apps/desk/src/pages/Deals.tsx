@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Download, Handshake, Plus, Search } from 'lucide-react';
 import type { DealStage } from '@vastgoed/shared';
 import { formatMad } from '@vastgoed/shared';
@@ -134,11 +134,11 @@ export function Deals({ office }: { office: Office }) {
             ? <p className="mt-10 text-center text-muted">{t('Nothing matches.')}</p>
             : (
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                {shown.map(({ d, person, property, splits }) => (
+                {shown.map(({ d, person, property, splits }, i) => (
                   <li key={d.id} role="button" tabIndex={0} aria-label={person?.full_name ?? ''}
                     onClick={() => setOpenId(d.id)}
                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(d.id); } }}
-                    className="card rise cursor-pointer rounded-2xl p-4 outline-none transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
+                    style={{ '--i': i } as CSSProperties} className="card rise cursor-pointer rounded-2xl p-4 outline-none transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
                     <div className="flex items-start justify-between gap-3">
                       <p className="font-display tabular text-base font-bold">{formatMad(d.price_cents)} <span className="text-sm font-semibold text-muted">{property ? priceSuffix(property.purpose) : ''}</span></p>
                       <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${dealStageCls[d.stage]}`}>{dealStageLabel(d.stage)}</span>

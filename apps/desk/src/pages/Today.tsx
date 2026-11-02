@@ -235,7 +235,7 @@ export function Today({ office, userId, onGo }: { office: Office; userId: string
       {quiet && <Card className="mt-6 text-center"><p className="font-display text-xl font-bold">{t('All clear')}</p><p className="mt-1 text-sm text-muted">{t('No tasks due, no viewings this week, nobody waiting for a call.')}</p></Card>}
 
       {!loading && (
-        <div className="mt-6 space-y-8">
+        <div className="stagger mt-6 space-y-8">
           <NewMatches office={office} onGo={onGo} onCount={setMatchCount} />
           <StaleAds office={office} onGo={onGo} onCount={setAdCount} />
           <WeakAds office={office} onGo={onGo} />

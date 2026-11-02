@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react';
 import { Download, KeyRound, Plus, Search } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { t } from '../lib/i18n';
@@ -145,13 +145,13 @@ export function Leases({ office }: { office: Office }) {
             ? <p className="mt-10 text-center text-muted">{t('Nothing matches.')}</p>
             : (
               <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-                {shown.map(({ l, person, property }) => {
+                {shown.map(({ l, person, property }, i) => {
                   const left = l.status === 'active' && l.end_date ? daysTo(l.end_date) : null;
                   return (
                     <li key={l.id} role="button" tabIndex={0} aria-label={person?.full_name ?? ''}
                       onClick={() => setOpenId(l.id)}
                       onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(l.id); } }}
-                      className="card rise cursor-pointer rounded-2xl p-4 outline-none transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
+                      style={{ '--i': i } as CSSProperties} className="card rise cursor-pointer rounded-2xl p-4 outline-none transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
                       <div className="flex items-start justify-between gap-3">
                         <p className="font-display tabular text-base font-bold">{formatMad(l.rent_cents)} <span className="text-sm font-semibold text-muted">{t('/ month')}</span></p>
                         <span className="flex shrink-0 flex-wrap justify-end gap-1.5">
