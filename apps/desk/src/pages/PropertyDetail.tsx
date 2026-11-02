@@ -124,10 +124,12 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
 
   return (
     <Modal title={<span className="block truncate">{row.title}</span>} onClose={onClose}
+      sub={`${formatMad(row.price_cents)}${priceSuffix(row.purpose) ? ` ${priceSuffix(row.purpose)}` : ''} · ${statusLabel(row.status)}`}
+      action={canShare ? <button type="button" onClick={share} aria-label={t('Share')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90"><Share2 className="h-5 w-5" /></button> : undefined}
       footer={<div className="flex justify-end gap-2">
         {office.edition !== 'agent' && <Btn onClick={() => setReport(true)}><FileText className="h-4 w-4" /> {t('Owner report')}</Btn>}
         {canWrite && <Btn onClick={() => setEditing(true)}><Pencil className="h-4 w-4" /> {t('Edit')}</Btn>}
-        <Btn tone="brand" onClick={onClose}>{t('Close')}</Btn>
+        <Btn tone="brand" className="max-sm:hidden" onClick={onClose}>{t('Close')}</Btn>
       </div>}>
       <div className="space-y-5">
         <div className="relative -mx-4 -mt-4 aspect-[16/9] overflow-hidden bg-surface-2 sm:-mx-6 sm:-mt-5">
@@ -137,7 +139,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-night/40 to-transparent" />
           {canShare && (
             <button type="button" onClick={share} aria-label={t('Share')} title={t('Share')}
-              className="absolute end-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-ink shadow-sm backdrop-blur transition active:scale-90 hover:bg-white"><Share2 className="h-4 w-4" /></button>
+              className="max-sm:hidden absolute end-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white/90 text-ink shadow-sm backdrop-blur transition active:scale-90 hover:bg-white"><Share2 className="h-4 w-4" /></button>
           )}
         </div>
 

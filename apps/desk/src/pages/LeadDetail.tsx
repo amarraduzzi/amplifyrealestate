@@ -8,7 +8,7 @@ import { LEAD_STATUSES, leadStatusCls, leadStatusLabel, purposeLabel, sourceLabe
 import type { MatchProp } from '../lib/matching';
 import { Btn, Modal } from '../components/ui';
 import { ContactLinks } from '../components/ContactLinks';
-import { QuickBar } from '../components/QuickActions';
+import { QuickBar, QuickIcons } from '../components/QuickActions';
 import { SendMatches } from '../components/SendMatches';
 import { ContactAge } from '../components/ContactAge';
 import { budgetText, criteriaText } from '../components/leadText';
@@ -48,9 +48,11 @@ export function LeadDetail({ office, userId, lead, person, matches, onChanged, o
 
   return (
     <Modal title={<span className="block truncate">{person?.full_name ?? '…'}</span>} onClose={onClose}
+      sub={`${leadStatusLabel(lead.status)} · ${budgetText(lead)}`}
+      action={person ? <QuickIcons c={person} /> : undefined}
       footer={<div className="flex justify-end gap-2">
         {canWrite && <Btn onClick={() => setEditing(true)}><Pencil className="h-4 w-4" /> {t('Edit')}</Btn>}
-        <Btn tone="brand" onClick={onClose}>{t('Close')}</Btn>
+        <Btn tone="brand" className="max-sm:hidden" onClick={onClose}>{t('Close')}</Btn>
       </div>}>
       <div className="space-y-5">
         <div>
@@ -60,7 +62,7 @@ export function LeadDetail({ office, userId, lead, person, matches, onChanged, o
             {lead.source && <span className="rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">{t('Via {source}', { source: sourceLabel(lead.source) })}</span>}
           </div>
           {person && <div className="mt-3"><ContactLinks c={person} /></div>}
-          {person && <QuickBar c={person} />}
+          {person && <div className="max-sm:hidden"><QuickBar c={person} /></div>}
         </div>
 
         <div>
