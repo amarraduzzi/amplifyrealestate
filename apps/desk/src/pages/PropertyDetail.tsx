@@ -17,6 +17,7 @@ import { VoucherSection } from './VoucherSection';
 import { PostingSection } from './PostingSection';
 import { AdQuality } from '../components/AdQuality';
 import { PropertyStats } from '../components/PropertyStats';
+import { VitrineCard } from '../components/VitrineCard';
 import { OwnerPortalSection } from '../components/OwnerPortalSection';
 import { ManagementSection } from '../components/ManagementSection';
 import { NetworkShare } from '../components/NetworkShare';
@@ -168,6 +169,7 @@ export function PropertyDetail({ office, userId, row, onChanged, onClose }: {
         <PublishSection office={office} property={row} canWrite={canWrite} onChanged={() => { onChanged(); loadHistory(); }} />
         <PropertyStats office={office} property={row} />
         <PostingSection office={office} property={row} canWrite={canWrite} />
+        <VitrineCard office={office} property={row} />
         <NetworkShare office={office} property={row} canWrite={canWrite} />
         <VoucherSection office={office} property={row} canWrite={canWrite} />
         <PropertyLeads office={office} property={row} />

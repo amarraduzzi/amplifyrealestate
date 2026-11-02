@@ -28,6 +28,14 @@ export const FR4: Record<string, string> = {
   '{n} ({d} fewer than last week)': '{n} ({d} de moins que la semaine dernière)',
   'Send weekly update to the owner': 'Envoyer le point de la semaine au propriétaire',
   'Opens WhatsApp with this week’s numbers, ready to send to the owner. Every Monday is a good moment.': 'Ouvre WhatsApp avec les chiffres de la semaine, prêt à envoyer au propriétaire. Le lundi est un bon moment.',
+  'Window card (A4 / A3)': 'Affiche de vitrine (A4 / A3)',
+  'A poster for your shop window with the photo, price, key facts and a QR code to the public page.': 'Une affiche pour votre vitrine avec la photo, le prix, les infos clés et un QR code vers la page publique.',
+  'Language of the card': 'Langue de l’affiche',
+  'Paper size': 'Format du papier',
+  'Print window card': 'Imprimer l’affiche',
+  'Put the public page online first: the QR code leads to it.': 'Mettez d’abord la page publique en ligne : le QR code y mène.',
+  'Allow pop-ups to print the card.': 'Autorisez les fenêtres pop-up pour imprimer l’affiche.',
+  'The card opens in a new window. Choose "Save as PDF" or your printer.': 'L’affiche s’ouvre dans une nouvelle fenêtre. Choisissez « Enregistrer en PDF » ou votre imprimante.',
 };
 export const AR4: Record<string, string> = {
   'Gated residence': 'إقامة مغلقة', 'Guard 24/7': 'حارس 24/24', 'Elevator': 'مصعد', 'Parking': 'موقف سيارات',
@@ -58,4 +66,12 @@ export const AR4: Record<string, string> = {
   '{n} ({d} fewer than last week)': '{n} (أقل بـ {d} من الأسبوع الماضي)',
   'Send weekly update to the owner': 'إرسال مستجدات الأسبوع إلى المالك',
   'Opens WhatsApp with this week’s numbers, ready to send to the owner. Every Monday is a good moment.': 'يفتح واتساب بأرقام هذا الأسبوع جاهزة للإرسال إلى المالك. يوم الاثنين وقت مناسب.',
+  'Window card (A4 / A3)': 'ملصق الواجهة (A4 / A3)',
+  'A poster for your shop window with the photo, price, key facts and a QR code to the public page.': 'ملصق لواجهة مكتبك مع الصورة والثمن وأهم المعلومات ورمز QR نحو الصفحة العمومية.',
+  'Language of the card': 'لغة الملصق',
+  'Paper size': 'حجم الورق',
+  'Print window card': 'طباعة الملصق',
+  'Put the public page online first: the QR code leads to it.': 'انشر الصفحة العمومية أولا: رمز QR يقود إليها.',
+  'Allow pop-ups to print the card.': 'اسمح بالنوافذ المنبثقة لطباعة الملصق.',
+  'The card opens in a new window. Choose "Save as PDF" or your printer.': 'يفتح الملصق في نافذة جديدة. اختر «حفظ بصيغة PDF» أو الطابعة.',
 };
