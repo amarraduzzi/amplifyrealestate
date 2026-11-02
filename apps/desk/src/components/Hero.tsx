@@ -8,7 +8,7 @@ const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 export function madShort(cents: number | null | undefined) {
   if (cents === null || cents === undefined) return '-';
   const dh = Math.abs(cents) / 100;
-  if (dh < 10_000) return formatMad(cents);
+  if (dh < 1_000) return formatMad(cents);
   const nf = new Intl.NumberFormat(LOCALES[getLang()], { maximumFractionDigits: 1 });
   const sign = cents < 0 ? '-' : '';
   return dh >= 1_000_000 ? `${sign}${nf.format(dh / 1_000_000)} M DH` : `${sign}${nf.format(dh / 1000)} k DH`;

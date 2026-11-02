@@ -40,7 +40,7 @@ const BAR: Record<AgendaItem['kind'], string> = {
 /** The week at a glance: viewings, deadlines, mandates and leases that end, and rent that is due. */
 function AgendaTabs({ tab, onTab, onDark = false }: { tab: 'week' | 'tasks'; onTab: (t: 'week' | 'tasks') => void; onDark?: boolean }) {
   return (
-    <div className={`inline-flex rounded-full p-1 ${onDark ? 'bg-white/10 ring-1 ring-white/10' : 'mt-3 bg-surface ring-1 ring-line/10'}`} role="tablist">
+    <div className={`inline-flex rounded-full p-1 ${onDark ? 'bg-night-2 ring-1 ring-white/20' : 'mt-3 bg-surface ring-1 ring-line/10'}`} role="tablist">
       {(['week', 'tasks'] as const).map(x => (
         <button key={x} type="button" role="tab" aria-selected={tab === x} onClick={() => onTab(x)}
           className={`rounded-full px-4 py-1.5 text-sm font-semibold transition ${onDark ? (tab === x ? 'bg-white text-night' : 'text-white/70') : (tab === x ? 'bg-ink text-bg' : 'text-muted hover:text-ink')}`}>

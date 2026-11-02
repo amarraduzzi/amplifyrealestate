@@ -81,6 +81,7 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
   const bottom = solo ? BOTTOM_SOLO : BOTTOM;
   const all = gs.flatMap(g => g.items);
   const settings: Item = { id: 'settings', label: t('Settings'), icon: <Settings className="h-[18px] w-[18px] shrink-0" /> };
+  const ownTitle = active !== 'today' && active !== 'website';
   const title = (all.find(x => x.id === active) ?? (active === 'settings' ? settings : undefined))?.label ?? '';
   const go = (v: View) => { setMore(false); onView(v); window.scrollTo(0, 0); };
 
@@ -145,9 +146,12 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
           <div className="flex items-center justify-between gap-3">
             <AmplifyLogo size="sm" className="hidden min-w-0 sm:flex" />
             {/* phone: the mark and the name of the screen you are on, like a native title bar */}
+            {/* screens with their own big title in the hero show only the logo here, so the title is not there twice */}
             <div className="flex min-w-0 items-center gap-2.5 sm:hidden">
               <AmplifyMark className="h-6 w-9 shrink-0" />
-              <h1 className="font-display min-w-0 truncate text-[1.05rem] font-bold text-white">{title}</h1>
+              {ownTitle
+                ? <><span className="font-display text-[1.05rem] font-bold text-white">Amplify</span><h1 className="sr-only">{title}</h1></>
+                : <h1 className="font-display min-w-0 truncate text-[1.05rem] font-bold text-white">{title}</h1>}
             </div>
             <div className="flex min-w-0 items-center justify-end gap-2">
               {/* the office picker only when there is a choice; language lives in Settings on a phone */}
