@@ -3,6 +3,7 @@ import { ChevronRight } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
+import { Hero, PhoneSheet } from '../components/Hero';
 import type { LeadSource, Office } from '../lib/types';
 import { SOURCES, sourceLabel, STATUSES, VIEWING_OUTCOMES, LEAD_STATUSES, leadStatusCls, leadStatusLabel, outcomeCls, outcomeLabel, statusCls, statusLabel } from '../lib/labels';
 import { computeOverview, type MandateAlert, type OverviewInput } from '../lib/overview';
@@ -119,9 +120,14 @@ export function Overview({ office, onGo }: { office: Office; onGo: (v: View) => 
   const allGood = !!m && m.expired.length === 0 && m.missing.length === 0 && m.expiring.length === 0;
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
-      <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Overview')}</h1>
-      <p className="text-sm text-muted">{t('Figures for your office: properties, leads, viewings and mandates.')}</p>
+    <>
+    <Hero
+      title={t('Overview')}
+    />
+    <PhoneSheet>
+    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+      <h1 className="font-display text-2xl font-bold max-lg:hidden sm:text-3xl">{t('Overview')}</h1>
+      <p className="text-sm text-muted max-lg:hidden">{t('Figures for your office: properties, leads, viewings and mandates.')}</p>
 
       {error && (
         <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">
@@ -200,5 +206,7 @@ export function Overview({ office, onGo }: { office: Office; onGo: (v: View) => 
         </div>
       )}
     </div>
+    </PhoneSheet>
+    </>
   );
 }

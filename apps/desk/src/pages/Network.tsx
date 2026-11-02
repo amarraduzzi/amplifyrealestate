@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Handshake, MessageCircle, Network as NetworkIcon, Send } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { t } from '../lib/i18n';
+import { Hero, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import { loadNetwork, loadWork, networkCall, networkError, type Collab, type NetProperty, type Partner, type Referral } from '../lib/network';
 import { CollabsTab, ProposeCollab, ReferralForm, ReferralsTab } from './NetworkWork';
@@ -48,8 +49,13 @@ export function Network({ office }: { office: Office }) {
   };
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-      <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Network')}</h1>
+    <>
+    <Hero
+      title={t('Network')}
+    />
+    <PhoneSheet>
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+      <h1 className="font-display text-2xl font-bold max-lg:hidden sm:text-3xl">{t('Network')}</h1>
       {error && <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
       {info && <p className="mt-4 rounded-xl bg-ok/10 px-3 py-2 text-sm font-semibold text-ok">{info}</p>}
       {(() => {
@@ -129,7 +135,7 @@ export function Network({ office }: { office: Office }) {
             <p className="font-display text-lg font-bold">{p.title}</p>
             <p className="text-xs text-muted">{[p.reference, typeLabel(p.property_type), purposeLabel(p.purpose)].join(' · ')}</p>
             <p className="mt-1 text-lg font-bold">{p.price_cents !== null ? formatMad(p.price_cents) : '–'}</p>
-            <p className="text-sm text-muted">{[[p.neighborhood, p.city].filter(Boolean).join(', '), p.bedrooms !== null ? `${p.bedrooms} ${t('Bedrooms')}` : null, p.bathrooms !== null ? `${p.bathrooms} ${t('Bathrooms')}` : null, p.area_m2 !== null ? `${Number(p.area_m2)} m²` : null].filter(Boolean).join(' · ')}</p>
+            <p className="text-sm text-muted max-lg:hidden">{[[p.neighborhood, p.city].filter(Boolean).join(', '), p.bedrooms !== null ? `${p.bedrooms} ${t('Bedrooms')}` : null, p.bathrooms !== null ? `${p.bathrooms} ${t('Bathrooms')}` : null, p.area_m2 !== null ? `${Number(p.area_m2)} m²` : null].filter(Boolean).join(' · ')}</p>
             {p.description && <p className="mt-2 line-clamp-3 text-sm">{p.description}</p>}
             {p.commission_pct !== null && <p className="mt-2 text-sm font-semibold text-brand">{t('Commission offered to you')}: {t('{n}% of their commission', { n: Number(p.commission_pct) })}</p>}
             {p.note && <p className="mt-1 text-sm text-muted">{p.note}</p>}
@@ -142,5 +148,7 @@ export function Network({ office }: { office: Office }) {
       </ul>
       </>}
     </div>
+    </PhoneSheet>
+    </>
   );
 }

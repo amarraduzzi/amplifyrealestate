@@ -3,6 +3,7 @@ import { BedDouble, CalendarPlus, Check, ChevronLeft, ChevronRight, Link2 } from
 import { formatMad } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { getLang, t } from '../lib/i18n';
+import { Hero, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import { channelCls, channelName, iso, loadStayProps, loadStays, nights, type Stay, type StayProp } from '../lib/stays';
 import { PUBLIC_SITE } from '../lib/publicSite';
@@ -68,8 +69,16 @@ export function Stays({ office }: { office: Office }) {
   };
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <>
+    <Hero
+      title={t('Short stays')}
+      action={(<div className="flex items-center gap-2">
+        {canWrite && props && props.length > 0 && <button type="button" onClick={() => setForm({})} aria-label={t('New booking')} title={t('New booking')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><CalendarPlus className="h-5 w-5" /></button>}
+      </div>)}
+    />
+    <PhoneSheet>
+    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+      <div className="flex flex-wrap items-center justify-between gap-3 max-lg:hidden">
         <div>
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Short stays')}</h1>
           <p className="text-sm text-muted">{t('Bookings, occupancy and revenue of your short-term rentals.')}</p>
@@ -156,5 +165,7 @@ export function Stays({ office }: { office: Office }) {
           onClose={() => setForm(null)} onSaved={() => { setForm(null); load(); }} />
       )}
     </div>
+    </PhoneSheet>
+    </>
   );
 }

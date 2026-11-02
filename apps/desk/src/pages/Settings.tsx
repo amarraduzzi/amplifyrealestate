@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { t } from '../lib/i18n';
+import { Hero, PhoneSheet } from '../components/Hero';
 import { isSolo, type Office } from '../lib/types';
 import { canSeeOverview } from '../components/Shell';
 import { Team } from './Team';
@@ -29,9 +30,15 @@ export function Settings({ office, userId, onSelfChanged, initialTab = 'team' }:
   const [tab, setTab] = useState<SettingsTab>(tabs.some(x => x.id === initialTab) ? initialTab : tabs[0].id);
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
-      <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Settings')}</h1>
-      <p className="text-sm text-muted">{office.name}</p>
+    <>
+    <Hero
+      title={t('Settings')}
+      sub={office.name}
+    />
+    <PhoneSheet>
+    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+      <h1 className="font-display text-2xl font-bold max-lg:hidden sm:text-3xl">{t('Settings')}</h1>
+      <p className="text-sm text-muted max-lg:hidden">{office.name}</p>
       <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-surface px-4 py-3 ring-1 ring-line/10">
         <span className="text-sm font-semibold">{t('Language')}</span>
         <div className="rounded-full bg-surface-2 p-0.5"><LangSwitch light /></div>
@@ -56,5 +63,7 @@ export function Settings({ office, userId, onSelfChanged, initialTab = 'team' }:
         {tab === 'plan' && <Plan office={office} embedded onEditionChanged={onSelfChanged} />}
       </div>
     </div>
+    </PhoneSheet>
+    </>
   );
 }

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FilePlus2, Receipt, Search } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { getLang, t } from '../lib/i18n';
+import { Hero, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import { loadInvoices, type InvoiceRow, type InvoiceStatus } from '../lib/invoices';
 import { Btn, Card, inputCls } from '../components/ui';
@@ -45,8 +46,16 @@ export function Invoices({ office }: { office: Office }) {
   const opened = rows?.find(r => r.id === openId);
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <>
+    <Hero
+      title={t('Invoices')}
+      action={(<div className="flex items-center gap-2">
+        {canWrite && rows !== null && <button type="button" onClick={() => setAdding(true)} aria-label={t('New invoice')} title={t('New invoice')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><FilePlus2 className="h-5 w-5" /></button>}
+      </div>)}
+    />
+    <PhoneSheet>
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+      <div className="flex flex-wrap items-center justify-between gap-3 max-lg:hidden">
         <div>
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Invoices')}</h1>
           <p className="text-sm text-muted">{t('Invoices and fee notes for your commission.')}</p>
@@ -108,5 +117,7 @@ export function Invoices({ office }: { office: Office }) {
       {adding && <InvoiceForm office={office} onClose={() => setAdding(false)} onCreated={id => { setAdding(false); load().then(() => setOpenId(id)); }} />}
       {opened && <InvoiceDoc office={office} invoice={opened} onClose={() => setOpenId(null)} onChanged={load} />}
     </div>
+    </PhoneSheet>
+    </>
   );
 }

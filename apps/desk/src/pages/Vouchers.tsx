@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ExternalLink, FileSignature, MessageCircle, Plus } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { getLang, t } from '../lib/i18n';
+import { Hero, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import { loadVouchers, voucherUrl, voucherWhatsapp, type Voucher } from '../lib/vouchers';
 import { PUBLIC_SITE } from '../lib/publicSite';
@@ -32,8 +33,16 @@ export function Vouchers({ office }: { office: Office }) {
   const when = (iso: string) => new Intl.DateTimeFormat(LOCALES[getLang()], { dateStyle: 'medium', timeStyle: 'short' }).format(new Date(iso));
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="flex flex-wrap items-end justify-between gap-3">
+    <>
+    <Hero
+      title={t('Visit vouchers')}
+      action={(<div className="flex items-center gap-2">
+        {canWrite && <button type="button" onClick={() => setOpen(true)} aria-label={t('New voucher')} title={t('New voucher')} disabled={props.length === 0} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90 disabled:opacity-40"><Plus className="h-5 w-5" /></button>}
+      </div>)}
+    />
+    <PhoneSheet>
+    <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+      <div className="flex flex-wrap items-end justify-between gap-3 max-lg:hidden">
         <div>
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Visit vouchers')}</h1>
           <p className="text-sm text-muted">{t('The visitor signs on your phone that he saw the property through you. If the deal is made without you, you have the proof.')}</p>
@@ -73,5 +82,7 @@ export function Vouchers({ office }: { office: Office }) {
       )}
       {open && <VoucherForm office={office} properties={props} onClose={() => setOpen(false)} onSaved={load} />}
     </div>
+    </PhoneSheet>
+    </>
   );
 }
