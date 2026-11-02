@@ -30,7 +30,9 @@ export function BarsMotif({ className = '', tone = 'dark' }: { className?: strin
     <svg viewBox="0 0 84 76" className={className} aria-hidden="true">
       {heights.map((h, i) => (
         <rect key={i} x={i * 17} y={76 - h} width="11" height={h} rx="3"
-          fill={i === heights.length - 1 ? '#05B962' : tone === 'dark' ? '#FFFFFF' : '#001E3E'}
+          // on a light surface the bars follow the text color, so they also show in dark mode
+          fill={i === heights.length - 1 ? '#05B962' : tone === 'dark' ? '#FFFFFF' : undefined}
+          style={i === heights.length - 1 || tone === 'dark' ? undefined : { fill: 'rgb(var(--ink))' }}
           opacity={i === heights.length - 1 ? 0.9 : tone === 'dark' ? 0.1 + i * 0.03 : 0.08 + i * 0.03} />
       ))}
     </svg>
