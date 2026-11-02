@@ -16,7 +16,10 @@ export const FR6: Record<string, string> = {
   'Next viewing': 'Prochaine visite',
   'Call {name}': 'Appeler {name}',
   '{n} days without contact': '{n} jours sans contact',
+  'Unsaved changes': 'Modifications non enregistrées',
+  'You have unsaved changes. Leave without saving?': 'Vous avez des modifications non enregistrées. Quitter sans enregistrer ?',
 };
+
 export const AR6: Record<string, string> = {
   'Add': 'إضافة',
   'Quick add': 'إضافة سريعة',
@@ -34,4 +37,6 @@ export const AR6: Record<string, string> = {
   'Next viewing': 'المعاينة القادمة',
   'Call {name}': 'اتصل بـ {name}',
   '{n} days without contact': '{n} أيام بدون اتصال',
+  'Unsaved changes': 'تغييرات غير محفوظة',
+  'You have unsaved changes. Leave without saving?': 'لديك تغييرات غير محفوظة. هل تريد المغادرة دون حفظ؟',
 };

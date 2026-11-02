@@ -2,6 +2,7 @@ import { Fragment, useCallback, useEffect, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from './lib/supabase';
 import { t } from './lib/i18n';
+import { confirmLeave } from './lib/leaveGuard';
 import type { Office } from './lib/types';
 import { AmplifyMark } from './components/Brand';
 import { Shell, canSeeOverview, type QuickKind, type View } from './components/Shell';
@@ -42,7 +43,8 @@ function Splash() {
 function Workspace({ session }: { session: Session }) {
   const [offices, setOffices] = useState<Office[] | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [view, setView] = useState<View>('today');
+  const [view, setViewRaw] = useState<View>('today');
+  const setView = (v: View) => { if (v !== view && !confirmLeave()) return; setViewRaw(v); };
   const [quick, setQuick] = useState<QuickKind | null>(null);
   const [rev, setRev] = useState(0);   // bump to load the open screen again (pull to refresh, after a quick add)
   const [plan, setPlan] = useState<{ orgId: string; info: PlanInfo | null } | null>(null);

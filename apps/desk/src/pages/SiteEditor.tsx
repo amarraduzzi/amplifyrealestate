@@ -15,7 +15,10 @@ import { AgentProfile } from '../components/AgentProfile';
 import { PublicProfile } from './PublicProfile';
 import { BlogTab, MapTab } from './SiteMapBlog';
 import { DEMO_SLUGS, DemoImport } from '../components/DemoImport';
+import { setUnsaved } from '../lib/leaveGuard';
 
+type FormTab = 'style' | 'home' | 'blocks';
+type Report = (id: FormTab, dirty: boolean, save: () => Promise<boolean>) => void;
 type Tab = 'style' | 'home' | 'blocks' | 'team' | 'reviews' | 'map' | 'blog' | 'texts' | 'contact';
 type Site = { site_theme: Theme; site_color: string | null; site_logo: string | null; site_hero: string | null; site_hero_title: string | null; site_hero_sub: string | null; site_blocks: Block[]; site_featured: string | null };
 type Member = { id: string; name: string; role: string | null; photo: string | null; whatsapp: string | null; langs: string[]; sort: number };
@@ -58,7 +61,32 @@ export function SiteEditor({ office, onSelfChanged }: { office: Office; onSelfCh
   const [site, setSite] = useState<Site | null | undefined>(undefined);
   const [tick, setTick] = useState(0);
   const [device, setDevice] = useState<'phone' | 'desktop'>('phone');
-  const refresh = () => setTick(x => x + 1);
+  const refresh = useCallback(() => setTick(x => x + 1), []);
+  const patch = useCallback((p: Partial<Site>) => setSite(prev => (prev ? { ...prev, ...p } : prev)), []);
+  // the three tabs with a form stay mounted, so a change is not lost when you switch tab; one bar saves them all
+  const saves = useRef<Partial<Record<FormTab, () => Promise<boolean>>>>({});
+  const [dirty, setDirty] = useState<Partial<Record<FormTab, boolean>>>({});
+  const [saving, setSaving] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
+  const report = useCallback<Report>((id, d, save) => { saves.current[id] = save; setDirty(p => (p[id] === d ? p : { ...p, [id]: d })); }, []);
+  const dirtyIds = (['style', 'home', 'blocks'] as FormTab[]).filter(id => dirty[id]);
+  const isDirty = dirtyIds.length > 0;
+  useEffect(() => {
+    setUnsaved(isDirty);
+    if (!isDirty) return;
+    const warn = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [isDirty]);
+  useEffect(() => () => setUnsaved(false), []);
+  const saveAll = async () => {
+    setSaving(true);
+    for (const id of dirtyIds) {
+      const ok = await saves.current[id]?.();
+      if (ok === false) { setTab(id); break; } // the tab shows its own error
+    }
+    setSaving(false);
+  };
 
   useEffect(() => {
     supabase.from('organizations').select(COLS).eq('id', office.id).maybeSingle().then(({ data, error }) => {
@@ -110,15 +138,15 @@ export function SiteEditor({ office, onSelfChanged }: { office: Office; onSelfCh
           <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0 [&::-webkit-scrollbar]:hidden" role="tablist">
             {tabs.map(x => (
               <button key={x.id} type="button" role="tab" aria-selected={tab === x.id} onClick={() => setTab(x.id)}
-                className={`shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${tab === x.id ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>{x.label}</button>
+                className={`relative shrink-0 whitespace-nowrap rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${tab === x.id ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>{x.label}{dirty[x.id as FormTab] && <span className="absolute -end-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-warn ring-2 ring-bg" />}</button>
             ))}
           </div>
           <div className="mt-4">
             {site === undefined && <p className="py-10 text-center text-muted">…</p>}
             {site === null && <Card><p className="text-sm text-muted">{t('The website settings could not be loaded. Run the latest SQL update first.')}</p></Card>}
-            {site && tab === 'style' && <StyleTab office={office} site={site} setSite={setSite} canManage={canManage} onSaved={refresh} />}
-            {site && tab === 'home' && <HomeTab office={office} site={site} setSite={setSite} canManage={canManage} onSaved={refresh} />}
-            {site && tab === 'blocks' && <BlocksTab office={office} site={site} setSite={setSite} canManage={canManage} onSaved={refresh} />}
+            {site && <div hidden={tab !== 'style'}><StyleTab key={`s${resetKey}`} office={office} site={site} setSite={patch} canManage={canManage} onSaved={refresh} report={report} /></div>}
+            {site && <div hidden={tab !== 'home'}><HomeTab key={`h${resetKey}`} office={office} site={site} setSite={patch} canManage={canManage} onSaved={refresh} report={report} /></div>}
+            {site && <div hidden={tab !== 'blocks'}><BlocksTab key={`b${resetKey}`} office={office} site={site} setSite={patch} canManage={canManage} onSaved={refresh} report={report} /></div>}
             {tab === 'team' && <TeamTab office={office} canManage={canManage} onSaved={refresh} />}
             {tab === 'reviews' && <ReviewsTab office={office} canManage={canManage} onSaved={refresh} />}
             {tab === 'map' && <MapTab office={office} canManage={canManage} onSaved={refresh} />}
@@ -126,6 +154,14 @@ export function SiteEditor({ office, onSelfChanged }: { office: Office; onSelfCh
             {tab === 'texts' && <div className="-mt-6"><WebsiteSettings office={office} canManage={canManage} /></div>}
             {tab === 'contact' && <div className="-mt-6"><PublicProfile office={office} canManage={canManage} onSlugChanged={onSelfChanged} /><AgentProfile office={office} canManage={canManage} /></div>}
           </div>
+          {isDirty && canManage && (
+            <div className="rise lift night sticky z-20 mt-4 flex items-center gap-2 rounded-2xl p-2 ps-4 text-white ring-1 ring-white/10 max-lg:bottom-[calc(4.75rem+env(safe-area-inset-bottom))] lg:bottom-4" role="status">
+              <span className="h-2 w-2 shrink-0 rounded-full bg-warn" />
+              <p className="min-w-0 flex-1 truncate text-sm font-semibold">{t('Unsaved changes')}</p>
+              <button type="button" disabled={saving} onClick={() => setResetKey(k => k + 1)} className="rounded-xl px-3 py-2 text-sm font-semibold text-white/75 transition active:scale-95 disabled:opacity-50">{t('Cancel')}</button>
+              <button type="button" disabled={saving} onClick={saveAll} className="rounded-xl bg-brand px-4 py-2 text-sm font-bold text-white transition active:scale-95 disabled:opacity-60">{saving ? '…' : t('Save changes')}</button>
+            </div>
+          )}
         </div>
 
         {url && (
@@ -153,7 +189,7 @@ export function SiteEditor({ office, onSelfChanged }: { office: Office; onSelfCh
   );
 }
 
-type TabProps = { office: Office; site: Site; setSite: (s: Site) => void; canManage: boolean; onSaved: () => void };
+type TabProps = { office: Office; site: Site; setSite: (p: Partial<Site>) => void; canManage: boolean; onSaved: () => void; report: Report };
 
 function useSave(office: Office, onSaved: () => void) {
   const [busy, setBusy] = useState(false);
@@ -190,7 +226,7 @@ function ImagePick({ label, hint, value, round, onPick, onRemove, disabled }: { 
   );
 }
 
-function StyleTab({ office, site, setSite, canManage, onSaved }: TabProps) {
+function StyleTab({ office, site, setSite, canManage, onSaved, report }: TabProps) {
   const s = useSave(office, onSaved);
   const [theme, setTheme] = useState<Theme>(site.site_theme);
   const [color, setColor] = useState<string | null>(site.site_color);
@@ -201,11 +237,13 @@ function StyleTab({ office, site, setSite, canManage, onSaved }: TabProps) {
     try {
       const base = await uploadSiteImage(office.id, f, 800);
       const old = site.site_logo;
-      if (await s.save({ site_logo: base })) { setSite({ ...site, site_logo: base }); await removeSiteImage(old); } else await removeSiteImage(base);
+      if (await s.save({ site_logo: base })) { setSite({ site_logo: base }); await removeSiteImage(old); } else await removeSiteImage(base);
     } catch (e) { s.setError(friendly(e instanceof Error ? e.message : String(e))); s.setBusy(false); }
   };
-  const dropLogo = async () => { const old = site.site_logo; if (await s.save({ site_logo: null })) { setSite({ ...site, site_logo: null }); await removeSiteImage(old); } };
-  const saveStyle = async () => { if (await s.save({ site_theme: theme, site_color: color })) setSite({ ...site, site_theme: theme, site_color: color }); };
+  const dropLogo = async () => { const old = site.site_logo; if (await s.save({ site_logo: null })) { setSite({ site_logo: null }); await removeSiteImage(old); } };
+  const saveStyle = async () => { if (await s.save({ site_theme: theme, site_color: color })) { setSite({ site_theme: theme, site_color: color }); return true; } return false; };
+  const dirty = theme !== site.site_theme || color !== site.site_color;
+  useEffect(() => { report('style', dirty, saveStyle); });
 
   return (
     <Card className="space-y-5">
@@ -269,7 +307,6 @@ function StyleTab({ office, site, setSite, canManage, onSaved }: TabProps) {
           {color && <button type="button" onClick={() => { setColor(null); s.setSaved(false); }} className="text-sm font-semibold text-muted hover:text-ink">{t('Default of the style')}</button>}
         </div>
       </div>
-      <Btn tone="brand" disabled={!canManage || s.busy} onClick={saveStyle}>{s.busy ? '…' : t('Save the style')}</Btn>
       <div className="border-t border-line/[0.08] pt-5">
         <ImagePick label={t('Logo')} hint={t('Shown at the top of every page, on a white background. A JPG or PNG with a white or light background works best.')}
           value={site.site_logo} onPick={logo} onRemove={dropLogo} disabled={!canManage || s.busy} />
@@ -279,7 +316,7 @@ function StyleTab({ office, site, setSite, canManage, onSaved }: TabProps) {
   );
 }
 
-function HomeTab({ office, site, setSite, canManage, onSaved }: TabProps) {
+function HomeTab({ office, site, setSite, canManage, onSaved, report }: TabProps) {
   const s = useSave(office, onSaved);
   const [title, setTitle] = useState(site.site_hero_title ?? '');
   const [sub, setSub] = useState(site.site_hero_sub ?? '');
@@ -288,14 +325,17 @@ function HomeTab({ office, site, setSite, canManage, onSaved }: TabProps) {
     try {
       const base = await uploadSiteImage(office.id, f, 2200);
       const old = site.site_hero;
-      if (await s.save({ site_hero: base })) { setSite({ ...site, site_hero: base }); await removeSiteImage(old); } else await removeSiteImage(base);
+      if (await s.save({ site_hero: base })) { setSite({ site_hero: base }); await removeSiteImage(old); } else await removeSiteImage(base);
     } catch (e) { s.setError(friendly(e instanceof Error ? e.message : String(e))); s.setBusy(false); }
   };
-  const dropHero = async () => { const old = site.site_hero; if (await s.save({ site_hero: null })) { setSite({ ...site, site_hero: null }); await removeSiteImage(old); } };
+  const dropHero = async () => { const old = site.site_hero; if (await s.save({ site_hero: null })) { setSite({ site_hero: null }); await removeSiteImage(old); } };
   const saveTexts = async () => {
     const f = { site_hero_title: title.trim() || null, site_hero_sub: sub.trim() || null };
-    if (await s.save(f)) setSite({ ...site, ...f });
+    if (await s.save(f)) { setSite(f); return true; }
+    return false;
   };
+  const dirty = title.trim() !== (site.site_hero_title ?? '') || sub.trim() !== (site.site_hero_sub ?? '');
+  useEffect(() => { report('home', dirty, saveTexts); });
   return (
     <Card className="space-y-5">
       <ImagePick label={t('Large photo at the top')} hint={t('Your most beautiful property or your street. Without a photo, the cover of your newest property is used.')}
@@ -306,13 +346,12 @@ function HomeTab({ office, site, setSite, canManage, onSaved }: TabProps) {
       <Field label={t('Sentence under the title')}>
         <input className={inputCls} value={sub} onChange={e => { setSub(e.target.value); s.setSaved(false); }} maxLength={180} placeholder="Achat, vente et location à Agdal, Souissi et Harhoura" disabled={!canManage} />
       </Field>
-      <Btn tone="brand" disabled={!canManage || s.busy} onClick={saveTexts}>{s.busy ? '…' : t('Save')}</Btn>
       <Msg error={s.error} saved={s.saved} />
     </Card>
   );
 }
 
-function BlocksTab({ office, site, setSite, canManage, onSaved }: TabProps) {
+function BlocksTab({ office, site, setSite, canManage, onSaved, report }: TabProps) {
   const s = useSave(office, onSaved);
   const [order, setOrder] = useState<Block[]>(() => [...site.site_blocks, ...BLOCKS.filter(b => !site.site_blocks.includes(b))]);
   const [on, setOn] = useState<Set<Block>>(() => new Set(site.site_blocks));
@@ -327,8 +366,14 @@ function BlocksTab({ office, site, setSite, canManage, onSaved }: TabProps) {
   const saveBlocks = async () => {
     const blocks = order.filter(b => on.has(b) || b === 'listings');
     const f = { site_blocks: blocks, site_featured: featured || null };
-    if (await s.save(f)) setSite({ ...site, ...f });
+    if (await s.save(f)) { setSite(f); return true; }
+    return false;
   };
+  const baseOn = new Set(site.site_blocks);
+  const baseBlocks = [...site.site_blocks, ...BLOCKS.filter(b => !baseOn.has(b))].filter(b => baseOn.has(b) || b === 'listings');
+  const nowBlocks = order.filter(b => on.has(b) || b === 'listings');
+  const dirty = baseBlocks.join() !== nowBlocks.join() || featured !== (site.site_featured ?? '');
+  useEffect(() => { report('blocks', dirty, saveBlocks); });
   return (
     <Card className="space-y-4">
       <p className="text-sm text-muted">{t('Choose what is on your home page, and in which order. Your properties are always shown.')}</p>
@@ -353,7 +398,6 @@ function BlocksTab({ office, site, setSite, canManage, onSaved }: TabProps) {
           </select>
         </Field>
       )}
-      <Btn tone="brand" disabled={!canManage || s.busy} onClick={saveBlocks}>{s.busy ? '…' : t('Save the blocks')}</Btn>
       <Msg error={s.error} saved={s.saved} />
     </Card>
   );
