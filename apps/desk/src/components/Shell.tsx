@@ -123,9 +123,12 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
           <div className="flex items-center justify-between gap-3">
             <AmplifyLogo size="sm" className="hidden min-w-0 sm:flex" />
             <AmplifyMark className="h-6 w-9 shrink-0 sm:hidden" />
-            <div className="flex min-w-0 items-center gap-2">
-              <div className="min-w-0 max-w-[12rem]"><OfficePick offices={offices} office={office} onPick={onPick} /></div>
-              <LangSwitch />
+            <div className="flex min-w-0 items-center justify-end gap-2">
+              {/* the office picker only when there is a choice; language lives in Settings on a phone */}
+              {offices.length > 1
+                ? <div className="min-w-0 max-w-[14rem]"><OfficePick offices={offices} office={office} onPick={onPick} /></div>
+                : <span className="min-w-0 truncate text-sm font-semibold text-white/85">{office.name}</span>}
+              <span className="hidden sm:block"><LangSwitch /></span>
             </div>
           </div>
         </header>

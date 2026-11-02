@@ -9,6 +9,7 @@ import { PublicProfile } from './PublicProfile';
 import { WebsiteSettings } from '../components/WebsiteSettings';
 import { FeedSettings } from '../components/FeedSettings';
 import { BillingSettings } from '../components/BillingSettings';
+import { LangSwitch } from '../components/LangSwitch';
 
 export type SettingsTab = 'team' | 'site' | 'billing' | 'plan';
 
@@ -31,6 +32,10 @@ export function Settings({ office, userId, onSelfChanged, initialTab = 'team' }:
     <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
       <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Settings')}</h1>
       <p className="text-sm text-muted">{office.name}</p>
+      <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-surface px-4 py-3 ring-1 ring-line/10">
+        <span className="text-sm font-semibold">{t('Language')}</span>
+        <div className="rounded-full bg-surface-2 p-0.5"><LangSwitch light /></div>
+      </div>
       <div className="-mx-4 mt-4 flex gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden" role="tablist">
         {tabs.map(x => (
           <button key={x.id} type="button" role="tab" aria-selected={tab === x.id} onClick={() => setTab(x.id)}

@@ -1,16 +1,27 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Bath, BedDouble, Building2, Download, Plus, Ruler, Search } from 'lucide-react';
+import { Bath, BedDouble, Building2, Download, ImageOff, Plus, Ruler, Search } from 'lucide-react';
 import { formatMad, type PropertyStatus } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import type { Office, PropertyRow } from '../lib/types';
-import { STATUSES, priceSuffix, purposeLabel, statusCls, statusLabel, typeLabel } from '../lib/labels';
+import { STATUSES, priceSuffix, purposeLabel, statusLabel, typeLabel } from '../lib/labels';
 import { Btn, Card, inputCls } from '../components/ui';
 import { Confirmed } from '../components/Confirmed';
 import { PropertyForm } from './PropertyForm';
 import { PropertyDetail } from './PropertyDetail';
 import { downloadCsv, propertiesCsv } from '../lib/exportCsv';
 import { friendly } from '../lib/errors';
+import { photoUrl } from '../lib/photos';
+
+/** Solid status colors for the label on top of a photo (readable on any picture). */
+const badgeCls: Record<PropertyStatus, string> = {
+  available: 'bg-ok text-white',
+  reserved: 'bg-warn text-white',
+  rented: 'bg-qr text-white',
+  sold: 'bg-surface-3 text-ink',
+  draft: 'bg-night/80 text-white',
+  withdrawn: 'bg-danger text-white',
+};
 
 type Filter = 'all' | PropertyStatus;
 
@@ -21,6 +32,7 @@ export function Properties({ office, userId }: { office: Office; userId: string 
   const [q, setQ] = useState('');
   const [adding, setAdding] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [covers, setCovers] = useState<Record<string, string>>({});
   const canWrite = office.role !== 'viewer';
 
   const load = useCallback(async () => {
@@ -28,6 +40,25 @@ export function Properties({ office, userId }: { office: Office; userId: string 
     if (error) setError(friendly(error)); else { setError(null); setRows((data ?? []) as PropertyRow[]); }
   }, [office.id]);
   useEffect(() => { setRows(null); load(); }, [load]);
+
+  // One cover photo per property: the cover first, otherwise the oldest. Small version (480 px) only.
+  useEffect(() => {
+    if (!rows || rows.length === 0) return;
+    let live = true;
+    (async () => {
+      const ids = rows.map(r => r.id);
+      const out: Record<string, string> = {};
+      for (let i = 0; i < ids.length; i += 100) {
+        const { data } = await supabase.from('property_photos').select('id, org_id, property_id, is_cover')
+          .in('property_id', ids.slice(i, i + 100)).order('is_cover', { ascending: false }).order('created_at').order('id');
+        for (const x of (data ?? []) as { id: string; org_id: string; property_id: string }[]) {
+          if (!out[x.property_id]) out[x.property_id] = photoUrl(`${x.org_id}/${x.property_id}/${x.id}`, true);
+        }
+      }
+      if (live) setCovers(out);
+    })();
+    return () => { live = false; };
+  }, [rows]);
 
   const counts = useMemo(() => {
     const c: Record<string, number> = { all: rows?.length ?? 0 };
@@ -46,13 +77,17 @@ export function Properties({ office, userId }: { office: Office; userId: string 
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Properties')}</h1>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h1 className="font-display truncate text-2xl font-bold sm:text-3xl">{t('Properties')}</h1>
           <p className="text-sm text-muted">{t('{n} in total', { n: counts.all })}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          {shown.length > 0 && <Btn tone="ghost" onClick={() => downloadCsv(`properties-${new Date().toISOString().slice(0, 10)}.csv`, propertiesCsv(shown))}><Download className="h-4 w-4" /> {t('Export to Excel')}</Btn>}
+        <div className="flex shrink-0 items-center gap-2">
+          {shown.length > 0 && (
+            <button type="button" title={t('Export to Excel')} aria-label={t('Export to Excel')}
+              onClick={() => downloadCsv(`properties-${new Date().toISOString().slice(0, 10)}.csv`, propertiesCsv(shown))}
+              className="grid h-10 w-10 place-items-center rounded-full border border-line/[0.12] bg-surface text-muted transition hover:text-ink active:scale-95"><Download className="h-4 w-4" /></button>
+          )}
           {canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add property')}</Btn>}
         </div>
       </div>
@@ -73,7 +108,7 @@ export function Properties({ office, userId }: { office: Office; userId: string 
       {rows !== null && rows.length > 0 && (
         <>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div role="tablist" className="flex flex-wrap gap-1.5">
+            <div role="tablist" className="-mx-4 flex flex-nowrap gap-1.5 px-4 sm:mx-0 sm:flex-wrap sm:px-0">
               {tabs.map(f => (
                 <button key={f} role="tab" aria-selected={filter === f} onClick={() => setFilter(f)}
                   className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${filter === f ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
@@ -90,33 +125,37 @@ export function Properties({ office, userId }: { office: Office; userId: string 
           {shown.length === 0
             ? <p className="mt-10 text-center text-muted">{t('Nothing matches.')}</p>
             : (
-              <ul className="mt-4 grid gap-3 sm:grid-cols-2">
+              <ul className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {shown.map(r => (
                   <li key={r.id} role="button" tabIndex={0} aria-label={r.title}
                     onClick={() => setOpenId(r.id)}
                     onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(r.id); } }}
-                    className="card rise cursor-pointer rounded-2xl p-4 outline-none transition hover:ring-2 hover:ring-brand/30 focus-visible:ring-2 focus-visible:ring-brand sm:p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <h3 className="font-display truncate text-lg font-semibold">{r.title}</h3>
-                        <p className="truncate text-sm text-muted">
-                          {[r.neighborhood, r.city].filter(Boolean).join(', ') || '—'} · {typeLabel(r.property_type)}
-                        </p>
+                    className="card rise min-w-0 cursor-pointer overflow-hidden rounded-3xl outline-none transition active:scale-[.985] hover:-translate-y-0.5 hover:shadow-lg focus-visible:ring-2 focus-visible:ring-brand">
+                    <div className="relative aspect-[16/10] w-full overflow-hidden bg-surface-2">
+                      {covers[r.id]
+                        ? <img src={covers[r.id]} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                        : <div className="grid h-full w-full place-items-center bg-gradient-to-br from-surface-2 to-surface-3 text-muted/50"><ImageOff className="h-8 w-8" /></div>}
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-night/45 to-transparent" />
+                      <span className={`absolute start-3 top-3 rounded-full px-3 py-1 text-xs font-bold shadow-sm ${badgeCls[r.status]}`}>{statusLabel(r.status)}</span>
+                      <span className="absolute bottom-3 start-3 max-w-[calc(100%-1.5rem)] truncate rounded-full bg-white/90 px-2.5 py-0.5 text-[11px] font-bold text-ink backdrop-blur">{purposeLabel(r.purpose)}</span>
+                    </div>
+                    <div className="min-w-0 p-4 sm:p-5">
+                      <p className="flex items-baseline gap-x-1.5">
+                        <span className="font-display tabular truncate text-2xl font-bold leading-none">{formatMad(r.price_cents)}</span>
+                        {priceSuffix(r.purpose) && <span className="shrink-0 text-sm font-semibold text-muted">{priceSuffix(r.purpose)}</span>}
+                      </p>
+                      <h3 className="font-display mt-2 truncate text-base font-semibold">{r.title}</h3>
+                      <p className="truncate text-sm text-muted">
+                        {[r.neighborhood, r.city].filter(Boolean).join(', ') || '—'} · {typeLabel(r.property_type)}
+                      </p>
+                      <div className="mt-3 flex items-center gap-x-4 text-sm text-muted">
+                        {r.bedrooms !== null && <span className="inline-flex items-center gap-1.5"><BedDouble className="h-4 w-4" />{r.bedrooms}</span>}
+                        {r.bathrooms !== null && <span className="inline-flex items-center gap-1.5"><Bath className="h-4 w-4" />{r.bathrooms}</span>}
+                        {r.area_m2 !== null && <span className="inline-flex items-center gap-1.5"><Ruler className="h-4 w-4" />{r.area_m2} m²</span>}
+                        <span className="tabular ms-auto min-w-0 truncate text-xs">{r.reference}</span>
                       </div>
-                      <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-bold ${statusCls[r.status]}`}>{statusLabel(r.status)}</span>
+                      <div className="mt-3 border-t border-line/[0.07] pt-3"><Confirmed iso={r.info_confirmed_at} /></div>
                     </div>
-                    <p className="mt-3 flex flex-wrap items-baseline gap-x-2">
-                      <span className="font-display tabular text-xl font-bold">{formatMad(r.price_cents)}</span>
-                      <span className="text-sm text-muted">{priceSuffix(r.purpose)}</span>
-                      <span className="ms-auto rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-semibold text-muted">{purposeLabel(r.purpose)}</span>
-                    </p>
-                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
-                      {r.bedrooms !== null && <span className="inline-flex items-center gap-1.5"><BedDouble className="h-4 w-4" />{r.bedrooms}</span>}
-                      {r.bathrooms !== null && <span className="inline-flex items-center gap-1.5"><Bath className="h-4 w-4" />{r.bathrooms}</span>}
-                      {r.area_m2 !== null && <span className="inline-flex items-center gap-1.5"><Ruler className="h-4 w-4" />{r.area_m2} m²</span>}
-                      <span className="tabular ms-auto text-xs">{r.reference}</span>
-                    </div>
-                    <div className="mt-3 border-t border-line/[0.07] pt-3"><Confirmed iso={r.info_confirmed_at} /></div>
                   </li>
                 ))}
               </ul>
