@@ -7,7 +7,7 @@ import { Hero, madShort, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import { loadDeals, type DealView } from '../lib/deals';
 import { DEAL_STAGES, dealStageCls, dealStageLabel, priceSuffix } from '../lib/labels';
-import { Btn, Card, inputCls } from '../components/ui';
+import { Btn, inputCls, EmptyState } from '../components/ui';
 import { DealForm } from './DealForm';
 import { DealDetail } from './DealDetail';
 import { dealsCsv, downloadCsv } from '../lib/exportCsv';
@@ -98,12 +98,7 @@ export function Deals({ office }: { office: Office }) {
       {rows === null && !error && <p className="mt-10 text-center text-muted">…</p>}
 
       {rows !== null && rows.length === 0 && (
-        <Card className="mt-6 text-center">
-          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><Handshake className="h-6 w-6" /></span>
-          <h2 className="font-display mt-3 text-xl font-bold">{t('No deals yet')}</h2>
-          <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('When a lead makes an offer on a property, start a deal here: follow it to the signature and see your commission.')}</p>
-          {canWrite && <Btn tone="brand" className="mt-5" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Start your first deal')}</Btn>}
-        </Card>
+        <EmptyState className="mt-6" icon={Handshake} title={t('No deals yet')} text={t('When a lead makes an offer on a property, start a deal here: follow it to the signature and see your commission.')} action={canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Start your first deal')}</Btn>} />
       )}
 
       {rows !== null && rows.length > 0 && (

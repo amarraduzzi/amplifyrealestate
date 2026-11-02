@@ -6,7 +6,7 @@ import { Hero, madShort, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import { dateText } from '../lib/leases';
 import { isOpen, loadMaintenance, maintStatusCls, maintStatusLabel, priorityCls, priorityLabel, type MaintStatus, type MaintView } from '../lib/maintenance';
-import { Btn, Card, inputCls } from '../components/ui';
+import { Btn, inputCls, EmptyState } from '../components/ui';
 import { MaintenanceForm } from './MaintenanceForm';
 import { MaintenanceDetail } from './MaintenanceDetail';
 import { friendly } from '../lib/errors';
@@ -94,12 +94,7 @@ export function Maintenance({ office }: { office: Office }) {
       {rows === null && !error && <p className="mt-10 text-center text-muted">…</p>}
 
       {rows !== null && rows.length === 0 && (
-        <Card className="mt-6 text-center">
-          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><Wrench className="h-6 w-6" /></span>
-          <h2 className="font-display mt-3 text-xl font-bold">{t('No maintenance requests yet')}</h2>
-          <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('Note what is broken at a property, who reported it and who fixes it, and follow it until it is done.')}</p>
-          {canWrite && <Btn tone="brand" className="mt-5" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Report the first problem')}</Btn>}
-        </Card>
+        <EmptyState className="mt-6" icon={Wrench} title={t('No maintenance requests yet')} text={t('Note what is broken at a property, who reported it and who fixes it, and follow it until it is done.')} action={canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Report the first problem')}</Btn>} />
       )}
 
       {rows !== null && rows.length > 0 && (

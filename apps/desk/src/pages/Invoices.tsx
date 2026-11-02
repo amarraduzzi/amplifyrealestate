@@ -5,7 +5,7 @@ import { getLang, t } from '../lib/i18n';
 import { Hero, madShort, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import { loadInvoices, type InvoiceRow, type InvoiceStatus } from '../lib/invoices';
-import { Btn, Card, inputCls } from '../components/ui';
+import { Btn, Card, inputCls, EmptyState } from '../components/ui';
 import { InvoiceForm } from './InvoiceForm';
 import { InvoiceDoc } from './InvoiceDoc';
 
@@ -79,11 +79,7 @@ export function Invoices({ office }: { office: Office }) {
         </div>
 
         {rows.length === 0 ? (
-          <Card className="mt-6 text-center">
-            <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><Receipt className="h-6 w-6" /></span>
-            <h2 className="font-display mt-3 text-xl font-bold">{t('No invoices yet')}</h2>
-            <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('Open a deal and tap "Make an invoice", or make one here. Fill in your invoice details under Settings first.')}</p>
-          </Card>
+          <EmptyState className="mt-6" icon={Receipt} title={t('No invoices yet')} text={t('Open a deal and tap "Make an invoice", or make one here. Fill in your invoice details under Settings first.')} />
         ) : (<>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
             <div role="tablist" className="flex flex-wrap gap-1.5">

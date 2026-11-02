@@ -6,7 +6,7 @@ import type { Office } from '../lib/types';
 import { addDays, dayKey, dayLabel, loadAgenda, weekLabel, weekStart, type AgendaItem } from '../lib/agenda';
 import { viewingStatusCls, viewingStatusLabel } from '../lib/labels';
 import { toggleTask } from '../lib/tasks';
-import { Btn, Card } from '../components/ui';
+import { Btn, EmptyState } from '../components/ui';
 import { BarsMotif, Hero, madShort, PhoneSheet, bigDay } from '../components/Hero';
 import { QuickIcons } from '../components/QuickActions';
 import { TaskForm } from './TaskForm';
@@ -297,11 +297,7 @@ function AgendaWeek({ office, userId, onGo, tabs, darkTabs }: { office: Office; 
       {items !== null && (
         <>
           {items.length === 0 && (
-            <Card className="mt-6 text-center">
-              <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><CalendarDays className="h-6 w-6" /></span>
-              <h2 className="font-display mt-3 text-xl font-bold">{t('Your agenda is empty')}</h2>
-              <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('Viewings, tasks with a deadline, mandates and leases that end, and rent that is due appear here by themselves.')}</p>
-            </Card>
+            <EmptyState className="mt-6" icon={CalendarDays} title={t('Your agenda is empty')} text={t('Viewings, tasks with a deadline, mandates and leases that end, and rent that is due appear here by themselves.')} />
           )}
           <div className="mt-3 space-y-2 lg:hidden">
             {selList.length === 0 ? (

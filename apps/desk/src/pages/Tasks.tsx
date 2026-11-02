@@ -5,7 +5,7 @@ import { t } from '../lib/i18n';
 import type { Office } from '../lib/types';
 import { loadTasks, sortTasks, toggleTask, type TaskView } from '../lib/tasks';
 import { TASK_STATUSES, taskStatusLabel } from '../lib/labels';
-import { Btn, Card, inputCls } from '../components/ui';
+import { Btn, inputCls, EmptyState } from '../components/ui';
 import { TaskItem } from '../components/TaskItem';
 import { TaskForm } from './TaskForm';
 import { friendly } from '../lib/errors';
@@ -67,12 +67,7 @@ export function Tasks({ office, userId, embedded = false }: { office: Office; us
       {rows === null && !error && <p className="mt-10 text-center text-muted">…</p>}
 
       {rows !== null && rows.length === 0 && (
-        <Card className="mt-6 text-center">
-          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><ListChecks className="h-6 w-6" /></span>
-          <h2 className="font-display mt-3 text-xl font-bold">{t('No tasks yet')}</h2>
-          <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('Write down what has to happen, give it a deadline and a person, and tick it off when it is done.')}</p>
-          {canWrite && <Btn tone="brand" className="mt-5" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add your first task')}</Btn>}
-        </Card>
+        <EmptyState className="mt-6" icon={ListChecks} title={t('No tasks yet')} text={t('Write down what has to happen, give it a deadline and a person, and tick it off when it is done.')} action={canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add your first task')}</Btn>} />
       )}
 
       {rows !== null && rows.length > 0 && (

@@ -2,21 +2,38 @@ import { createPortal } from 'react-dom';
 import { useEffect, useRef, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { t } from '../lib/i18n';
+import { BarsMotif } from './Hero';
 
 // Open modals, last one on top: Escape only closes the top one (a viewing opened from a lead, for example).
-const openModals: symbol[] = [];
+type Open = { id: symbol; close: () => void; popped: boolean };
+const openModals: Open[] = [];
+let ignorePops = 0;
+// the phone's back button (or an edge swipe in the browser) closes the top screen instead of leaving the app
+if (typeof window !== 'undefined') {
+  window.addEventListener('popstate', () => {
+    if (ignorePops > 0) { ignorePops--; return; }
+    const top = openModals[openModals.length - 1];
+    if (top) { top.popped = true; top.close(); }
+  });
+}
 
 export function Modal({ title, sub, action, onClose, children, footer }: { title: ReactNode; sub?: ReactNode; action?: ReactNode; onClose: () => void; children: ReactNode; footer?: ReactNode }) {
   const swipe = useRef<{ x: number; y: number } | null>(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
   useEffect(() => {
-    const id = Symbol('modal');
-    openModals.push(id);
+    const entry: Open = { id: Symbol('modal'), close: () => closeRef.current(), popped: false };
+    openModals.push(entry);
     document.body.style.overflow = 'hidden'; // the page behind stays put
-    const k = (e: KeyboardEvent) => { if (e.key === 'Escape' && openModals[openModals.length - 1] === id) closeRef.current(); };
+    window.history.pushState({ amplifyScreen: true }, '');
+    const k = (e: KeyboardEvent) => { if (e.key === 'Escape' && openModals[openModals.length - 1] === entry) closeRef.current(); };
     window.addEventListener('keydown', k);
-    return () => { window.removeEventListener('keydown', k); const i = openModals.indexOf(id); if (i >= 0) openModals.splice(i, 1); if (openModals.length === 0) document.body.style.overflow = ''; };
+    return () => {
+      window.removeEventListener('keydown', k);
+      const n = openModals.indexOf(entry); if (n >= 0) openModals.splice(n, 1);
+      if (openModals.length === 0) document.body.style.overflow = '';
+      if (!entry.popped && window.history.state?.amplifyScreen) { ignorePops++; window.history.back(); }
+    };
   }, []);
   return createPortal((
     <div className="fixed inset-0 z-50 flex items-stretch justify-center bg-night/50 backdrop-blur-[2px] sm:items-center sm:p-3" onMouseDown={e => { if (e.target === e.currentTarget) onClose(); }}>
@@ -70,4 +87,18 @@ export function Field({ label, hint, children }: { label: string; hint?: string;
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return <div className={`card rounded-2xl p-4 sm:rounded-3xl sm:p-6 ${className}`}>{children}</div>;
+}
+
+
+/** The same empty state on every screen: the Amplify bars, an icon, what this is for, and the first action. */
+export function EmptyState({ icon: Icon, title, text, action, className = 'mt-6' }: { icon: React.ComponentType<{ className?: string }>; title: string; text: string; action?: ReactNode; className?: string }) {
+  return (
+    <div className={`card relative overflow-hidden rounded-3xl px-5 py-8 text-center ${className}`}>
+      <BarsMotif tone="light" className="pointer-events-none absolute end-4 top-4 h-10 w-12 opacity-80" />
+      <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><Icon className="h-6 w-6" /></span>
+      <h2 className="font-display mt-3 text-xl font-bold">{title}</h2>
+      <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{text}</p>
+      {action ? <div className="mt-5 flex justify-center">{action}</div> : null}
+    </div>
+  );
 }

@@ -7,7 +7,7 @@ import type { Office } from '../lib/types';
 import { loadViewings, type ViewingView } from '../lib/viewings';
 import { VIEWING_STATUSES, outcomeCls, outcomeLabel, viewingStatusCls, viewingStatusLabel } from '../lib/labels';
 import { whenText } from '../lib/dates';
-import { Btn, Card, inputCls } from '../components/ui';
+import { Btn, inputCls, EmptyState } from '../components/ui';
 import { ViewingForm } from './ViewingForm';
 import { ViewingDetail } from './ViewingDetail';
 import { friendly } from '../lib/errors';
@@ -76,12 +76,7 @@ export function Viewings({ office }: { office: Office }) {
       {rows === null && !error && <p className="mt-10 text-center text-muted">…</p>}
 
       {rows !== null && rows.length === 0 && (
-        <Card className="mt-6 text-center">
-          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><CalendarClock className="h-6 w-6" /></span>
-          <h2 className="font-display mt-3 text-xl font-bold">{t('No viewings yet')}</h2>
-          <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('Schedule an appointment between a lead and a property, and note how it went afterwards.')}</p>
-          {canWrite && <Btn tone="brand" className="mt-5" onClick={() => setAdding(true)}><CalendarPlus className="h-4 w-4" /> {t('Schedule your first viewing')}</Btn>}
-        </Card>
+        <EmptyState className="mt-6" icon={CalendarClock} title={t('No viewings yet')} text={t('Schedule an appointment between a lead and a property, and note how it went afterwards.')} action={canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><CalendarPlus className="h-4 w-4" /> {t('Schedule your first viewing')}</Btn>} />
       )}
 
       {rows !== null && rows.length > 0 && (

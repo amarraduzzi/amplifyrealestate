@@ -6,7 +6,7 @@ import { t } from '../lib/i18n';
 import type { LeadRow, Office, PersonRow } from '../lib/types';
 import { LEAD_STATUSES, OPEN_LEAD_STATUSES, daysSince, leadStatusCls, leadStatusLabel, purposeLabel, sourceLabel } from '../lib/labels';
 import { MATCH_COLUMNS, matches, type MatchProp } from '../lib/matching';
-import { Btn, Card, inputCls } from '../components/ui';
+import { Btn, inputCls, EmptyState } from '../components/ui';
 import { ContactAge } from '../components/ContactAge';
 import { QuickBar, QuickIcons } from '../components/QuickActions';
 import { budgetText, criteriaText } from '../components/leadText';
@@ -151,12 +151,7 @@ export function Leads({ office, userId }: { office: Office; userId: string }) {
       )}
 
       {leads !== null && leads.length === 0 && (
-        <Card className="mt-6 text-center">
-          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><Users className="h-6 w-6" /></span>
-          <h2 className="font-display mt-3 text-xl font-bold">{t('No leads yet')}</h2>
-          <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('Add someone who is looking for a property, with what they want. Available properties that fit show up automatically.')}</p>
-          {canWrite && <Btn tone="brand" className="mt-5" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add your first lead')}</Btn>}
-        </Card>
+        <EmptyState className="mt-6" icon={Users} title={t('No leads yet')} text={t('Add someone who is looking for a property, with what they want. Available properties that fit show up automatically.')} action={canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add your first lead')}</Btn>} />
       )}
 
       {leads !== null && leads.length > 0 && (

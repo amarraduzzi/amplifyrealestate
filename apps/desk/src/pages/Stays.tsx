@@ -7,7 +7,7 @@ import { Hero, madShort, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import { channelCls, channelName, iso, loadStayProps, loadStays, nights, type Stay, type StayProp } from '../lib/stays';
 import { PUBLIC_SITE } from '../lib/publicSite';
-import { Btn, Card } from '../components/ui';
+import { Btn, Card, EmptyState } from '../components/ui';
 import { StayForm } from './StayForm';
 import { StayTools } from '../components/StayTools';
 import { StayRequests } from '../components/StayRequests';
@@ -94,11 +94,7 @@ export function Stays({ office }: { office: Office }) {
       {props === undefined && <p className="mt-10 text-center text-muted">…</p>}
       {props === null && <p className="mt-6 rounded-xl bg-warn/10 px-3 py-2 text-sm font-semibold text-warn">{t('Run the SQL of etappe 7e first.')}</p>}
       {props && props.length === 0 && (
-        <Card className="mt-6 text-center">
-          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><BedDouble className="h-6 w-6" /></span>
-          <h2 className="font-display mt-3 text-xl font-bold">{t('No short-term rentals yet')}</h2>
-          <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('Give a property the purpose "Short-term rent" and it appears here with its calendar.')}</p>
-        </Card>
+        <EmptyState className="mt-6" icon={BedDouble} title={t('No short-term rentals yet')} text={t('Give a property the purpose "Short-term rent" and it appears here with its calendar.')} />
       )}
 
       {props && props.length > 0 && (<>

@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
 import type { Office, PropertyRow } from '../lib/types';
 import { STATUSES, priceSuffix, purposeLabel, statusLabel, typeLabel } from '../lib/labels';
-import { Btn, Card, inputCls } from '../components/ui';
+import { Btn, inputCls, EmptyState } from '../components/ui';
 import { Confirmed } from '../components/Confirmed';
 import { PropertyForm } from './PropertyForm';
 import { PropertyDetail } from './PropertyDetail';
@@ -133,12 +133,7 @@ export function Properties({ office, userId }: { office: Office; userId: string 
       )}
 
       {rows !== null && rows.length === 0 && (
-        <Card className="mt-6 text-center">
-          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><Building2 className="h-6 w-6" /></span>
-          <h2 className="font-display mt-3 text-xl font-bold">{t('No properties yet')}</h2>
-          <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('Add your first property. Every price and status change from then on is recorded.')}</p>
-          {canWrite && <Btn tone="brand" className="mt-5" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add your first property')}</Btn>}
-        </Card>
+        <EmptyState className="mt-6" icon={Building2} title={t('No properties yet')} text={t('Add your first property. Every price and status change from then on is recorded.')} action={canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add your first property')}</Btn>} />
       )}
 
       {rows !== null && rows.length > 0 && (

@@ -11,7 +11,7 @@ import {
 } from '../lib/projects';
 import { planError } from '../lib/plan';
 import { downloadCsv, toCsv } from '../lib/exportCsv';
-import { Btn, Card, Field, Modal, inputCls } from '../components/ui';
+import { Btn, Card, Field, Modal, inputCls, EmptyState } from '../components/ui';
 import { ProjectMarketing } from './ProjectMarketing';
 import { ProjectReport } from './ProjectReport';
 import { SaleForm, SaleView, SalesTab, WorksPanel, type SaleData } from './DevSales';
@@ -430,11 +430,7 @@ function ProjectView({ office, project, onBack, onChanged }: { office: Office; p
       {!data && <p className="mt-8 text-center text-muted">…</p>}
 
       {data && units.length === 0 && (tab === 'grid' || tab === 'list') && (
-        <Card className="mt-6 text-center">
-          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><Layers className="h-6 w-6" /></span>
-          <h2 className="font-display mt-3 text-xl font-bold">{t('No units yet')}</h2>
-          <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('Add the units building by building: floors, units per floor, area and price. The grid shows at a glance what is still for sale.')}</p>
-        </Card>
+        <EmptyState className="mt-6" icon={Layers} title={t('No units yet')} text={t('Add the units building by building: floors, units per floor, area and price. The grid shows at a glance what is still for sale.')} />
       )}
       {data && units.length > 0 && tab === 'grid' && (
         <>
@@ -536,11 +532,7 @@ export function Projects({ office }: { office: Office }) {
       {rows === undefined && <p className="mt-10 text-center text-muted">…</p>}
       {rows === null && <p className="mt-6 rounded-xl bg-warn/10 px-3 py-2 text-sm font-semibold text-warn">{t('Run the SQL of etappe 10a first.')}</p>}
       {rows && rows.length === 0 && (
-        <Card className="mt-6 text-center">
-          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><HardHat className="h-6 w-6" /></span>
-          <h2 className="font-display mt-3 text-xl font-bold">{t('No projects yet')}</h2>
-          <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('Are you a developer, or do you sell a project for one? Add the project and its units, and follow the sales unit by unit.')}</p>
-        </Card>
+        <EmptyState className="mt-6" icon={HardHat} title={t('No projects yet')} text={t('Are you a developer, or do you sell a project for one? Add the project and its units, and follow the sales unit by unit.')} />
       )}
       {rows && rows.length > 0 && (
         <ul className="mt-5 grid gap-3 sm:grid-cols-2">

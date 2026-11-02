@@ -7,7 +7,7 @@ import type { LeaseStatus, Office } from '../lib/types';
 import { daysTo, dateText, loadLeases, type LeaseView } from '../lib/leases';
 import { ensureRentDue, isOverdue, loadOpenPayments, type PaymentRow } from '../lib/payments';
 import { LEASE_STATUSES, leaseStatusCls, leaseStatusLabel } from '../lib/labels';
-import { Btn, Card, inputCls } from '../components/ui';
+import { Btn, inputCls, EmptyState } from '../components/ui';
 import { LeaseForm } from './LeaseForm';
 import { LeaseDetail } from './LeaseDetail';
 import { downloadCsv, leasesCsv } from '../lib/exportCsv';
@@ -109,12 +109,7 @@ export function Leases({ office }: { office: Office }) {
       {rows === null && !error && <p className="mt-10 text-center text-muted">…</p>}
 
       {rows !== null && rows.length === 0 && (
-        <Card className="mt-6 text-center">
-          <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-brand/10 text-brand"><KeyRound className="h-6 w-6" /></span>
-          <h2 className="font-display mt-3 text-xl font-bold">{t('No leases yet')}</h2>
-          <p className="mx-auto mt-1 max-w-sm text-sm text-muted">{t('When a property is rented out, record the tenant, the rent and the dates here. The property is marked as rented automatically.')}</p>
-          {canWrite && <Btn tone="brand" className="mt-5" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Start your first lease')}</Btn>}
-        </Card>
+        <EmptyState className="mt-6" icon={KeyRound} title={t('No leases yet')} text={t('When a property is rented out, record the tenant, the rent and the dates here. The property is marked as rented automatically.')} action={canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Start your first lease')}</Btn>} />
       )}
 
       {rows !== null && rows.length > 0 && (
