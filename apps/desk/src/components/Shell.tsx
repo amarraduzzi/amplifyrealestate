@@ -7,7 +7,8 @@ import { LangSwitch } from './LangSwitch';
 import { PullToRefresh } from './PullToRefresh';
 import { supabase } from '../lib/supabase';
 import { useCovers } from '../lib/covers';
-import { t } from '../lib/i18n';
+import { getLang, t } from '../lib/i18n';
+import { PUBLIC_SITE, officeUrl } from '../lib/publicSite';
 import { isSolo, type Office } from '../lib/types';
 
 // 'tasks', 'team' and 'plan' are no longer separate tabs (tasks live in the Agenda, team and plan in Settings),
@@ -87,6 +88,9 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
       .then(({ data }) => { if (live) setPropIds(((data ?? []) as { id: string }[]).map(r => r.id)); });
     return () => { live = false; };
   }, [more, office.id]);
+  // the website tile shows a live preview of the office's own public site
+  const siteUrl = PUBLIC_SITE && office.slug ? officeUrl(office.slug, getLang() === 'ar' ? 'ar' : getLang() === 'en' ? 'en' : 'fr') : '';
+  const siteHost = (() => { try { return new URL(siteUrl).host; } catch { return ''; } })();
   const propCovers = useCovers(propIds);
   const bienPhoto = propIds.map(id => propCovers[id]).find(Boolean);
   const [quick, setQuick] = useState(false);
@@ -267,6 +271,26 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
                       <div className={`grid gap-2.5 ${g.items.length <= 2 ? 'grid-cols-2' : 'grid-cols-3 sm:grid-cols-4'}`}>
                         {g.items.map(x => {
                           const on = active === x.id;
+                          if (x.id === 'website' && siteUrl) {
+                            return (
+                              <div key={x.id} role="button" tabIndex={0} aria-label={x.label} onClick={() => go(x.id)}
+                                onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(x.id); } }}
+                                style={{ '--i': n++ } as CSSProperties}
+                                className={`rise lift relative col-span-full h-40 cursor-pointer overflow-hidden rounded-2xl bg-night text-white outline-none transition active:scale-[.98] focus-visible:ring-2 focus-visible:ring-brand ${on ? 'ring-2 ring-brand' : 'ring-1 ring-line/10'}`}>
+                                {/* the public site, drawn at twice the width and scaled down to fit, so it looks like a small browser window */}
+                                <iframe title={x.label} src={siteUrl} tabIndex={-1} loading="lazy" aria-hidden="true"
+                                  className="pointer-events-none absolute left-0 top-0 h-[20rem] w-[200%] origin-top-left scale-50 border-0 bg-white" />
+                                <span className="absolute inset-0 bg-gradient-to-t from-night/90 via-night/15 to-transparent" aria-hidden="true" />
+                                <span className="absolute inset-x-3.5 bottom-3 flex items-end justify-between gap-3">
+                                  <span className="min-w-0">
+                                    {siteHost && <span dir="ltr" className="block truncate text-xs font-semibold text-white/70">{siteHost}/{office.slug}</span>}
+                                    <span className="font-display block truncate text-[0.95rem] font-bold leading-tight">{x.label}</span>
+                                  </span>
+                                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/15 ring-1 ring-white/25 backdrop-blur"><Globe className="h-4 w-4" /></span>
+                                </span>
+                              </div>
+                            );
+                          }
                           const photo = x.id === 'properties' ? bienPhoto : undefined;
                           const dark = on || !!photo;
                           return (
