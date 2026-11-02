@@ -141,13 +141,13 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
         <div className="mx-auto grid max-w-lg grid-cols-5">
           {bottom.map(id => all.find(x => x.id === id)).filter((x): x is Item => !!x).map(x => (
             <button key={x.id} type="button" onClick={() => go(x.id)} aria-current={active === x.id ? 'page' : undefined}
-              className={`flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold transition ${active === x.id ? 'text-brand' : 'text-muted hover:text-ink'}`}>
-              {x.icon}<span className="max-w-full truncate px-1">{x.label}</span>
+              className={`flex flex-col items-center gap-0.5 pb-1.5 pt-2 text-[11px] font-semibold transition active:scale-95 ${active === x.id ? 'text-brand' : 'text-muted hover:text-ink'}`}>
+              <span className={`grid h-7 w-12 place-items-center rounded-full transition ${active === x.id ? 'bg-brand/10' : ''}`}>{x.icon}</span><span className="max-w-full truncate px-1">{x.label}</span>
             </button>
           ))}
           <button type="button" onClick={() => setMore(true)} aria-expanded={more}
-            className={`flex flex-col items-center gap-0.5 py-2 text-[11px] font-semibold transition ${!bottom.includes(active) ? 'text-brand' : 'text-muted hover:text-ink'}`}>
-            <LayoutGrid className="h-[18px] w-[18px]" /><span>{t('More')}</span>
+            className={`flex flex-col items-center gap-0.5 pb-1.5 pt-2 text-[11px] font-semibold transition active:scale-95 ${!bottom.includes(active) ? 'text-brand' : 'text-muted hover:text-ink'}`}>
+            <span className={`grid h-7 w-12 place-items-center rounded-full transition ${!bottom.includes(active) ? 'bg-brand/10' : ''}`}><LayoutGrid className="h-[18px] w-[18px]" /></span><span>{t('More')}</span>
           </button>
         </div>
       </nav>

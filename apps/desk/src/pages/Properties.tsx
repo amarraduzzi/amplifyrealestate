@@ -88,13 +88,26 @@ export function Properties({ office, userId }: { office: Office; userId: string 
               onClick={() => downloadCsv(`properties-${new Date().toISOString().slice(0, 10)}.csv`, propertiesCsv(shown))}
               className="grid h-10 w-10 place-items-center rounded-full border border-line/[0.12] bg-surface text-muted transition hover:text-ink active:scale-95"><Download className="h-4 w-4" /></button>
           )}
-          {canWrite && <Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add property')}</Btn>}
+          {canWrite && <span className="hidden sm:block"><Btn tone="brand" onClick={() => setAdding(true)}><Plus className="h-4 w-4" /> {t('Add property')}</Btn></span>}
         </div>
       </div>
 
       {error && <p className="mt-4 rounded-xl bg-danger/10 px-3 py-2 text-sm font-semibold text-danger">{error}</p>}
 
-      {rows === null && !error && <p className="mt-10 text-center text-muted">…</p>}
+      {rows === null && !error && (
+        <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3" aria-hidden="true">
+          {[0, 1, 2].map(i => (
+            <li key={i} className="card overflow-hidden rounded-3xl">
+              <div className="skeleton aspect-[16/10] w-full" />
+              <div className="space-y-2.5 p-4 sm:p-5">
+                <div className="skeleton h-6 w-1/2 rounded-lg" />
+                <div className="skeleton h-4 w-3/4 rounded-lg" />
+                <div className="skeleton h-4 w-1/3 rounded-lg" />
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
 
       {rows !== null && rows.length === 0 && (
         <Card className="mt-6 text-center">
@@ -111,8 +124,8 @@ export function Properties({ office, userId }: { office: Office; userId: string 
             <div role="tablist" className="-mx-4 flex flex-nowrap gap-1.5 px-4 sm:mx-0 sm:flex-wrap sm:px-0">
               {tabs.map(f => (
                 <button key={f} role="tab" aria-selected={filter === f} onClick={() => setFilter(f)}
-                  className={`rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${filter === f ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
-                  {f === 'all' ? t('All') : statusLabel(f)} <span className="tabular opacity-60">{counts[f] ?? 0}</span>
+                  className={`rounded-full px-3.5 py-1.5 text-[13px] font-semibold transition active:scale-95 ${filter === f ? 'bg-ink text-bg' : 'bg-surface text-muted ring-1 ring-line/10 hover:text-ink'}`}>
+                  {f === 'all' ? t('All') : statusLabel(f)} <span className="tabular ms-0.5 text-[11px] opacity-60">{counts[f] ?? 0}</span>
                 </button>
               ))}
             </div>
@@ -161,6 +174,14 @@ export function Properties({ office, userId }: { office: Office; userId: string 
               </ul>
             )}
         </>
+      )}
+
+      {canWrite && rows !== null && rows.length > 0 && !openId && !adding && (
+        <button type="button" onClick={() => setAdding(true)} aria-label={t('Add property')} title={t('Add property')}
+          className="gold-fill fixed end-4 z-20 grid h-14 w-14 place-items-center rounded-full text-brand-ink transition active:scale-90 sm:hidden"
+          style={{ bottom: 'calc(4.75rem + env(safe-area-inset-bottom))' }}>
+          <Plus className="h-6 w-6" />
+        </button>
       )}
 
       {openId && (() => {
