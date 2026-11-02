@@ -697,7 +697,7 @@ export const FR: Record<string, string> = {
   'Agenda': 'Agenda',
   'Open again': 'Rouvrir',
   'Add': 'Ajouter',
-  'Nothing planned': 'Rien de prévu',
+  'Nothing planned': 'Libre',
   'Lease ends': 'Fin du bail',
   'Rent due': 'Loyer à payer',
   'This week': 'Cette semaine',

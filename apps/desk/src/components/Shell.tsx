@@ -75,6 +75,7 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
   const bottom = solo ? BOTTOM_SOLO : BOTTOM;
   const all = gs.flatMap(g => g.items);
   const settings: Item = { id: 'settings', label: t('Settings'), icon: <Settings className="h-[18px] w-[18px] shrink-0" /> };
+  const title = (all.find(x => x.id === active) ?? (active === 'settings' ? settings : undefined))?.label ?? '';
   const go = (v: View) => { setMore(false); onView(v); window.scrollTo(0, 0); };
 
   useEffect(() => {
@@ -122,18 +123,22 @@ export function Shell({ offices, office, view, onView, onPick, onSignOut, banner
         <header className="night sticky top-0 z-30 px-4 pb-2.5 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 lg:hidden">
           <div className="flex items-center justify-between gap-3">
             <AmplifyLogo size="sm" className="hidden min-w-0 sm:flex" />
-            <AmplifyMark className="h-6 w-9 shrink-0 sm:hidden" />
+            {/* phone: the mark and the name of the screen you are on, like a native title bar */}
+            <div className="flex min-w-0 items-center gap-2.5 sm:hidden">
+              <AmplifyMark className="h-6 w-9 shrink-0" />
+              <h1 className="font-display min-w-0 truncate text-[1.05rem] font-bold text-white">{title}</h1>
+            </div>
             <div className="flex min-w-0 items-center justify-end gap-2">
               {/* the office picker only when there is a choice; language lives in Settings on a phone */}
               {offices.length > 1
-                ? <div className="min-w-0 max-w-[14rem]"><OfficePick offices={offices} office={office} onPick={onPick} /></div>
-                : <span className="min-w-0 truncate text-sm font-semibold text-white/85">{office.name}</span>}
+                ? <div className="min-w-0 max-w-[10rem] sm:max-w-[14rem]"><OfficePick offices={offices} office={office} onPick={onPick} /></div>
+                : <span className="hidden min-w-0 truncate text-sm font-semibold text-white/85 sm:block">{office.name}</span>}
               <span className="hidden sm:block"><LangSwitch /></span>
             </div>
           </div>
         </header>
         {banner}
-        <main className="flex-1 pb-24 lg:pb-0">{children}</main>
+        <main key={active} className="view-in flex-1 pb-24 lg:pb-0">{children}</main>
       </div>
 
       {/* ---- Phone and tablet: bottom bar ---- */}

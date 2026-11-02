@@ -29,6 +29,22 @@
   --night-2: 0 46 95;
 }
 html, body, #root { height: 100%; }
+/* app feel: no tap flash, no rubber-band, no double-tap zoom, no text selection on controls */
+html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; }
+body { overscroll-behavior-y: none; }
+button, [role="button"], a, select, summary { touch-action: manipulation; }
+button, [role="tab"] { -webkit-user-select: none; user-select: none; }
+button:active:not(:disabled) { transition-duration: 60ms; }
+/* a screen change: a quick fade, not a slide-in of every card */
+@keyframes view-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.view-in { animation: view-in .18s ease-out both; }
+/* a detail on a phone is its own page that pushes in from the side (RTL: from the left) */
+@keyframes page-in { from { transform: translateX(28px); opacity: 0; } to { transform: none; opacity: 1; } }
+[dir="rtl"] .page-in { animation-name: page-in-rtl; }
+@keyframes page-in-rtl { from { transform: translateX(-28px); opacity: 0; } to { transform: none; opacity: 1; } }
+.page-in { animation: page-in .22s cubic-bezier(.16, 1, .3, 1) both; }
+@media (min-width: 640px) { .page-in { animation: pop .16s ease-out both; } }
+@media (prefers-reduced-motion: reduce) { .view-in, .page-in { animation: none !important; } }
 body { background: rgb(var(--bg)); color: rgb(var(--ink)); -webkit-font-smoothing: antialiased; }
 .tabular { font-variant-numeric: tabular-nums; }
 .font-display { font-family: "Montserrat Variable", "IBM Plex Sans Arabic", system-ui, sans-serif; letter-spacing: -0.015em; }
@@ -37,13 +53,11 @@ body { background: rgb(var(--bg)); color: rgb(var(--ink)); -webkit-font-smoothin
 [dir="rtl"] body { font-size: 1.02rem; }
 [dir="rtl"] [class*="tracking-"], [dir="rtl"] .font-display { letter-spacing: 0 !important; }
 [dir="rtl"] .uppercase { text-transform: none; }
-.card { background: rgb(var(--surface)); border: 1px solid rgb(var(--line) / .05); box-shadow: 0 1px 2px rgb(15 21 36 / .03), 0 14px 34px -20px rgb(0 30 62 / .28); }
+.card { background: rgb(var(--surface)); border: 1px solid rgb(var(--line) / .07); box-shadow: 0 1px 1px rgb(15 21 36 / .03); }
 .skeleton { background: linear-gradient(100deg, rgb(var(--surface-2)) 30%, rgb(var(--surface-3) / .7) 50%, rgb(var(--surface-2)) 70%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
 @keyframes shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
-.gold-fill {
-  background: linear-gradient(160deg, rgb(var(--brand-hi)) 0%, rgb(var(--brand)) 100%);
-  box-shadow: 0 1px 0 rgb(255 255 255 / .22) inset, 0 8px 20px -10px rgb(var(--brand) / .8);
-}
+/* flat, solid primary: no gradient, no glow */
+.gold-fill { background: rgb(var(--brand)); }
 .night {
   --brand: 5 185 98; --brand-hi: 38 208 125; --brand-ink: 0 30 62;
   background: radial-gradient(600px 400px at 0% 0%, rgb(var(--brand-hi) / .16), transparent 70%), linear-gradient(180deg, rgb(var(--night-2)), rgb(var(--night))); color: rgb(236 242 250); }
@@ -54,7 +68,7 @@ body { background: rgb(var(--bg)); color: rgb(var(--ink)); -webkit-font-smoothin
 .sheet { animation: sheet-up .26s cubic-bezier(.16, 1, .3, 1) both; }
 @media (min-width: 640px) { .sheet { animation: pop .16s ease-out both; } }
 @keyframes rise { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
-.rise { animation: rise .4s cubic-bezier(.16, 1, .3, 1) both; }
+.rise { animation: rise .24s cubic-bezier(.16, 1, .3, 1) both; }
 @media (prefers-reduced-motion: reduce) { .pop, .rise, .sheet, .skeleton { animation: none !important; } }
 
 /* Login screen, in the style of the company site */

@@ -6,6 +6,7 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
+      borderRadius: { xl: '0.625rem', '2xl': '0.875rem', '3xl': '1.125rem' },
       colors: {
         brand: v('brand'), 'brand-hi': v('brand-hi'), 'brand-ink': v('brand-ink'),
         bg: v('bg'), surface: v('surface'), 'surface-2': v('surface-2'), 'surface-3': v('surface-3'),

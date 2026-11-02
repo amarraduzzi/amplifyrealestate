@@ -243,8 +243,8 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
               const { weekday, date } = dayLabel(d);
               const isToday = key === today;
               return (
-                <section key={key} className={`card rise flex min-h-[7rem] flex-col rounded-3xl p-3 ${isToday ? 'ring-2 ring-brand' : ''} ${list.length === 0 ? 'max-lg:min-h-0' : ''}`}>
-                  <div className="mb-1.5 flex items-center justify-between gap-1 px-1">
+                <section key={key} className={`card rise flex min-h-[7rem] flex-col rounded-3xl p-3 ${isToday ? 'ring-2 ring-brand' : ''} ${list.length === 0 ? 'max-lg:min-h-0 max-lg:flex-row max-lg:items-center max-lg:justify-between max-lg:rounded-xl max-lg:border-0 max-lg:bg-transparent max-lg:px-1 max-lg:py-0.5 max-lg:shadow-none' : ''}`}>
+                  <div className={`flex items-center justify-between gap-1 px-1 ${list.length === 0 ? 'max-lg:mb-0 lg:mb-1.5' : 'mb-1.5'}`}>
                     <p className="text-sm">
                       <span className={`font-bold capitalize ${isToday ? 'text-brand' : ''}`}>{weekday}</span>{' '}
                       <span className="tabular text-muted">{date}</span>
@@ -262,9 +262,9 @@ function AgendaWeek({ office, userId, onGo, tabs }: { office: Office; userId: st
                         className="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-bold">{t('Task')}</button>
                     </div>
                   )}
-                  <div className="flex flex-col gap-1.5">
+                  <div className={`flex flex-col gap-1.5 ${list.length === 0 ? 'max-lg:order-first max-lg:flex-1' : ''}`}>
                     {list.length === 0
-                      ? <p className="px-1 text-xs text-muted/70">{t('Nothing planned')}</p>
+                      ? <p className="px-1 text-xs text-muted/70 max-lg:text-end">{t('Nothing planned')}</p>
                       : list.map(line)}
                   </div>
                 </section>

@@ -34,12 +34,22 @@ export function saveLang(l: Lang) {
   try { localStorage.setItem(KEY, l); } catch { /* private mode: keep it for this session only */ }
 }
 
+const ONE: Record<string, Record<string, string>> = {
+  en: { '{n} items': '{n} item', '{n} invoices': '{n} invoice', '{n} new properties': '{n} new property', '{n} unpaid months': '{n} unpaid month', '{n} days ago': '{n} day ago' },
+  fr: { '{n} items': '{n} élément', '{n} invoices': '{n} facture', '{n} new properties': '{n} nouveau bien', '{n} unpaid months': '{n} mois impayé', '{n} days ago': 'Il y a {n} jour', '{n} open': '{n} ouverte', '{n} days left, until {date}.': '{n} jour restant, jusqu’au {date}.', '{n} past due date': '{n} échue' },
+};
+
 export function t(en: string, vars?: Record<string, string | number>): string {
   const dict = current === 'ar' ? AR : current === 'fr' ? FR : null;
   const extra = current === 'ar' ? AR2 : current === 'fr' ? FR2 : null;
   const more = current === 'ar' ? AR3 : current === 'fr' ? FR3 : null;
   const vitrine = current === 'ar' ? AR4 : current === 'fr' ? FR4 : null;
   const agent = current === 'ar' ? AR5 : current === 'fr' ? FR5 : null;
+  // singular: a count of exactly 1 uses the "<key>|one" entry when there is one ("1 élément", not "1 éléments")
+  if (vars && Number(vars.n) === 1) {
+    const one = ONE[current]?.[en] ?? (current === 'ar' || current === 'fr' ? undefined : ONE.en[en]);
+    if (one) return one.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
+  }
   let s = dict ? (dict[en] ?? extra?.[en] ?? more?.[en] ?? vitrine?.[en] ?? agent?.[en] ?? en) : en;
   if (vars) s = s.replace(/\{(\w+)\}/g, (_, k: string) => String(vars[k] ?? ''));
   return s;
