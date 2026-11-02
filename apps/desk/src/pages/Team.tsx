@@ -6,6 +6,7 @@ import { t } from '../lib/i18n';
 import type { MemberRow, Office } from '../lib/types';
 import { ROLES, roleHint, roleLabel } from '../lib/labels';
 import { Btn, Card, Field, inputCls } from '../components/ui';
+import { Hero, PhoneSheet } from '../components/Hero';
 import { planError } from '../lib/plan';
 
 /** The database answers with short codes; show a sentence the person understands. */
@@ -77,10 +78,11 @@ export function Team({ office, userId, onSelfChanged, embedded = false }: { offi
     if (self) onSelfChanged(); else load();
   };
 
-  return (
-    <div className={embedded ? '' : 'mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8'}>
+  const count = (r: OrgRole) => (members ?? []).filter(m => m.role === r).length;
+  const page = (
+    <div className={embedded ? '' : 'mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1'}>
       {!embedded && (
-        <div>
+        <div className="max-lg:hidden">
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Team')}</h1>
           <p className="text-sm text-muted">{office.name}</p>
         </div>
@@ -146,5 +148,20 @@ export function Team({ office, userId, onSelfChanged, embedded = false }: { offi
         <p className="mt-6 text-sm text-muted">{t('Only owners and managers can change the team.')}</p>
       )}
     </div>
+  );
+  if (embedded) return page;
+  return (
+    <>
+      <Hero
+        title={t('Team')}
+        sub={office.name}
+        stats={[
+          { value: members ? count('owner') + count('manager') : '–', label: `${roleLabel('owner')} / ${roleLabel('manager')}` },
+          { value: members ? count('agent') : '–', label: roleLabel('agent') },
+          { value: members ? count('viewer') : '–', label: roleLabel('viewer') },
+        ]}
+      />
+      <PhoneSheet>{page}</PhoneSheet>
+    </>
   );
 }

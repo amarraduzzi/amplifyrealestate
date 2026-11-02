@@ -180,6 +180,8 @@ export const FR5: Record<string, string> = {
   'Send {n} matching properties': 'Envoyer {n} biens qui correspondent',
   'Follow up on the viewing': 'Relancer après la visite',
   'No action needed': 'Rien à faire',
+  // Plan hero
+  'Days left': 'Jours restants',
 };
 export const AR5: Record<string, string> = {
   'Language of the texts': 'لغة النصوص',
@@ -362,4 +364,6 @@ export const AR5: Record<string, string> = {
   'Send {n} matching properties': 'أرسل {n} عقارات مناسبة',
   'Follow up on the viewing': 'تابع بعد المعاينة',
   'No action needed': 'لا شيء مطلوب',
+  // Plan hero
+  'Days left': 'الأيام المتبقية',
 };

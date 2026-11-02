@@ -4,6 +4,7 @@ import type { Office } from '../lib/types';
 import { loadPlan, planError, type PlanInfo } from '../lib/plan';
 import { supabase } from '../lib/supabase';
 import { Btn, Card } from '../components/ui';
+import { Hero, PhoneSheet } from '../components/Hero';
 
 const LOCALES = { en: 'en-GB', fr: 'fr-FR', ar: 'ar-MA' } as const;
 
@@ -48,10 +49,10 @@ export function Plan({ office, embedded = false, onEditionChanged }: { office: O
 
   const date = (iso: string) => new Intl.DateTimeFormat(LOCALES[getLang()], { dateStyle: 'long' }).format(new Date(iso + 'T12:00:00'));
 
-  return (
-    <div className={embedded ? '' : 'mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8'}>
-      {!embedded && <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Plan')}</h1>}
-      {!embedded && <p className="text-sm text-muted">{office.name}</p>}
+  const page = (
+    <div className={embedded ? '' : 'mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1'}>
+      {!embedded && <h1 className="font-display text-2xl font-bold sm:text-3xl max-lg:hidden">{t('Plan')}</h1>}
+      {!embedded && <p className="text-sm text-muted max-lg:hidden">{office.name}</p>}
 
       {plan === undefined && <p className="mt-10 text-center text-muted">…</p>}
       {plan === null && <Card className="mt-6"><p className="text-sm text-muted">{t('The plan could not be loaded.')}</p></Card>}
@@ -96,5 +97,21 @@ export function Plan({ office, embedded = false, onEditionChanged }: { office: O
         </div>
       )}
     </div>
+  );
+  if (embedded) return page;
+  const endsSoon = !!plan && plan.plan !== 'free' && (!plan.is_open || plan.days_left <= 7);
+  return (
+    <>
+      <Hero
+        title={t('Plan')}
+        sub={office.name}
+        stats={[
+          { value: plan ? `${plan.properties} / ${plan.max_properties}` : '–', label: t('Properties') },
+          { value: plan ? `${plan.members} / ${plan.max_members}` : '–', label: t('Team') },
+          { value: plan ? (plan.plan === 'free' ? '–' : plan.is_open ? plan.days_left : 0) : '–', label: t('Days left'), warn: endsSoon },
+        ]}
+      />
+      <PhoneSheet>{page}</PhoneSheet>
+    </>
   );
 }
