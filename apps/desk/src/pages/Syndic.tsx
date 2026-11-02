@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { ArrowLeft, Building, ChevronDown, MessageCircle, Plus } from 'lucide-react';
+import { ArrowLeft, Building, ChevronDown, MessageCircle, Pencil, Plus } from 'lucide-react';
 import { formatMad, dirhamToCents } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { getLang, t } from '../lib/i18n';
+import { Hero, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import {
   LOT_KINDS, loadArrears, loadResidence, loadResidences, previewSplit, syndicError,
@@ -184,9 +185,22 @@ function ResidenceView({ office, residence, onBack, onChanged }: { office: Offic
   };
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-      <button type="button" onClick={onBack} className="inline-flex items-center gap-1 text-sm font-semibold text-muted hover:text-ink"><ArrowLeft className="h-4 w-4 rtl:rotate-180" /> {t('All residences')}</button>
-      <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+    <>
+    <Hero
+      eyebrow={<button type="button" onClick={onBack} className="inline-flex items-center gap-1 text-sm font-semibold normal-case tracking-normal text-white/80"><ArrowLeft className="h-4 w-4 rtl:rotate-180" /> {t('All residences')}</button>}
+      title={residence.name}
+      sub={[residence.address, residence.city].filter(Boolean).join(', ') || undefined}
+      action={canWrite ? <button type="button" onClick={() => setEditRes(true)} aria-label={t('Edit')} title={t('Edit')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90"><Pencil className="h-5 w-5" /></button> : undefined}
+      stats={[
+        { value: data ? data.lots.length : '–', label: t('Lots') },
+        { value: data ? totalTant : '–', label: t('Tantièmes') },
+        { value: !data || office.role === 'viewer' ? '–' : formatMad(totalArrears), label: t('Unpaid charges'), warn: !!data && office.role !== 'viewer' && totalArrears > 0 },
+      ]}
+    />
+    <PhoneSheet>
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+      <button type="button" onClick={onBack} className="inline-flex items-center gap-1 text-sm font-semibold text-muted hover:text-ink max-lg:hidden"><ArrowLeft className="h-4 w-4 rtl:rotate-180" /> {t('All residences')}</button>
+      <div className="mt-2 flex flex-wrap items-start justify-between gap-3 max-lg:hidden">
         <div>
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{residence.name}</h1>
           <p className="text-sm text-muted">{[residence.address, residence.city].filter(Boolean).join(', ') || '—'}</p>
@@ -194,7 +208,7 @@ function ResidenceView({ office, residence, onBack, onChanged }: { office: Offic
         {canWrite && <Btn tone="ghost" onClick={() => setEditRes(true)}>{t('Edit')}</Btn>}
       </div>
 
-      <div className="mt-4 grid grid-cols-3 gap-3">
+      <div className="mt-4 grid grid-cols-3 gap-3 max-lg:hidden">
         <Card><p className="text-xs text-muted sm:text-sm">{t('Lots')}</p><p className="font-display tabular mt-1 text-xl font-bold">{data?.lots.length ?? '…'}</p></Card>
         <Card><p className="text-xs text-muted sm:text-sm">{t('Tantièmes')}</p><p className="font-display tabular mt-1 text-xl font-bold">{totalTant}</p></Card>
         <Card><p className="text-xs text-muted sm:text-sm">{t('Unpaid charges')}</p><p className={`font-display tabular mt-1 text-xl font-bold ${totalArrears ? 'text-danger' : ''}`}>{office.role === 'viewer' ? '—' : formatMad(totalArrears)}</p></Card>
@@ -311,6 +325,8 @@ function ResidenceView({ office, residence, onBack, onChanged }: { office: Offic
       {callForm && data && <CallForm residenceId={residence.id} lots={data.lots} onClose={() => setCallForm(false)} onSaved={() => { setCallForm(false); setTab('calls'); load(); }} />}
       {editRes && <ResidenceForm office={office} residence={residence} onClose={() => setEditRes(false)} onSaved={() => { setEditRes(false); onChanged(); }} />}
     </div>
+    </PhoneSheet>
+    </>
   );
 }
 
@@ -337,9 +353,23 @@ export function Syndic({ office }: { office: Office }) {
   const opened = rows?.find(r => r.id === openId);
   if (opened) return <ResidenceView key={opened.id} office={office} residence={opened} onBack={() => { setOpenId(null); load(); }} onChanged={load} />;
 
+  const lotTotal = [...lots.values()].reduce((n, x) => n + x, 0);
+  const arrearsTotal = [...arrears.values()].reduce((n, x) => n + x, 0);
+  const ready = !!rows;
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <>
+    <Hero
+      title={t('Syndic')}
+      action={canWrite && rows ? <button type="button" onClick={() => setAdding(true)} aria-label={t('New residence')} title={t('New residence')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90"><Plus className="h-5 w-5" /></button> : undefined}
+      stats={[
+        { value: ready ? rows.length : '–', label: t('All residences') },
+        { value: ready ? lotTotal : '–', label: t('Lots') },
+        { value: ready && office.role !== 'viewer' ? formatMad(arrearsTotal) : '–', label: t('Unpaid charges'), warn: ready && arrearsTotal > 0 },
+      ]}
+    />
+    <PhoneSheet>
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+      <div className="flex flex-wrap items-center justify-between gap-3 max-lg:hidden">
         <div>
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Syndic')}</h1>
           <p className="text-sm text-muted">{t('The residences you manage as syndic: lots, co-owners, calls for funds and unpaid charges.')}</p>
@@ -373,5 +403,7 @@ export function Syndic({ office }: { office: Office }) {
       )}
       {adding && <ResidenceForm office={office} onClose={() => setAdding(false)} onSaved={id => { setAdding(false); load().then(() => setOpenId(id)); }} />}
     </div>
+    </PhoneSheet>
+    </>
   );
 }

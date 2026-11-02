@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react';
-import { ArrowLeft, BarChart3, Check, Download, HardHat, Layers, MessageCircle, MousePointerClick, Plus, Trash2, X } from 'lucide-react';
+import { ArrowLeft, BarChart3, Check, Download, HardHat, Layers, MessageCircle, MousePointerClick, Pencil, Plus, Trash2, X } from 'lucide-react';
 import { formatMad, dirhamToCents } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { getLang, t } from '../lib/i18n';
+import { Hero, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import {
   PROJECT_STATUSES, UNIT_CLS, UNIT_KINDS, UNIT_STATUSES, floorLabel, loadProject, loadProjects, projectError, projectStatusLabel, seriesRef,
@@ -362,9 +363,22 @@ function ProjectView({ office, project, onBack, onChanged }: { office: Office; p
   };
 
   return (
-    <div className="mx-auto w-full min-w-0 max-w-6xl px-4 py-6 pb-32 sm:px-6 sm:py-8">
-      <button type="button" onClick={onBack} className="inline-flex items-center gap-1 text-sm font-semibold text-muted hover:text-ink"><ArrowLeft className="h-4 w-4 rtl:rotate-180" /> {t('All projects')}</button>
-      <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
+    <>
+    <Hero
+      eyebrow={<button type="button" onClick={onBack} className="inline-flex items-center gap-1 text-sm font-semibold normal-case tracking-normal text-white/80"><ArrowLeft className="h-4 w-4 rtl:rotate-180" /> {t('All projects')}</button>}
+      title={project.name}
+      sub={[project.city, projectStatusLabel(project.status), project.delivery_date ? t('Delivery {date}', { date: day(project.delivery_date) }) : null].filter(Boolean).join(' · ') || undefined}
+      action={canWrite ? <button type="button" onClick={() => setEditProject(true)} aria-label={t('Edit')} title={t('Edit')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90"><Pencil className="h-5 w-5" /></button> : undefined}
+      stats={[
+        { value: data ? s.total : '–', label: t('Units') },
+        { value: data ? `${s.total ? Math.round(s.sold / s.total * 100) : 0}%` : '–', label: t('Sold') },
+        { value: data ? formatMad(s.soldCents) : '–', label: t('Sales') },
+      ]}
+    />
+    <PhoneSheet>
+    <div className="mx-auto w-full min-w-0 max-w-6xl px-4 py-6 pb-32 sm:px-6 sm:py-8 max-lg:pt-1">
+      <button type="button" onClick={onBack} className="inline-flex items-center gap-1 text-sm font-semibold text-muted hover:text-ink max-lg:hidden"><ArrowLeft className="h-4 w-4 rtl:rotate-180" /> {t('All projects')}</button>
+      <div className="mt-2 flex flex-wrap items-start justify-between gap-3 max-lg:hidden">
         <div>
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{project.name}</h1>
           <p className="text-sm text-muted">{[project.city, projectStatusLabel(project.status), project.delivery_date ? t('Delivery {date}', { date: day(project.delivery_date) }) : null].filter(Boolean).join(' · ')}</p>
@@ -373,10 +387,10 @@ function ProjectView({ office, project, onBack, onChanged }: { office: Office; p
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Card><p className="text-xs text-muted sm:text-sm">{t('Units')}</p><p className="font-display tabular mt-1 text-xl font-bold">{s.total}</p><p className="text-xs text-muted">{t('{n} available', { n: s.available })}</p></Card>
-        <Card><p className="text-xs text-muted sm:text-sm">{t('Sold')}</p><p className="font-display tabular mt-1 text-xl font-bold">{s.total ? Math.round(s.sold / s.total * 100) : 0}%</p><p className="text-xs text-muted">{t('{n} units', { n: s.sold })}</p></Card>
-        <Card><p className="text-xs text-muted sm:text-sm">{t('Sales')}</p><p className="font-display tabular mt-1 whitespace-nowrap text-base font-bold sm:text-xl">{formatMad(s.soldCents)}</p><p className="text-xs text-muted">{t('+ {amount} reserved', { amount: formatMad(s.reservedCents) })}</p></Card>
-        <Card><p className="text-xs text-muted sm:text-sm">{t('Stock still to sell')}</p><p className="font-display tabular mt-1 whitespace-nowrap text-base font-bold sm:text-xl">{formatMad(s.stockCents)}</p><p className="text-xs text-muted">{t('{n} on option', { n: s.option })}</p></Card>
+        <Card className="max-lg:hidden"><p className="text-xs text-muted sm:text-sm">{t('Units')}</p><p className="font-display tabular mt-1 text-xl font-bold">{s.total}</p><p className="text-xs text-muted">{t('{n} available', { n: s.available })}</p></Card>
+        <Card className="max-lg:hidden"><p className="text-xs text-muted sm:text-sm">{t('Sold')}</p><p className="font-display tabular mt-1 text-xl font-bold">{s.total ? Math.round(s.sold / s.total * 100) : 0}%</p><p className="text-xs text-muted">{t('{n} units', { n: s.sold })}</p></Card>
+        <Card className="max-lg:hidden"><p className="text-xs text-muted sm:text-sm">{t('Sales')}</p><p className="font-display tabular mt-1 whitespace-nowrap text-base font-bold sm:text-xl">{formatMad(s.soldCents)}</p><p className="text-xs text-muted">{t('+ {amount} reserved', { amount: formatMad(s.reservedCents) })}</p></Card>
+        <Card className="max-lg:col-span-2"><p className="text-xs text-muted sm:text-sm">{t('Stock still to sell')}</p><p className="font-display tabular mt-1 whitespace-nowrap text-base font-bold sm:text-xl">{formatMad(s.stockCents)}</p><p className="text-xs text-muted">{t('{n} on option', { n: s.option })}</p></Card>
       </div>
       {s.total > 0 && (
         <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-surface-2" aria-hidden>
@@ -464,6 +478,8 @@ function ProjectView({ office, project, onBack, onChanged }: { office: Office; p
         onReserve={sales ? () => { const u = edit.unit!; setEdit(null); setSaleFor(u); } : undefined} />}
       {editProject && <ProjectForm office={office} project={project} onClose={() => setEditProject(false)} onSaved={id => { setEditProject(false); if (!id) onBack(); else onChanged(); }} />}
     </div>
+    </PhoneSheet>
+    </>
   );
 }
 
@@ -487,9 +503,27 @@ export function Projects({ office }: { office: Office }) {
   const opened = rows?.find(r => r.id === openId);
   if (opened) return <ProjectView key={opened.id} office={office} project={opened} onBack={() => { setOpenId(null); load(); }} onChanged={load} />;
 
+  const all = stats(units);
+  const ready = !!rows;
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <>
+    <Hero
+      title={t('Projects')}
+      action={(boss && rows && rows.length > 0) || (canWrite && rows) ? (
+        <div className="flex items-center gap-2">
+          {boss && rows && rows.length > 0 && <button type="button" onClick={() => setReport(true)} aria-label={t('Sales report')} title={t('Sales report')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90"><BarChart3 className="h-5 w-5" /></button>}
+          {canWrite && rows && <button type="button" onClick={() => setAdding(true)} aria-label={t('New project')} title={t('New project')} className="grid h-11 w-11 place-items-center rounded-full bg-white/10 text-white ring-1 ring-white/15 transition active:scale-90"><Plus className="h-5 w-5" /></button>}
+        </div>
+      ) : undefined}
+      stats={[
+        { value: ready ? rows.length : '–', label: t('Projects') },
+        { value: ready ? all.total : '–', label: t('Units') },
+        { value: ready ? `${all.total ? Math.round(all.sold / all.total * 100) : 0}%` : '–', label: t('Sold') },
+      ]}
+    />
+    <PhoneSheet>
+    <div className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
+      <div className="flex flex-wrap items-center justify-between gap-3 max-lg:hidden">
         <div>
           <h1 className="font-display text-2xl font-bold sm:text-3xl">{t('Projects')}</h1>
           <p className="text-sm text-muted">{t('New-build projects: tranches, units in stock, prices and what is sold.')}</p>
@@ -523,5 +557,7 @@ export function Projects({ office }: { office: Office }) {
       {report && <ProjectReport office={office} onClose={() => setReport(false)} />}
       {adding && <ProjectForm office={office} onClose={() => setAdding(false)} onSaved={id => { setAdding(false); load().then(() => setOpenId(id)); }} />}
     </div>
+    </PhoneSheet>
+    </>
   );
 }
