@@ -6,6 +6,7 @@ import { t } from '../lib/i18n';
 import type { MemberRow, Office } from '../lib/types';
 import { ROLES, roleHint, roleLabel } from '../lib/labels';
 import { Btn, Card, Field, inputCls } from '../components/ui';
+import { Avatar } from '../components/Avatar';
 import { Hero, PhoneSheet } from '../components/Hero';
 import { planError } from '../lib/plan';
 
@@ -100,13 +101,17 @@ export function Team({ office, userId, onSelfChanged, embedded = false }: { offi
             const editable = canManage && (m.role !== 'owner' || isOwner);
             const leavable = self && !canManage;
             return (
-              <li key={m.user_id} className="card flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl p-3.5 sm:p-4">
+              <li key={m.user_id} className="card lift flex flex-col gap-3 rounded-2xl p-4 sm:flex-row sm:items-center sm:gap-4">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                <Avatar name={m.email} id={m.user_id} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold" dir="ltr">{m.email}{self && <span className="ms-2 text-xs font-medium text-muted">{t('You')}</span>}</p>
+                  <p className="font-semibold max-sm:break-all sm:truncate" dir="ltr">{m.email}{self && <span className="ms-2 text-xs font-medium text-muted">{t('You')}</span>}</p>
                   <p className="text-xs text-muted">{roleHint(m.role)}</p>
                 </div>
+                </div>
+                <div className="flex items-center gap-2 max-sm:w-full">
                 {editable ? (
-                  <select aria-label={t('Role')} className={`${inputCls} !w-auto !py-1.5 text-sm font-semibold`} value={m.role} disabled={busy === m.user_id}
+                  <select aria-label={t('Role')} className={`${inputCls} !w-auto !py-1.5 text-sm font-semibold max-sm:!w-0 max-sm:flex-1`} value={m.role} disabled={busy === m.user_id}
                     onChange={e => changeRole(m, e.target.value as OrgRole)}>
                     {ROLES.filter(r => r !== 'owner' || isOwner).map(r => <option key={r} value={r}>{roleLabel(r)}</option>)}
                   </select>
@@ -121,6 +126,7 @@ export function Team({ office, userId, onSelfChanged, embedded = false }: { offi
                   <button type="button" onClick={() => remove(m)} disabled={busy === m.user_id} aria-label={t('Leave this office')} title={t('Leave this office')}
                     className="grid h-9 w-9 place-items-center rounded-full bg-surface-2 text-muted hover:text-ink disabled:opacity-40"><LogOut className="h-4 w-4" /></button>
                 )}
+              </div>
               </li>
             );
           })}

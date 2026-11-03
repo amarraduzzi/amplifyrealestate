@@ -150,3 +150,11 @@ fieldset { min-width: 0; }
   .modal-foot > div > * { flex: 1 1 0; padding-block: .8rem; font-size: 1rem; }
   .modal-foot > div > :last-child:not(:only-child) { flex: 1.7 1 0; }
 }
+
+@media (max-width: 639px) {
+  main form input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]),
+  main form select, main form textarea,
+  main .card input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]),
+  main .card select, main .card textarea { background-color: rgb(var(--surface-2)); border-color: transparent; padding-block: .8rem; }
+  main form input:focus, main form select:focus, main form textarea:focus, main .card input:focus, main .card select:focus, main .card textarea:focus { background-color: rgb(var(--surface)); border-color: rgb(var(--brand)); }
+}

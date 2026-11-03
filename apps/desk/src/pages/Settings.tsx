@@ -41,17 +41,19 @@ export function Settings({ office, userId, onSelfChanged, initialTab = 'team' }:
     <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
       <h1 className="font-display text-2xl font-bold max-lg:hidden sm:text-3xl">{t('Settings')}</h1>
       <p className="text-sm text-muted max-lg:hidden">{office.name}</p>
-      <div className="mt-4 flex items-center justify-between gap-3 rounded-2xl bg-surface px-4 py-3 ring-1 ring-line/10">
-        <span className="text-sm font-semibold">{t('Language')}</span>
-        <div className="rounded-full bg-surface-2 p-0.5"><LangSwitch light /></div>
-      </div>
-      <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl bg-surface px-4 py-3 ring-1 ring-line/10">
-        <span className="text-sm font-semibold">{t('Appearance')}</span>
-        <div className="flex rounded-full bg-surface-2 p-0.5" role="group" aria-label={t('Appearance')}>
-          {([['light', t('Light')], ['dark', t('Dark')], ['auto', t('Automatic')]] as [Theme, string][]).map(([k, label]) => (
-            <button key={k} type="button" aria-pressed={theme === k} onClick={() => { setTheme(k); saveTheme(k); }}
-              className={`rounded-full px-3 py-1 text-xs font-semibold transition ${theme === k ? 'bg-ink text-bg' : 'text-muted hover:text-ink'}`}>{label}</button>
-          ))}
+      <div className="card lift mt-4 divide-y divide-line/[0.07] rounded-2xl">
+        <div className="flex items-center justify-between gap-3 px-4 py-3">
+          <span className="text-sm font-semibold">{t('Language')}</span>
+          <div className="rounded-full bg-surface-2 p-0.5"><LangSwitch light /></div>
+        </div>
+        <div className="flex items-center justify-between gap-3 px-4 py-3">
+          <span className="text-sm font-semibold">{t('Appearance')}</span>
+          <div className="flex rounded-full bg-surface-2 p-0.5" role="group" aria-label={t('Appearance')}>
+            {([['light', t('Light')], ['dark', t('Dark')], ['auto', t('Automatic')]] as [Theme, string][]).map(([k, label]) => (
+              <button key={k} type="button" aria-pressed={theme === k} onClick={() => { setTheme(k); saveTheme(k); }}
+                className={`rounded-full px-3 py-1 text-xs font-semibold transition ${theme === k ? 'bg-ink text-bg' : 'text-muted hover:text-ink'}`}>{label}</button>
+            ))}
+          </div>
         </div>
       </div>
       <div className="-mx-4 mt-4 flex gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden" role="tablist">
