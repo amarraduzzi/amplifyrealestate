@@ -3,7 +3,8 @@ import { ChevronRight } from 'lucide-react';
 import { formatMad } from '@vastgoed/shared';
 import { supabase } from '../lib/supabase';
 import { t } from '../lib/i18n';
-import { Hero, PhoneSheet } from '../components/Hero';
+import { Hero, madShort, PhoneSheet } from '../components/Hero';
+import { Attention } from '../components/Rows';
 import type { LeadSource, Office } from '../lib/types';
 import { SOURCES, sourceLabel, STATUSES, VIEWING_OUTCOMES, LEAD_STATUSES, leadStatusCls, leadStatusLabel, outcomeCls, outcomeLabel, statusCls, statusLabel } from '../lib/labels';
 import { computeOverview, type MandateAlert, type OverviewInput } from '../lib/overview';
@@ -29,10 +30,10 @@ async function fetchAll<T>(table: string, columns: string, orgId: string): Promi
 function Stat({ label, value, hint, tone = 'plain' }: { label: string; value: number; hint?: string; tone?: 'plain' | 'warn' | 'ok' }) {
   const cls = tone === 'warn' && value > 0 ? 'text-warn' : tone === 'ok' ? 'text-ok' : '';
   return (
-    <div className="rounded-2xl bg-surface-2 px-3.5 py-3">
-      <p className={`tabular font-display text-2xl font-bold ${cls}`}>{value}</p>
-      <p className="text-sm font-semibold">{label}</p>
-      {hint && <p className="mt-0.5 text-xs text-muted">{hint}</p>}
+    <div className="rounded-2xl bg-surface-2 px-3 py-2.5 sm:px-3.5 sm:py-3">
+      <p className={`tabular font-display text-xl font-bold sm:text-2xl ${cls}`}>{value}</p>
+      <p className="text-xs font-semibold leading-tight sm:text-sm">{label}</p>
+      {hint && <p className="mt-0.5 text-xs text-muted max-sm:hidden">{hint}</p>}
     </div>
   );
 }
@@ -42,6 +43,16 @@ function Chip({ cls, label, n }: { cls: string; label: string; n: number }) {
     <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold ${cls} ${n === 0 ? 'opacity-50' : ''}`}>
       {label}<span className="tabular">{n}</span>
     </span>
+  );
+}
+
+/** One bar that shows how the total is divided, so the proportions are visible before you read the numbers. */
+function StackBar({ items }: { items: { key: string; cls: string; n: number }[] }) {
+  const shown = items.filter(x => x.n > 0);
+  return (
+    <div className="mt-4 flex h-2.5 gap-0.5 overflow-hidden rounded-full bg-surface-3" role="presentation">
+      {shown.map(x => <span key={x.key} className={`block h-full ${x.cls}`} style={{ flexGrow: x.n, flexBasis: 0 }}><span className="block h-full bg-current opacity-80" /></span>)}
+    </div>
   );
 }
 
@@ -123,6 +134,11 @@ export function Overview({ office, onGo }: { office: Office; onGo: (v: View) => 
     <>
     <Hero
       title={t('Overview')}
+      stats={[
+        { value: o ? o.properties.total : '–', label: t('Properties') },
+        { value: o ? o.leads.open : '–', label: t('Still looking') },
+        { value: o ? madShort(o.rent.overdueCents) : '–', label: t('Unpaid months'), warn: !!o && o.rent.overdueCents > 0 },
+      ]}
     />
     <PhoneSheet>
     <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8 max-lg:pt-1">
@@ -136,26 +152,34 @@ export function Overview({ office, onGo }: { office: Office; onGo: (v: View) => 
       )}
       {!o && !error && <p className="mt-10 text-center text-muted">…</p>}
 
-      {o && m && (
-        <div className="mt-6 space-y-8">
+      {o && m && (<>
+        <Attention items={[
+          ...(m.expired.length + m.missing.length > 0 ? [{ tone: 'danger' as const, text: `${m.expired.length > 0 ? t('Expired mandates') : t('No mandate on file')} · ${m.expired.length + m.missing.length}` }] : []),
+          ...(o.repairs.urgent > 0 ? [{ tone: 'danger' as const, text: `${t('Urgent')} · ${t('Maintenance')} ${o.repairs.urgent}` }] : []),
+          ...(m.expiring.length > 0 ? [{ tone: 'warn' as const, text: `${t('Ending within 30 days')} · ${m.expiring.length}` }] : []),
+          ...(o.viewings.pastOpen > 0 ? [{ tone: 'warn' as const, text: `${t('Not closed yet')} · ${t('Viewings')} ${o.viewings.pastOpen}` }] : []),
+        ]} />
+        <div className="mt-5 space-y-6 sm:mt-6 sm:space-y-8">
           <Section title={t('Properties')} to="properties" onGo={onGo}>
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
               <Stat label={t('Properties')} value={o.properties.total} />
               <Stat label={t('Online now')} value={o.properties.online} tone="ok" hint={t('Available or reserved, page switched on, valid mandate.')} />
             </div>
-            <p className="mb-2 mt-4 text-sm font-semibold">{t('By status')}</p>
+            <StackBar items={STATUSES.map(x => ({ key: x, cls: statusCls[x], n: o.properties.byStatus[x] }))} />
+            <p className="mb-2 mt-3 text-sm font-semibold">{t('By status')}</p>
             <div className="flex flex-wrap gap-2">
               {STATUSES.map(s => <Chip key={s} cls={statusCls[s]} label={statusLabel(s)} n={o.properties.byStatus[s]} />)}
             </div>
           </Section>
 
           <Section title={t('Leads')} to="leads" onGo={onGo}>
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
               <Stat label={t('Still looking')} value={o.leads.open} hint={t('New, active or viewing.')} />
               <Stat label={t('New this week')} value={o.leads.newWeek} tone="ok" />
               <Stat label={t('New this month')} value={o.leads.newMonth} />
             </div>
-            <p className="mb-2 mt-4 text-sm font-semibold">{t('By status')}</p>
+            <StackBar items={LEAD_STATUSES.map(x => ({ key: x, cls: leadStatusCls[x], n: o.leads.byStatus[x] }))} />
+            <p className="mb-2 mt-3 text-sm font-semibold">{t('By status')}</p>
             <div className="flex flex-wrap gap-2">
               {LEAD_STATUSES.map(s => <Chip key={s} cls={leadStatusCls[s]} label={leadStatusLabel(s)} n={o.leads.byStatus[s]} />)}
             </div>
@@ -174,14 +198,15 @@ export function Overview({ office, onGo }: { office: Office; onGo: (v: View) => 
               <Stat label={t('No-shows, last 30 days')} value={o.viewings.noShow30} tone="warn" />
               <Stat label={t('Not closed yet')} value={o.viewings.pastOpen} tone="warn" hint={t('In the past, still marked as scheduled.')} />
             </div>
-            <p className="mb-2 mt-4 text-sm font-semibold">{t('Results of the viewings done in the last 30 days')}</p>
+            <StackBar items={VIEWING_OUTCOMES.map(x => ({ key: x, cls: outcomeCls[x], n: o.viewings.outcomes[x] }))} />
+            <p className="mb-2 mt-3 text-sm font-semibold">{t('Results of the viewings done in the last 30 days')}</p>
             <div className="flex flex-wrap gap-2">
               {VIEWING_OUTCOMES.map(x => <Chip key={x} cls={outcomeCls[x]} label={outcomeLabel(x)} n={o.viewings.outcomes[x]} />)}
             </div>
           </Section>
 
           <Section title={t('Rent and repairs')} to="leases" onGo={onGo}>
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
               <Stat label={t('Unpaid months')} value={o.rent.overdueCount} tone="warn" hint={o.rent.overdueCount > 0 ? t('{amount} in total', { amount: formatMad(o.rent.overdueCents) }) : t('Nothing overdue')} />
               <Stat label={t('Open repairs')} value={o.repairs.open} hint={t('Open or in progress')} />
               <Stat label={t('Urgent')} value={o.repairs.urgent} tone="warn" hint={t('Open and marked urgent')} />
@@ -192,7 +217,7 @@ export function Overview({ office, onGo }: { office: Office; onGo: (v: View) => 
           </Section>
 
           <Section title={t('Mandates')} to="properties" onGo={onGo}>
-            <p className="mb-3 text-sm text-muted">{t('Only properties that are available or reserved are counted. Without a valid mandate a property cannot be online.')}</p>
+            <p className="mb-3 text-sm text-muted max-sm:hidden">{t('Only properties that are available or reserved are counted. Without a valid mandate a property cannot be online.')}</p>
             {allGood
               ? <p className="rounded-xl bg-ok/10 px-3 py-2 text-sm font-semibold text-ok">{t('All mandates are in order.')}</p>
               : (
@@ -204,7 +229,7 @@ export function Overview({ office, onGo }: { office: Office; onGo: (v: View) => 
               )}
           </Section>
         </div>
-      )}
+      </>)}
     </div>
     </PhoneSheet>
     </>
