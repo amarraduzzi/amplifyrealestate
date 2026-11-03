@@ -6,7 +6,7 @@ import { Hero, madShort, PhoneSheet } from '../components/Hero';
 import type { Office } from '../lib/types';
 import { loadInvoices, type InvoiceRow, type InvoiceStatus } from '../lib/invoices';
 import { Btn, Card, inputCls, EmptyState } from '../components/ui';
-import { AccentRow, type Tone } from '../components/Rows';
+import { AccentRow, Attention, type Tone } from '../components/Rows';
 import { InvoiceForm } from './InvoiceForm';
 import { InvoiceDoc } from './InvoiceDoc';
 
@@ -73,14 +73,16 @@ export function Invoices({ office }: { office: Office }) {
       {rows === null && <p className="mt-6 rounded-xl bg-warn/10 px-3 py-2 text-sm font-semibold text-warn">{t('Run the SQL of etappe 6f first.')}</p>}
 
       {rows && (<>
-        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <Attention items={sums.overdue > 0 ? [{ tone: 'danger', text: `${t('Overdue')} · ${sums.overdue}` }] : []} />
+        <div className="mt-5 grid gap-3 sm:grid-cols-3 max-lg:hidden">
           <Card><p className="text-sm text-muted">{t('To be collected')}</p><p className="font-display tabular mt-1 text-2xl font-bold text-warn">{formatMad(sums.open)}</p><p className="text-xs text-muted">{sums.openN === 1 ? t('1 invoice') : t('{n} invoices', { n: sums.openN })}{sums.overdue ? ` · ${t('{n} past due date', { n: sums.overdue })}` : ''}</p></Card>
           <Card><p className="text-sm text-muted">{t('Paid in {year}', { year })}</p><p className="font-display tabular mt-1 text-2xl font-bold text-ok">{formatMad(sums.paidYear)}</p></Card>
           <Card><p className="text-sm text-muted">{t('Invoices in total')}</p><p className="font-display tabular mt-1 text-2xl font-bold">{rows.length}</p></Card>
         </div>
 
         {rows.length === 0 ? (
-          <EmptyState className="mt-6" icon={Receipt} title={t('No invoices yet')} text={t('Open a deal and tap "Make an invoice", or make one here. Fill in your invoice details under Settings first.')} />
+          <EmptyState className="mt-6" icon={Receipt} title={t('No invoices yet')} text={t('Open a deal and tap "Make an invoice", or make one here. Fill in your invoice details under Settings first.')}
+            action={canWrite ? <Btn tone="brand" onClick={() => setAdding(true)}><FilePlus2 className="h-4 w-4" /> {t('New invoice')}</Btn> : undefined} />
         ) : (<>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center">
             <div role="tablist" className="-mx-4 flex flex-nowrap gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
