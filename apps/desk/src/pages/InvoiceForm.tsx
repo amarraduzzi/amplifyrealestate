@@ -108,6 +108,7 @@ export function InvoiceForm({ office, deal, onClose, onCreated }: { office: Offi
             ))}
           </div>
 
+          <p className="text-xs font-bold uppercase tracking-wide text-brand">{t('Client')}</p>
           {parties.length > 0 && (
             <div className="flex flex-wrap gap-1.5" role="group" aria-label={t('Client')}>
               {[...parties, { key: 'other', label: t('Someone else'), name: '' }].map(p => (
@@ -124,13 +125,13 @@ export function InvoiceForm({ office, deal, onClose, onCreated }: { office: Offi
           </div>
           <Field label={t('Address of the client')}><input className={inputCls} value={address} onChange={e => setAddress(e.target.value)} maxLength={300} /></Field>
 
-          <div>
-            <p className="mb-1 text-sm font-semibold">{t('Lines')} <span className="font-normal text-muted">({ae ? t('amounts') : t('amounts without VAT')})</span></p>
+          <div className="border-t border-line/[0.07] pt-4">
+            <p className="mb-2 text-xs font-bold uppercase tracking-wide text-brand">{t('Lines')} <span className="font-normal text-muted">({ae ? t('amounts') : t('amounts without VAT')})</span></p>
             <ul className="space-y-2">
               {lines.map((l, i) => (
-                <li key={i} className="grid grid-cols-[1fr_4rem_7rem_auto] items-center gap-2">
-                  <input className={inputCls} value={l.label} onChange={e => setLine(i, { label: e.target.value })} maxLength={300} aria-label={t('Description')} placeholder={t('Description')} />
-                  <input className={inputCls} dir="ltr" inputMode="decimal" value={l.qty} onChange={e => setLine(i, { qty: e.target.value })} aria-label={t('Quantity')} />
+                <li key={i} className="grid grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-2 max-sm:rounded-xl max-sm:bg-surface-2/60 max-sm:p-2 sm:grid-cols-[1fr_4rem_7rem_auto]">
+                  <input className={`${inputCls} max-sm:col-span-3`} value={l.label} onChange={e => setLine(i, { label: e.target.value })} maxLength={300} aria-label={t('Description')} placeholder={t('Description')} />
+                  <input className={inputCls} dir="ltr" inputMode="decimal" value={l.qty} onChange={e => setLine(i, { qty: e.target.value })} aria-label={t('Quantity')} placeholder={t('Quantity')} />
                   <input className={inputCls} dir="ltr" inputMode="decimal" value={l.amount} onChange={e => setLine(i, { amount: e.target.value })} aria-label={t('Amount (DH)')} placeholder="DH" />
                   <button type="button" disabled={lines.length === 1} onClick={() => setLines(ls => ls.filter((_, j) => j !== i))} aria-label={t('Remove')}
                     className="grid h-9 w-9 place-items-center rounded-lg text-muted hover:text-danger disabled:opacity-30"><Trash2 className="h-4 w-4" /></button>
@@ -150,7 +151,7 @@ export function InvoiceForm({ office, deal, onClose, onCreated }: { office: Offi
             </>)}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 border-t border-line/[0.07] pt-4 sm:grid-cols-2">
             <Field label={t('Invoice date')}><input type="date" className={inputCls} value={issued} onChange={e => setIssued(e.target.value)} /></Field>
             <Field label={t('Due date (optional)')}><input type="date" className={inputCls} value={due} min={issued} onChange={e => setDue(e.target.value)} /></Field>
           </div>
