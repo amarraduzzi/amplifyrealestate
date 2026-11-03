@@ -54,8 +54,8 @@ export function Modal({ title, sub, action, onClose, children, footer }: { title
           {action && <div className="shrink-0 pe-2 sm:hidden">{action}</div>}
           <button onClick={onClose} aria-label={t('Close')} className="hidden h-9 w-9 place-items-center rounded-full bg-surface-2 text-muted hover:text-ink sm:grid"><X className="h-5 w-5" /></button>
         </div>
-        <div className="relative flex-1 overflow-y-auto bg-surface px-4 py-4 max-sm:-mt-4 max-sm:rounded-t-[1.5rem] max-sm:pt-5 sm:px-6 sm:py-5">{children}</div>
-        {footer && <div className="border-t border-line/[0.07] bg-surface-2/50 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-4">{footer}</div>}
+        <div className="relative flex-1 overflow-y-auto bg-surface px-4 py-4 max-sm:-mt-4 max-sm:rounded-t-[1.5rem] max-sm:bg-bg max-sm:pt-5 sm:px-6 sm:py-5">{children}</div>
+        {footer && <div className="modal-foot border-t border-line/[0.07] bg-surface-2/50 px-4 py-3 max-sm:border-0 max-sm:bg-surface max-sm:shadow-[0_-10px_24px_-14px_rgb(0_30_62/.3)] pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6 sm:py-4">{footer}</div>}
       </div>
     </div>
   ), document.body);
@@ -78,7 +78,7 @@ export const inputCls = 'w-full rounded-xl border border-line/[0.12] bg-surface 
 export function Field({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-semibold">{label}</span>
+      <span className="field-label mb-1.5 block text-[13px] font-bold tracking-wide text-muted max-sm:uppercase">{label}</span>
       {children}
       {hint && <span className="mt-1 block text-xs text-muted">{hint}</span>}
     </label>
