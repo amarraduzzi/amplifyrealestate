@@ -1,0 +1,1961 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tournée">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="theme-color" content="#001E3E">
+<title>Amplify Tournée</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<style>
+:root{--ink:#001E3E;--mute:#4A5D74;--line:#D3DBD6;--bg:#EEF1EC;--panel:#fff;--accent:#00804A;--green:#05B962;--mint:#DDF7E9;--danger:#B8433A}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font:15px/1.4 'Archivo',system-ui,sans-serif;color:var(--ink);background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{display:grid;grid-template-columns:minmax(0,1fr) clamp(340px,30vw,460px);height:100dvh}
+.side{display:flex;flex-direction:column;min-height:0;background:var(--panel);border-right:1px solid var(--line)}
+.pane{padding-left:max(16px,2vw);padding-right:max(16px,2vw)}
+.map-wrap{position:relative;min-height:0}
+#map{position:absolute;inset:0;background:#dfe6ea}
+header{display:flex;align-items:center;gap:8px;padding:12px 14px;background:var(--ink);color:#fff;padding-top:max(12px,env(safe-area-inset-top))}
+header h1{font-size:18px;margin:0;flex:1;font-weight:700;letter-spacing:-.01em}
+header button{background:transparent;color:#fff;border:1px solid #ffffff55;border-radius:6px;padding:6px 10px}
+header button.solid{background:#fff;color:var(--ink);border-color:#fff;font-weight:500}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tabs button{flex:1;padding:11px 0;background:none;border:0;border-bottom:3px solid transparent;font-weight:500;color:var(--mute)}
+.tabs button[aria-selected=true]{color:var(--ink);border-bottom-color:var(--accent)}
+.badge{display:inline-block;min-width:20px;padding:0 6px;margin-left:6px;border-radius:10px;background:var(--accent);color:#fff;font-size:12px;line-height:20px}
+.tabs button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 4px 8px;font-size:13px;font-weight:600}
+.tabs button[aria-selected=true]{font-weight:800}
+.tabs .badge{position:absolute;top:-6px;right:-6px;min-width:18px;padding:0 5px;line-height:18px;font-size:11px}
+.pane>div{max-width:880px;margin:0 auto}
+.tabs svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tabs .ic{position:relative;display:grid;place-items:center}
+.pane{flex:1;overflow:auto;padding-bottom:env(safe-area-inset-bottom)}
+.filters{display:flex;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.filters input,.filters select{min-width:0;border:1px solid var(--line);border-radius:6px;padding:7px 9px;background:#fff}
+.filters input{flex:1}
+.row{display:grid;grid-template-columns:20px 1fr auto;gap:10px;align-items:start;padding:11px 14px;border-bottom:1px solid var(--line)}
+.dot{width:12px;height:12px;border-radius:50%;margin-top:5px}
+.row .name{font-weight:700;background:none;border:0;padding:0;text-align:left}
+.row .meta{color:var(--mute);font-size:13px}
+.row .next{font-size:13px;margin-top:2px}
+.row .next.due{color:var(--danger);font-weight:500}
+.acts{display:flex;gap:6px;align-items:center}
+.chk{width:22px;height:22px;accent-color:var(--accent)}
+.btn{border:1px solid var(--line);background:#fff;border-radius:6px;padding:7px 11px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
+.btn.danger{color:var(--danger);border-color:#e3b9b5}
+.btn:disabled{opacity:.5}
+.empty{padding:28px 18px;color:var(--mute)}
+.route-box{padding:14px;border-bottom:1px solid var(--line);display:grid;gap:10px}
+.route-box label{display:flex;gap:8px;align-items:center}
+.route-box .line{display:flex;gap:8px;flex-wrap:wrap}
+.summary{font-weight:700;font-size:16px}
+.stops{list-style:none;margin:0;padding:6px 14px 14px}
+.stop{display:grid;grid-template-columns:28px 1fr auto;gap:10px;padding:8px 0;position:relative}
+.stop::before{content:"";position:absolute;left:13px;top:34px;bottom:-8px;border-left:2px dotted #9fb0bb}
+.stop:last-child::before{display:none}
+.num{width:28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;display:grid;place-items:center;font-weight:700;font-size:13px}
+.num.start{background:var(--accent)}
+.stop .leg{color:var(--mute);font-size:12px}
+.pin{background:var(--ink);color:#fff;border:2px solid #fff;border-radius:50%;width:28px;height:28px;display:grid;place-items:center;font-weight:700;font-size:13px;box-shadow:0 1px 4px #0006}
+.pin.start{background:var(--accent)}
+.hint{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:8px 14px;border-radius:20px;z-index:500;display:none}
+.hint.on{display:block}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:8px;z-index:3000;display:none;max-width:90vw}
+dialog{border:0;border-radius:12px;padding:0;width:min(480px,94vw);max-height:92dvh;box-shadow:0 10px 40px #0005}
+dialog::backdrop{background:#14212B88}
+dialog form{display:grid;gap:12px;padding:18px}
+dialog h2{margin:0;font-size:18px}
+dialog label{display:grid;gap:4px;font-size:13px;color:var(--mute)}
+dialog input,dialog select,dialog textarea{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:#fff;color:var(--ink);font-size:15px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.foot{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.hist{font-size:13px;color:var(--mute);border-top:1px solid var(--line);padding-top:10px;display:grid;gap:6px}
+.pop button{margin:4px 4px 0 0}
+@media(max-width:820px){
+  .app{grid-template-columns:1fr;grid-template-rows:40dvh 1fr}
+  .map-wrap{order:-1}
+  .side{border-right:0;border-top:1px solid var(--line)}
+}
+
+.online{padding:10px 14px 0;display:flex;gap:8px}.online .btn{flex:1}
+.blk{padding:12px 14px;border-bottom:1px solid var(--line)}.blk h3{margin:0 0 8px;font-size:15px}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 14px}.kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;font-size:13px;color:var(--mute)}
+.kpi b{display:block;font-size:26px;font-stretch:62%;font-weight:800;color:var(--ink)}
+.brow{display:grid;grid-template-columns:104px 1fr 34px;gap:8px;align-items:center;font-size:14px;padding:3px 0}.brow span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar{background:#E3E8E5;border-radius:6px;height:10px;overflow:hidden}.bar i{display:block;height:100%;background:var(--green)}
+.tip{font-size:13px;background:var(--mint);border-radius:8px;padding:6px 9px;margin-top:6px}.late{color:var(--danger);font-weight:500}
+.stat{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--mute)}
+button.score{border:0;cursor:pointer;min-height:30px;min-width:40px}
+.sres{max-height:48dvh;overflow:auto;border:1px solid var(--line);border-radius:8px;background:#fff}
+.sr{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:9px 10px;border-bottom:1px solid var(--line)}
+.sr:last-child{border-bottom:0}.sr .meta{color:var(--mute);font-size:13px}.sr .btn{flex:none}
+.lang{display:flex;border:1px solid #ffffff88;border-radius:8px;overflow:hidden}
+.lang button{border:0;background:transparent;color:#fff;padding:6px 12px;font-weight:700;min-width:46px;min-height:36px;border-radius:0}
+.lang button.on{background:#fff;color:var(--ink)}
+dialog .lang{border-color:var(--line);justify-self:end}
+dialog .lang button{color:var(--ink)}
+dialog .lang button.on{background:var(--ink);color:#fff}
+dialog{overflow:hidden;overflow:clip}
+dialog form{overflow:auto;max-height:92dvh}
+@media(max-width:820px){
+.app{grid-template-rows:1fr;grid-template-columns:minmax(0,1fr)}.side{min-width:0}.map-wrap{display:none}body[data-tab=route] .map-wrap{display:block}body[data-tab=route] .app{grid-template-rows:44dvh 1fr}
+header{flex-wrap:wrap;row-gap:8px}
+header h1{flex:1 1 auto}
+.lang{order:1}
+header #btnImport,header #btnAdd,header #btnLogout{order:2;flex:1 1 30%;min-height:44px}
+.btn,.tabs button{min-height:44px}
+input,select,textarea{font-size:16px!important}
+.filters{flex-wrap:wrap}
+.filters input{flex:1 1 100%;min-height:44px}
+.filters select{flex:1 1 45%;min-height:44px}
+.row{grid-template-columns:16px 1fr}
+.row .acts{grid-column:2;flex-wrap:wrap;margin-top:6px}
+.chk{width:30px;height:30px}
+.row .name{font-size:16px;min-height:28px}
+dialog{width:100vw;max-width:100vw;margin:auto 0 0;border-radius:16px 16px 0 0}
+dialog form{max-height:94dvh;padding-bottom:max(18px,env(safe-area-inset-bottom))}
+.foot .btn{flex:1 1 auto}
+}
+header h1,dialog h2{font-stretch:62%;font-weight:800;text-transform:uppercase;line-height:.95;letter-spacing:.005em}
+header h1{font-size:26px}dialog h2{font-size:24px}
+.btn,header button{border-radius:999px}
+.btn.primary{background:var(--green);border-color:var(--green);color:var(--ink);font-weight:700}
+.tabs button[aria-selected=true]{border-bottom-color:var(--green)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}.chips button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:9px 13px;min-height:40px}
+.chips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}.lbl{font-size:13px;color:var(--mute);margin-bottom:4px}
+.score{display:inline-block;min-width:30px;text-align:center;padding:0 7px;margin-left:8px;border-radius:10px;font-size:12px;font-weight:700;line-height:20px;background:#E3E8E5;color:var(--mute);vertical-align:middle}
+.score.mid{background:var(--mint);color:#00804A}.score.hi{background:var(--green);color:var(--ink)}
+@media(max-width:820px){
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:900;background:#fff}
+.tabs{padding:6px 6px calc(6px + env(safe-area-inset-bottom));gap:2px;border-top:0;border-radius:20px 20px 0 0;box-shadow:0 -6px 22px rgba(0,30,62,.12)}
+.tabs button{flex-direction:column;gap:3px;min-height:62px;padding:6px 0 4px;border:0;border-radius:14px;font-size:11.5px;font-weight:600;color:var(--mute);background:none}
+.tabs button[aria-selected=true]{border:0;color:var(--ink);font-weight:800}
+.tabs .ic{width:54px;height:30px;border-radius:15px;transition:background .15s}
+.tabs button[aria-selected=true] .ic{background:var(--mint);color:var(--accent)}
+.tabs .badge{position:absolute;top:-5px;right:-2px;min-width:18px;padding:0 5px;line-height:18px;font-size:11px;background:var(--ink)}
+.tabs .badge[data-zero]{display:none}
+.pane{padding-bottom:calc(86px + env(safe-area-inset-bottom))}
+#toast{bottom:calc(94px + env(safe-area-inset-bottom))}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+/* ===== Vandaag / Aujourd’hui : mise en page compacte ===== */
+#paneToday{background:var(--bg)}
+#today{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;padding-top:12px;padding-bottom:24px}
+#today .strip{display:flex;flex-wrap:wrap;gap:6px}
+#today .pill{font-size:12.5px;line-height:1;padding:7px 11px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--mute)}
+#today .pill.hot{background:#FBEAE8;border-color:#EBC3BF;color:var(--danger);font-weight:600}
+#today .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;gap:12px}
+#today .find{display:flex;gap:8px}
+#today .find input{flex:1;min-width:0;font-size:16px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;min-height:44px}
+#today .sug{display:grid;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:-4px;background:#fff}
+#today .sug:empty{display:none}
+#today .sug button{text-align:left;background:#fff;border:0;border-bottom:1px solid var(--line);padding:12px;font-size:15px;min-height:44px;color:inherit}
+#today .sug button:last-child{border-bottom:0}
+#today .from{display:flex;flex-wrap:wrap;align-items:center;gap:0 8px;font-size:13px;color:var(--mute)}
+#today .lks{flex:1 1 100%;display:flex;flex-wrap:wrap;gap:0 18px;padding-left:24px}
+#today .from svg{width:16px;height:16px;flex:none;fill:none;stroke:var(--accent);stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#today .from .fl{flex:1 1 0;min-width:0;color:var(--ink);font-weight:600}
+#today .lk{background:none;border:0;padding:8px 0;color:var(--accent);font-weight:600;font-size:13px;text-decoration:none}
+#today select{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;min-height:44px}
+#today .lbl{font-size:13px;color:var(--mute);margin-bottom:5px}
+#today .two2{display:flex;flex-wrap:wrap;gap:10px 16px}
+#today .seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+#today .seg button{border:0;border-right:1px solid var(--line);background:#fff;padding:0 14px;min-height:42px;font-weight:600;color:var(--mute)}
+#today .seg button:last-child{border-right:0}
+#today .seg button.on{background:var(--ink);color:#fff}
+#today .tgs{display:grid;gap:0}
+#today .tg{display:flex;align-items:center;gap:10px;min-height:40px;cursor:pointer}
+#today .tg input{appearance:none;-webkit-appearance:none;margin:0;flex:none;width:40px;height:24px;border-radius:12px;background:#C5CEC8;position:relative;cursor:pointer;transition:background .15s}
+#today .tg input::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #0003;transition:transform .15s}
+#today .tg input:checked{background:var(--green)}
+#today .tg input:checked::after{transform:translateX(16px)}
+#today .miss{border:1px dashed #9FB0BB;background:transparent;border-radius:10px;min-height:44px}
+#today .plan{background:var(--ink);color:#fff;border-radius:14px;padding:14px;display:grid;gap:12px}
+#today .summary{font-size:28px;font-stretch:62%;font-weight:800;line-height:1.05;letter-spacing:.01em}
+#today .plan .line{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+#today .plan .btn{background:transparent;border-color:#ffffff66;color:#fff;border-radius:10px;min-height:46px}
+#today .plan .btn.primary{background:var(--green);border-color:var(--green);color:var(--ink);font-weight:700}
+/* follow-up rows: name on top, one fixed 4-column action row below */
+#today .fu-item{display:grid;gap:8px;padding:12px 0;border-top:1px solid #0001}
+#today .fu-info{min-width:0}
+#today .fu-acts{display:grid;grid-template-columns:1fr 1fr 1fr 48px;gap:8px;align-items:stretch}
+#today .fu-acts .btn{min-height:44px;padding:0 6px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;border-radius:10px}
+#today .fu-acts .btn.go{border-color:var(--accent);color:var(--accent);font-weight:600}
+#today .fu-acts .fu-done{padding:0;font-size:18px}
+#today .stops{background:#fff;border:1px solid var(--line);border-radius:14px;padding:4px 14px}
+#today .stop{grid-template-columns:30px 1fr;gap:12px;padding:12px 0}
+#today .stop:first-child{padding-bottom:4px;align-items:center}
+#today .stop::before{left:14px;top:42px;bottom:-12px;border-left:2px solid var(--line)}
+#today .num{width:30px;height:30px}
+#today .stop.fu .num{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 2px var(--green)}
+#today .stop.fu.late .num{color:var(--danger);box-shadow:inset 0 0 0 2px var(--danger)}
+#today .stop b{display:block;font-size:15.5px;line-height:1.25}
+#today .stop .leg{font-size:12.5px;margin-top:2px}
+#today .tip{margin-top:8px;background:none;border-left:3px solid var(--green);border-radius:0;padding:1px 0 1px 10px;color:var(--mute);font-size:12.5px}
+#today .stop .acts{margin-top:10px}
+#today .btn.sm{padding:0 14px;min-height:40px;border-radius:10px}
+#today .btn.go{border-color:var(--accent);color:var(--accent);font-weight:600}
+#today .empty{background:#fff;border:1px dashed var(--line);border-radius:14px;padding:18px}
+@media (prefers-reduced-motion:reduce){#today .tg input,#today .tg input::after{transition:none}}
+/* ===== Mobile / app polish (update 26) ===== */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior:none}
+body{overscroll-behavior:none;overflow:hidden;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
+button,.btn,.chips button,.lang button,.tg,select,.kpi{touch-action:manipulation;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+.pane{overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.btn,.chips button,.lang button,header button,.kpi{transition:transform .08s ease,background-color .12s ease,opacity .12s ease}
+.btn:active,.chips button:active,header button:active,.kpi:active{transform:scale(.97)}
+input[type=search]{-webkit-appearance:none;appearance:none}
+input[type=date],input[type=time]{min-width:0;width:100%;min-height:44px}
+#toast{pointer-events:none}
+header{padding-left:max(14px,env(safe-area-inset-left));padding-right:max(14px,env(safe-area-inset-right))}
+@keyframes sheetUp{from{transform:translateY(36px);opacity:0}to{transform:none;opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@media(max-width:820px){
+  header{padding-top:max(10px,env(safe-area-inset-top));padding-bottom:10px;row-gap:8px}
+  header h1{font-size:23px}
+  header #btnImport,header #btnAdd,header #btnLogout{min-height:40px;font-size:14px;padding:0 12px}
+  .tabs{padding-left:max(6px,env(safe-area-inset-left));padding-right:max(6px,env(safe-area-inset-right))}
+  .row{content-visibility:auto;contain-intrinsic-size:auto 104px}
+  .row .acts .btn{flex:1 1 auto}
+  #paneRoute .stop{grid-template-columns:28px 1fr}
+  #paneRoute .stop .acts{grid-column:2;flex-wrap:wrap;margin-top:4px}
+  #paneRoute .stop .acts .btn{flex:1 1 0;min-width:84px}
+  .route-box .line .btn{flex:1 1 auto}
+  .online{flex-wrap:wrap}
+  .online .btn{flex:1 1 45%}
+  .kpis{gap:8px}
+  .leaflet-touch .leaflet-bar a{width:40px;height:40px;line-height:40px;font-size:20px}
+  .leaflet-control-attribution{font-size:10px}
+  body[data-tab=route] .app{grid-template-rows:40dvh 1fr}
+  dialog{max-height:94dvh}
+  dialog[open]{animation:sheetUp .24s cubic-bezier(.2,.8,.2,1)}
+  dialog[open]::backdrop{animation:fadeIn .2s ease}
+  dialog form{max-height:94dvh;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right))}
+  dialog form::before{content:"";justify-self:center;width:40px;height:4px;border-radius:2px;background:var(--line);margin:-6px 0 0}
+  body.kb .tabs{display:none}
+  body.kb .pane{padding-bottom:16px}
+  body.kb #toast{bottom:calc(16px + env(safe-area-inset-bottom))}
+}
+@media(max-width:820px) and (max-height:480px){
+  .tabs button{min-height:50px}.tabs .lb{display:none}.pane{padding-bottom:calc(64px + env(safe-area-inset-bottom))}
+  header h1{font-size:20px}
+}
+@media(prefers-reduced-motion:reduce){dialog[open],dialog[open]::backdrop{animation:none}.btn,.chips button,header button{transition:none}}
+/* ===== Update 27: ronde, bezoekformulier, dagoverzicht ===== */
+dialog input[type=date],dialog input[type=time]{display:block;width:100%;max-width:100%;min-width:0;-webkit-appearance:none;appearance:none;min-height:44px;text-align:left;background:#fff}
+dialog input::-webkit-date-and-time-value{text-align:left}
+dialog .two>label,dialog .two>div{min-width:0}
+dialog select,dialog input:not([type=checkbox]),dialog textarea{width:100%;max-width:100%;min-width:0}
+.fuadd>*,.fur>*{min-width:0}
+#fVisit{padding-bottom:0;scroll-padding-bottom:96px}
+dialog .foot.stick{position:sticky;bottom:0;z-index:3;background:#fff;margin:0 -18px;padding:12px 18px max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.vmeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:-4px}.vmeta:empty{display:none}
+.vmeta span{font-size:12.5px;padding:5px 10px;border-radius:999px;background:var(--mint);color:var(--accent);font-weight:600}
+.vsec{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px;background:#FAFBFA}
+.vsec>b{font-size:15px;color:var(--ink)}
+.chips button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.vh{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start;padding:8px 0;border-top:1px solid #0001;color:var(--ink)}
+.vh .ib{border:1px solid var(--line);background:#fff;border-radius:10px;min-width:40px;min-height:40px;font-size:15px}
+.vh-edit{grid-column:1/-1;display:grid;gap:8px}
+.fur{display:grid;grid-template-columns:1fr auto auto auto;gap:6px;align-items:center;padding:8px 0;border-top:1px solid #0001}
+.fur b{grid-column:1/-1;font-size:14px}
+.fur .btn{min-height:40px;padding:0 12px}
+.fuadd{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fuadd .full{grid-column:1/-1}
+#today .tour{background:var(--ink);color:#fff;border-radius:14px;padding:14px;display:grid;gap:12px}
+#today .tour .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+#today .tour .cur{background:#ffffff14;border-radius:12px;padding:12px;display:grid;gap:8px}
+#today .tour .nm{font-size:24px;font-stretch:62%;font-weight:800;line-height:1.05;display:block}
+#today .tour .m2{font-size:13px;color:#C9D3DD}
+#today .tour .g3{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px}
+#today .tour .g2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#today .tour .btn{background:transparent;border-color:#ffffff55;color:#fff;border-radius:10px;min-height:48px;padding:0 8px}
+#today .tour .btn.primary{background:var(--green);border-color:var(--green);color:var(--ink);font-weight:700}
+#today .prog{height:6px;border-radius:3px;background:#ffffff26;overflow:hidden}#today .prog i{display:block;height:100%;background:var(--green)}
+#today .stop.done .num{background:var(--green);color:var(--ink)}
+#today .stop.done b{opacity:.55}
+#today .stop.skip .num{background:#C5CEC8;color:var(--ink)}
+#today .stop.skip b{opacity:.55}
+#today .stop.now .num{background:var(--green);color:var(--ink);box-shadow:0 0 0 4px var(--mint)}
+#today .tag{font-size:11.5px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--mint);color:var(--accent);margin-left:6px;vertical-align:middle}
+#today .card,#today .plan,#today .tour,#today .cur,#today .addq{grid-template-columns:minmax(0,1fr)}
+#today #btnTour{grid-column:1/-1;min-height:52px;font-size:16px}
+#today .addq{display:grid;gap:6px}
+#today .addq input{width:100%;min-width:0;font-size:16px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;min-height:46px;color:var(--ink)}
+#today .sug button:disabled{opacity:.5}
+#today .tour .addq input{background:#fff;color:var(--ink)}
+#today .tour .sug button{color:var(--ink)}
+.dvh{font-size:13px;font-weight:800;color:var(--mute);margin-top:12px;text-transform:capitalize}
+.dvi{display:grid;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+.dvi .t{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.dvi .o{font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;background:#E3E8E5;color:var(--mute);white-space:nowrap}
+.dvi .o.pos{background:var(--mint);color:var(--accent)}.dvi .o.neg{background:#FBEAE8;color:var(--danger)}
+.dvi .n{font-size:13px;color:var(--mute)}.dvi .n.late{color:var(--danger);font-weight:600}
+.dvi .a{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.dvi .a .btn{min-height:40px;padding:0 4px;border-radius:10px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.dvi .a .btn.go{border-color:var(--accent);color:var(--accent);font-weight:600}
+#today details.card>summary{cursor:pointer;min-height:28px}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <header>
+      <h1>Amplify Tournée</h1>
+<div class="lang" role="group" aria-label="Langue / Taal"><button type="button" data-l="fr">FR</button><button type="button" data-l="nl">NL</button></div>
+      <button id="btnImport">Importer</button>
+      <button id="btnAdd" class="solid">+ Ajouter</button>
+      <button id="btnLogout" hidden>Sortir</button>
+    </header>
+    <div class="tabs" role="tablist">
+      <button role="tab" id="tabToday" aria-selected="true"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M8 3v4M16 3v4M8.5 13l2.5 2.5 4.5-5"/></svg></span><span class="lb">Aujourd’hui</span></button>
+      <button role="tab" id="tabOverview" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg></span><span class="lb">Aperçu</span></button>
+      <button role="tab" id="tabList" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="18" r="1"/></svg></span><span class="lb">Restaurants</span></button>
+      <button role="tab" id="tabStats" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V11M12 20V5M19 20v-6"/></svg></span><span class="lb">Chiffres</span></button>
+      <button role="tab" id="tabRoute" aria-selected="false"><span class="ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg></span><span class="lb">Carte</span><span class="badge" id="badge">0</span></button>
+    </div>
+
+    <section class="pane" id="paneToday"><div id="today"></div></section>
+<section class="pane" id="paneOverview" hidden><div id="overview"></div></section>
+<section class="pane" id="paneStats" hidden><div id="stats"></div></section>
+<section class="pane" id="paneList" hidden>
+      <div class="online"><button class="btn primary" id="btnOnline" type="button">Chercher en ligne</button><button class="btn" id="btnW" type="button">Réglages du score</button><button class="btn" id="btnTpl" type="button">Messages WhatsApp</button><button class="btn miss" id="lLocate" type="button" hidden></button></div>
+<div class="filters">
+        <input id="q" type="search" enterkeyhint="search" autocapitalize="off" autocorrect="off" placeholder="Chercher un restaurant" aria-label="Chercher">
+        <select id="fStatus" aria-label="Statut"></select>
+        <select id="fDistrict" aria-label="Quartier"></select>
+      </div>
+      <div id="list"></div>
+    </section>
+
+    <section class="pane" id="paneRoute" hidden>
+      <div class="route-box">
+        <div class="line">
+          <button class="btn" id="btnGeo">Ma position</button>
+          <button class="btn" id="btnClear">Vider la tournée</button>
+        </div>
+        <div class="meta" style="color:var(--mute);font-size:13px">Point de départ : le repère bleu sur la carte. Déplacez-le pour le changer.</div>
+        <label><input type="checkbox" id="loop"> Revenir au point de départ</label>
+        <button class="btn primary" id="btnOptimize">Calculer la meilleure route</button>
+        <div id="summary"></div>
+        <div class="line" id="goBtns" hidden>
+          <button class="btn" id="btnGmaps">Ouvrir dans Google Maps</button>
+        </div>
+      </div>
+      <ol class="stops" id="stops"></ol>
+      <div class="empty" id="routeEmpty">Cochez les restaurants à visiter aujourd’hui, dans la liste ou sur la carte.</div>
+    </section>
+  </aside>
+  <div class="map-wrap">
+    <div id="map"></div>
+    <div class="hint" id="hint">Touchez la carte pour placer le restaurant</div>
+  </div>
+</div>
+<div id="toast" role="status"></div>
+
+<!-- Login -->
+<dialog id="dlgLogin">
+  <form method="dialog" id="fLogin">
+    <div class="lang" role="group" aria-label="Langue / Taal"><button type="button" data-l="fr">FR</button><button type="button" data-l="nl">NL</button></div>
+<h2>Connexion</h2>
+    <label>E-mail<input name="email" type="email" required autocomplete="username" autocapitalize="none" autocorrect="off" inputmode="email"></label>
+    <label>Mot de passe<input name="password" type="password" required autocomplete="current-password"></label>
+    <div id="loginErr" style="color:var(--danger)"></div>
+    <div class="foot"><button class="btn primary" value="ok">Se connecter</button></div>
+  </form>
+</dialog>
+
+<!-- Add / edit -->
+<dialog id="dlgEdit">
+  <form method="dialog" id="fEdit">
+    <h2 id="editTitle">Nouveau restaurant</h2>
+    <label>Nom<input name="name" required></label>
+    <div class="two">
+      <label>Quartier<input name="district" list="districts" placeholder="Agdal, Hay Riad…"></label>
+      <label>Téléphone<input name="phone" type="tel" inputmode="tel" autocomplete="off" placeholder="06 12 34 56 78"></label>
+    </div>
+    <datalist id="districts"></datalist>
+    <div class="vsec"><b>Position</b>
+      <label>Adresse<input name="address" placeholder="Rue, quartier"></label>
+      <label>Lien Google Maps (coordonnées automatiques)<input name="maps" placeholder="Collez le lien complet"></label>
+      <div class="two">
+        <label>Latitude<input name="lat" inputmode="decimal"></label>
+        <label>Longitude<input name="lng" inputmode="decimal"></label>
+      </div>
+      <div class="chips" id="posBtns">
+        <button type="button" id="btnGeocode">Trouver via l’adresse</button>
+        <button type="button" id="btnPick">Placer sur la carte</button>
+        <button type="button" id="btnHere">Ma position</button>
+      </div>
+    </div>
+    <label id="hereRow" class="vsec" style="display:flex;gap:10px;align-items:center;font-size:14px;color:var(--ink)"><input type="checkbox" id="hereNow" style="width:22px;height:22px;accent-color:var(--accent)"> Je suis sur place : noter la visite tout de suite</label>
+    <div class="vsec"><b>Détails</b>
+      <div><div class="lbl">Type</div><div class="chips" data-chip="kind"><button type="button" data-v="restaurant">Restaurant</button><button type="button" data-v="cafe">Café</button><button type="button" data-v="snack">Snack</button><button type="button" data-v="patisserie">Pâtisserie</button></div></div>
+      <div><div class="lbl">Site web</div><div class="chips" data-chip="website_status"><button type="button" data-v="unknown">Inconnu</button><button type="button" data-v="no">Pas de site</button><button type="button" data-v="yes">A un site</button></div></div>
+      <div class="two"><label>Note Google<input name="g_rating" inputmode="decimal" placeholder="4,5"></label><label>Nombre d’avis<input name="g_reviews" inputmode="numeric" placeholder="120"></label></div>
+      <div><div class="lbl">Environnement</div><div class="chips" data-chip="area"><button type="button" data-v="good">Quartier agréable</button><button type="button" data-v="ok">Moyen</button><button type="button" data-v="bad">Quartier difficile</button></div></div>
+      <label>Statut<select name="status"></select></label>
+      <div hidden><select name="kind"><option value="">—</option><option value="restaurant">Restaurant</option><option value="cafe">Café</option><option value="snack">Snack</option><option value="patisserie">Pâtisserie</option></select><select name="website_status"><option value="unknown">Inconnu</option><option value="no">Pas de site</option><option value="yes">A un site</option></select><select name="area"><option value="">—</option><option value="good">Quartier agréable</option><option value="ok">Moyen</option><option value="bad">Quartier difficile</option></select></div>
+    </div>
+    <div class="foot stick">
+      <button type="button" class="btn danger" id="btnDelete" hidden>Supprimer</button>
+      <button type="button" class="btn" id="btnEditCancel">Annuler</button>
+      <button class="btn primary" value="ok">Enregistrer</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Visit -->
+<dialog id="dlgVisit">
+  <form method="dialog" id="fVisit">
+    <h2 id="visitTitle">Visite</h2>
+    <div class="vmeta" id="visitMeta"></div>
+    <div><div class="lbl">Résultat</div><div class="chips" id="chips"><button type="button" data-o="absent">Pas là</button><button type="button" data-o="talked">Parlé au gérant</button><button type="button" data-o="owner">Parlé au patron</button><button type="button" data-o="interested">Intéressé</button><button type="button" data-o="appt">RDV pris</button><button type="button" data-o="no">Pas intéressé</button></div><input type="hidden" name="outcome"></div>
+<label>Parlé avec<input name="contact_name" placeholder="Prénom, rôle" autocomplete="off"></label>
+<label>Objection<select name="objection"><option value="">—</option><option value="price">Prix</option><option value="equipped">Déjà équipé</option><option value="time">Pas le temps</option><option value="decider">Pas le décideur</option><option value="other">Autre</option></select></label>
+<label>Compte rendu<textarea name="note" rows="3" placeholder="Ce qui a été dit, ce qui l’intéresse, objections…"></textarea></label>
+    <div class="vsec"><b>Suivi</b>
+      <div class="chips" id="dates"><button type="button" data-d="1">Demain</button><button type="button" data-d="3">+3 jours</button><button type="button" data-d="7">+1 semaine</button><button type="button" data-d="0">Pas de suivi</button></div>
+      <div class="two"><label>Prochain contact<input name="next_contact" type="date"></label><label>Heure du RDV (facultatif)<input name="next_time" type="time"></label></div>
+      <div class="two"><label>Type d’action<select name="fu_type"><option value="revisit">Repasser</option><option value="call">Appeler</option><option value="wa">WhatsApp à envoyer</option><option value="demo">Faire une démo</option><option value="confirm">Confirmer le RDV</option><option value="info">Envoyer des infos</option></select></label><label>Statut après visite<select name="status"></select></label></div>
+      <label>Prochaine étape<input name="next_step" placeholder="Ex. envoyer la démo, repasser jeudi" autocomplete="off"></label>
+      <div id="waTpl" hidden><div class="lbl">Envoyer sur WhatsApp</div><div style="display:grid;gap:8px">
+        <button type="button" class="btn" data-wa="boss">Manager + Boss</button>
+        <button type="button" class="btn" data-wa="glovo">Glovo message</button>
+      </div></div>
+      <div id="waNote" hidden style="display:grid;gap:8px;font-size:13px;color:var(--mute)"><div>Pas de numéro mobile valide : pas de modèles WhatsApp.</div><button type="button" class="btn" id="waAddNum">Ajouter un numéro WhatsApp</button></div>
+    </div>
+    <div class="hist" id="visitHist"></div>
+    <div id="fuBox" class="vsec"><b>Actions de suivi</b><div id="fuList"></div>
+      <div class="fuadd"><select id="fuType" aria-label="Type d’action"><option value="revisit">Repasser</option><option value="call">Appeler</option><option value="wa">WhatsApp à envoyer</option><option value="demo">Faire une démo</option><option value="confirm">Confirmer le RDV</option><option value="info">Envoyer des infos</option></select><input id="fuDate" type="date" aria-label="Date"><input id="fuNote" class="full" placeholder="Note (facultatif)"><button type="button" class="btn full" id="fuAdd">Ajouter une action</button></div></div>
+    <div class="foot stick">
+      <button type="button" class="btn" id="btnVisitCancel">Annuler</button>
+      <button class="btn primary" value="ok">Enregistrer la visite</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Import -->
+<dialog id="dlgImport">
+  <form method="dialog" id="fImport">
+    <h2>Importer une liste</h2>
+    <p style="margin:0;color:var(--mute);font-size:14px">Fichier CSV avec les colonnes : name, address, district, phone, lat, lng, status. Les lignes sans coordonnées sont localisées via leur adresse (environ 1 par seconde).</p>
+    <input type="file" id="csvFile" accept=".csv,text/csv">
+    <label>ou collez le contenu<textarea id="csvText" rows="6" placeholder="name;address;district;phone&#10;Louai's;Rue Oued Fès, Agdal;Agdal;0612345678"></textarea></label>
+    <label style="display:flex;gap:8px;align-items:center;font-size:14px"><input type="checkbox" id="csvUpdate" checked> Mettre à jour les restaurants déjà dans la liste (remplit seulement les champs vides)</label>
+    <div class="foot">
+      <button type="button" class="btn" id="btnImportCancel">Annuler</button>
+      <button class="btn primary" value="ok">Importer</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgWhy"><form method="dialog"><h2 id="whyTitle"></h2><div id="whyBody" class="sres"></div><div id="whyTodo" class="meta" style="color:var(--mute);font-size:13px"></div><div class="foot"><button class="btn primary" value="ok">Fermer</button></div></form></dialog>
+<dialog id="dlgTpl"><form method="dialog" id="fTpl"><h2>Messages WhatsApp</h2>
+<p style="margin:0;color:var(--mute);font-size:14px">Ces textes sont partagés avec toute l’équipe.</p>
+<div id="tplFields"></div>
+<div class="foot"><button type="button" class="btn" id="btnTplReset">Textes d’origine</button><button type="button" class="btn" id="btnTplCancel">Annuler</button><button type="button" class="btn primary" id="btnTplSave">Enregistrer</button></div></form></dialog>
+<dialog id="dlgWaNum"><form method="dialog" id="fWaNum"><h2 id="waNumTitle">WhatsApp</h2>
+<div id="waNumNote" style="color:var(--mute);font-size:14px"></div>
+<label>Numéro WhatsApp<input id="waNumInput" type="tel" inputmode="tel" autocomplete="off" placeholder="06 12 34 56 78 · 07… · +212 6…"></label>
+<div class="foot stick"><button type="button" class="btn" id="waNumCancel">Annuler</button><button type="submit" class="btn primary" id="waNumSave">Enregistrer et ouvrir WhatsApp</button></div></form></dialog>
+<dialog id="dlgWaPick"><form method="dialog" id="fWaPick"><h2 id="waPickTitle">WhatsApp</h2>
+<div id="waPickSub" style="color:var(--mute);font-size:14px"></div>
+<div id="waPickBtns" style="display:grid;gap:8px">
+<button type="button" class="btn" data-wp="boss">Manager + Boss</button>
+        <button type="button" class="btn" data-wp="glovo">Glovo message</button>
+</div>
+<div id="waPickNote" hidden style="color:var(--mute);font-size:13px">Numéro fixe ou non reconnu : pas de modèles WhatsApp.</div>
+<div class="foot"><button type="button" class="btn" id="waPickCancel">Fermer</button></div></form></dialog>
+<dialog id="dlgW"><form method="dialog" id="fW"><h2>Réglages du score</h2><p style="margin:0;color:var(--mute);font-size:14px">Plus le nombre est grand, plus ce critère compte. Les réglages restent sur cet appareil.</p><div id="wFields" class="two"></div><div class="foot"><button type="button" class="btn" id="btnWReset">Réinitialiser</button><button type="button" class="btn" id="btnWCancel">Annuler</button><button class="btn primary" value="ok">Enregistrer</button></div></form></dialog>
+<!-- Online search -->
+<dialog id="dlgSearch">
+<form method="dialog" id="fSearch" onsubmit="return false">
+<h2>Recherche en ligne</h2>
+<div style="display:flex;gap:8px"><input id="sq" type="search" enterkeyhint="search" autocapitalize="off" autocorrect="off" style="flex:1;min-width:0" placeholder="Nom du restaurant" aria-label="Nom du restaurant"><button type="button" class="btn primary" id="btnSq">Chercher</button></div>
+<button type="button" class="btn" id="btnArea">Restaurants, cafés et pâtisseries de la zone</button>
+<div id="sinfo" class="meta" style="color:var(--mute);font-size:13px"></div>
+<div id="sres" class="sres" hidden></div>
+<div class="foot"><button type="button" class="btn" id="btnAddAll" hidden>Tout ajouter</button><button type="button" class="btn" id="btnSClose">Fermer</button></div>
+</form>
+</dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.min.js"></script>
+<script>
+// ====== CONFIG ======
+// Leave empty to run in local mode (data stays in this browser). Fill both to use the shared database.
+const CONFIG = { SUPABASE_URL: 'https://ryxjnppbqcatutflhhkh.supabase.co', SUPABASE_ANON_KEY: 'sb_publishable_-XNBZ3o2yi7pcdjsbsakOA_l2d97EAA' };
+const DEFAULT_START = { lat: 33.9916, lng: -6.8498 }; // Agdal, Rabat
+const RABAT = [34.0209, -6.8416];
+// ---- Modèles WhatsApp : 2 messages fixes (modifiables pour toute l’équipe via « Messages WhatsApp ») ----
+const WA_TPL = {
+  boss: "Salam ! M3ak Amar,\n\nLe gars qui va vous faciliter la vie. 😁 Vous m’avez dit que vous transmettriez mes informations au propriétaire. Mais soyons honnêtes… qu’est-ce que vous y gagnez ?\n\nVoici ce que je vous propose : si le propriétaire me contacte et que nous finissons par collaborer, je vous offrirai personnellement une commission d’apporteur d’affaires.\n\nEn plus, avec mes 20+ ans d’expérience dans la restauration, je vous partagerai gratuitement 3 conseils pratiques pour vous faciliter considérablement le travail au quotidien.\n\nTout ce que je vous demande en échange, c’est de transférer le message ci-dessous à votre patron.\n\nMarché conclu ? 🤝\n\nSalam,\n\nJe suis passé dans votre restaurant et j’ai remarqué quelques points qui méritent votre attention… 🤔\n\nJe m’appelle Amar, entrepreneur néerlandais avec plus de 20 ans d’expérience dans le secteur de la restauration.\n\nAujourd’hui, j’accompagne plus de 40 restaurants et commerces dans la région, notamment Ba Fares, Doms Café, Indian Flavors, Louai’s et Gaston Gali.\n\nEst-ce que certaines de ces situations vous parlent ? ⬇️\n\n- Vous souhaitez attirer plus de clients, mais vous avez du mal à le faire régulièrement ?\n- Vous manquez de visibilité sur vos coûts et vos bénéfices réels ?\n- Votre présence en ligne est insuffisante alors que vos concurrents attirent l’attention ?\n- Vous perdez des clients à cause des longs temps d’attente, des erreurs de commande ou des mauvais avis Google ?\n- Vous passez trop de temps à gérer les opérations quotidiennes au lieu de développer votre activité ?\n\nJ’aimerais simplement vous accorder 5 minutes, gratuitement, pour vous montrer quelques opportunités concrètes d’améliorer votre restaurant. 📈\n\nNous accompagnons un nombre limité de nouveaux clients chaque mois. Si le sujet vous intéresse, autant en discuter rapidement ! \n\nNotre Google score? 5 ⭐⭐⭐⭐⭐\n\nAucune pression, aucun engagement. Si vous n’y voyez pas de valeur, safi, aucun souci ! 🤷\n\nAppelez-moi ou contactez-moi sur WhatsApp : 0660353741\n\nAmar Raduzzi\nCEO – Amplify Growth Studio\n\nP.s. \nNos clients site webs: \nhttps://bafares.pages.dev\nhttps://gastongali.pages.dev\nhttps://atelierbysam.pages.dev\nhttps://louais.ma/",
+  glovo: "Salam ! 👋\n\nJ’ai discuté avec votre équipe et on m’a dit que vous travaillez avec Glovo.\n\nContinuez à utiliser Glovo ! Mais continuer à payer 30 % de commission, c’est ABSURDE. Transformez les clients Glovo en VOS propres clients, avec 0 % de commission !\n\nVoici la stratégie : 🚀\n\n1️⃣ Glovo vous apporte de nouveaux clients.\n\n2️⃣ Nous créons votre propre site de commande en ligne pour que vos clients puissent vous trouver et commander directement.\n\n3️⃣ Vous ajoutez un flyer dans chaque commande Glovo, avec une offre de -30 % sur leur prochaine commande directement sur votre site (avec vos prix habituels en magasin).\n\n4️⃣ Le résultat ? Vous transformez les clients Glovo en clients directs. ZÉRO commission. Plus de contrôle. Plus de marge. 💰\n\nEt le meilleur ? Nous créons votre site web à partir de seulement 250 MAD 😅\n\nFranchement, qu’est-ce qui vous empêcherait de développer votre propre clientèle au lieu de payer des commissions indéfiniment ?\n\nNotre Google score? ⭐⭐⭐⭐⭐\n\n📲 Appelez-moi ou contactez-moi sur WhatsApp : 0660353741\n\nAmar Raduzzi\nCEO – Amplify Growth Studio"
+};
+const WA_DEF = { ...WA_TPL };
+const TPL_F = [['boss', 'Manager + Boss'], ['glovo', 'Glovo message']];
+const applyTpl = rowsT => { Object.assign(WA_TPL, WA_DEF); (rowsT || []).forEach(x => { if (x.key in WA_TPL) WA_TPL[x.key] = x.body; }); };
+const isMobileMA = p => /^212[67]\d{8}$/.test(waNumber(p));
+function waBuild(kind) { return WA_TPL[kind] || ''; }
+function waText(kind) { return waBuild(kind); }
+const WA_INTRO = "Bonjour, c’est l’équipe Amplify. Merci pour l’échange aujourd’hui !";
+
+const STATUS = {
+new: { label: 'À visiter', color: '#6B7B88' },
+visited: { label: 'Visité', color: '#0A3F7A' },
+interested: { label: 'Intéressé', color: '#D98E04' },
+appt: { label: 'Rendez-vous', color: '#C25E00' },
+demo: { label: 'Démo faite', color: '#7A4FB5' },
+trial: { label: 'Essai en cours', color: '#00A6A6' },
+client: { label: 'Client', color: '#05B962' },
+lost: { label: 'Pas intéressé', color: '#B8433A' }
+};
+// Visit outcomes. "Conversation" = every outcome where someone was spoken to.
+const TALK = ['talked', 'owner', 'interested', 'appt', 'no'];
+const OUTC = { absent: ['Pas là', 'Niet aanwezig'], talked: ['Parlé au gérant', 'Met manager gesproken'], owner: ['Parlé au patron', 'Gesproken met baas'], interested: ['Intéressé', 'Geïnteresseerd'], appt: ['RDV pris', 'Afspraak gemaakt'], no: ['Pas intéressé', 'Niet geïnteresseerd'] };
+const tx = (fr, nl) => lang === 'fr' ? fr : nl; // only called after the language block below has run
+const outL = k => OUTC[k] ? tx(...OUTC[k]) : '';
+const stL = k => STATUS[k] ? tx(STATUS[k].label, D[STATUS[k].label] || STATUS[k].label) : '';
+const localDate = d => new Date(d).toLocaleDateString('sv-SE');
+
+// ====== Helpers ======
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : 'id' + Date.now() + Math.random().toString(16).slice(2));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const norm = s => String(s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+let toastTimer;
+function toast(msg, ms = 3200) {
+  const t = $('#toast'); t.textContent = msg; t.style.display = 'block';
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.style.display = 'none', ms);
+}
+const km = m => (m / 1000).toFixed(1).replace('.', ',') + ' km';
+const mins = s => { const m = Math.round(s / 60); return m >= 60 ? Math.floor(m / 60) + ' h ' + String(m % 60).padStart(2, '0') : m + ' min'; };
+function haversine(a, b) {
+  const R = 6371000, r = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r;
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+function waNumber(p) {
+  let d = String(p || '').replace(/\D/g, '');
+  if (d.startsWith('00')) d = d.slice(2);
+  if (d.startsWith('0')) d = '212' + d.slice(1);
+  return d;
+}
+function parseMapsLink(s) {
+  s = decodeURIComponent(String(s || ''));
+  const m = s.match(/!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/) || s.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/) || s.match(/[?&](?:q|ll|query)=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  return m ? { lat: +m[1], lng: +m[2] } : null;
+}
+async function geocode(q) {
+  const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ma&q=' + encodeURIComponent(q + ', Rabat, Maroc');
+  const r = await fetch(url, { headers: { 'Accept-Language': 'fr' } });
+  const j = await r.json();
+  return j[0] ? { lat: +j[0].lat, lng: +j[0].lon } : null;
+}
+
+async function suggestPlaces(q) { // typo-tolerant search (Photon), Morocco only, biased to Rabat
+  const r = await fetch('https://photon.komoot.io/api/?limit=8&lang=fr&lat=34.02&lon=-6.84&bbox=-13.5,27.5,-1,36&q=' + encodeURIComponent(q));
+  const j = await r.json(), seen = new Set();
+  return (j.features || []).filter(f => (f.properties.countrycode || 'MA') === 'MA').map(f => {
+    const p = f.properties, label = [p.name, p.district || p.city || p.county].filter(Boolean).filter((x, i, a) => a.indexOf(x) === i).join(', ');
+    return { lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0], label };
+  }).filter(x => x.label && !seen.has(x.label) && seen.add(x.label)).slice(0, 5);
+}
+async function geocodeFuzzy(q) {
+  try { const p = await geocode(q); if (p) return p; } catch {}
+  const s = await suggestPlaces(q);
+  return s[0] ? { lat: s[0].lat, lng: s[0].lng } : null;
+}
+const inBox = p => p && p.lat > 33.85 && p.lat < 34.15 && p.lng > -7.2 && p.lng < -6.6;
+async function geocodeRaw(q) {
+  const city = /t[ée]mara|harhoura|sal[ée]/i.test(q) ? '' : ', Rabat';
+  const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=ma&viewbox=-7.2,34.15,-6.6,33.85&q=' + encodeURIComponent(q + city + ', Maroc'), { headers: { 'Accept-Language': 'fr' } });
+  const j = await r.json();
+  return j[0] ? { lat: +j[0].lat, lng: +j[0].lon } : null;
+}
+const APPROX_KEY = 'at_approx', posKey = (lat, lng) => (+lat).toFixed(5) + ',' + (+lng).toFixed(5);
+const isApprox = r => r.lat != null && ls(APPROX_KEY, '{}')[r.id] === posKey(r.lat, r.lng);
+const DIST_FALLBACK = { agdal: [33.9916, -6.8555], hassan: [34.0209, -6.8326], 'hay riad': [33.9577, -6.8696], souissi: [33.978, -6.83], oudayas: [34.0316, -6.836], ocean: [34.0227, -6.8387], harhoura: [33.956, -6.987], temara: [33.928, -6.906], sale: [34.0531, -6.7985], marina: [34.029, -6.825] };
+function approxPos(r) { // centre of the district (median of already placed restaurants, else a fixed point), with a small spread
+  const k = norm(r.district || ''), same = rows.filter(x => x.lat != null && x.lng != null && norm(x.district || '') === k && !isApprox(x));
+  const med = a => { a = a.slice().sort((x, y) => x - y); return a[Math.floor(a.length / 2)]; };
+  const c = k && same.length >= 3 ? [med(same.map(x => +x.lat)), med(same.map(x => +x.lng))] : (DIST_FALLBACK[k] || [34.0209, -6.8416]);
+  let h = 0; for (const ch of String(r.id)) h = (h * 31 + ch.charCodeAt(0)) | 0;
+  return { lat: c[0] + ((h % 600) / 100000), lng: c[1] + (((h >> 8) % 600) / 100000) };
+}
+async function findPos(r) { // returns exact position or null; tries address, then fuzzy name search, then plain name search
+  const toks = norm(r.name).split(/[^a-z0-9]+/).filter(w => w.length >= 3), d = r.district || '';
+  try { if (r.address) { const p = await geocodeRaw([r.address, d].filter(Boolean).join(', ')); if (inBox(p)) return p; await sleep(1100); } } catch {}
+  try { const s = await suggestPlaces([r.name, d || 'Rabat'].join(' ')); const m = s.find(x => inBox(x) && toks.some(w => norm(x.label).includes(w))); if (m) return { lat: m.lat, lng: m.lng }; } catch {}
+  try { const p = await geocodeRaw([r.name, d].filter(Boolean).join(', ')); if (inBox(p)) return p; await sleep(1100); } catch {}
+  return null;
+}
+let sugTimer = 0, sugList = [];
+
+// ====== Data layer (Supabase or local) ======
+const useDb = !!(CONFIG.SUPABASE_URL && CONFIG.SUPABASE_ANON_KEY);
+const sb = useDb ? supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY) : null;
+const ls = (k, d) => JSON.parse(localStorage.getItem(k) || d);
+const store = {
+  async list() {
+    if (sb) { const { data, error } = await sb.from('restaurants').select('*').order('name'); if (error) throw error; return data; }
+    return ls('at_rows', '[]');
+  },
+  async save(r) {
+    if (sb) { const { data, error } = await sb.from('restaurants').upsert(r).select().single(); if (error) throw error; return data; }
+    const a = ls('at_rows', '[]'); const i = a.findIndex(x => x.id === r.id);
+    if (i >= 0) a[i] = { ...a[i], ...r }; else a.push({ created_at: new Date().toISOString(), ...r });
+    localStorage.setItem('at_rows', JSON.stringify(a)); return a.find(x => x.id === r.id);
+  },
+  async saveMany(rs) {
+    if (sb) { const { data, error } = await sb.from('restaurants').insert(rs).select(); if (error) throw error; return data; }
+    const a = ls('at_rows', '[]'); rs.forEach(r => a.push({ created_at: new Date().toISOString(), ...r }));
+    localStorage.setItem('at_rows', JSON.stringify(a)); return rs;
+  },
+  async remove(id) {
+    if (sb) { const { error } = await sb.from('restaurants').delete().eq('id', id); if (error) throw error; return; }
+    localStorage.setItem('at_rows', JSON.stringify(ls('at_rows', '[]').filter(x => x.id !== id)));
+    localStorage.setItem('at_visits', JSON.stringify(ls('at_visits', '[]').filter(x => x.restaurant_id !== id)));
+  },
+  async addVisit(v) {
+    if (sb) { const { error } = await sb.from('visits').insert(v); if (error) throw error; return; }
+    const a = ls('at_visits', '[]'); a.push({ created_at: new Date().toISOString(), ...v });
+    localStorage.setItem('at_visits', JSON.stringify(a));
+  },
+  async fuFor(rid) {
+    if (sb) { const { data, error } = await sb.from('followups').select('*').eq('restaurant_id', rid).order('due_date'); if (error) throw error; return data; }
+    return ls('at_fu', '[]').filter(x => x.restaurant_id === rid);
+  },
+  async fuOpen() {
+    if (sb) { const { data, error } = await sb.from('followups').select('*').eq('status', 'open').order('due_date'); if (error) throw error; return data; }
+    return ls('at_fu', '[]').filter(x => x.status === 'open');
+  },
+  async fuDoneBetween(a, b) {
+    if (sb) { const { data, error } = await sb.from('followups').select('id').eq('status', 'done').gte('done_at', a).lt('done_at', b); if (error) throw error; return data; }
+    return ls('at_fu', '[]').filter(x => x.status === 'done' && x.done_at >= a && x.done_at < b);
+  },
+  async bilanGet(date, who) {
+    if (sb) { const { data, error } = await sb.from('day_reports').select('*').eq('report_date', date).eq('author', who).maybeSingle(); if (error) throw error; return data; }
+    return ls('at_bil', '[]').find(x => x.report_date === date && x.author === who) || null;
+  },
+  async bilanRecent(who) {
+    if (sb) { const { data, error } = await sb.from('day_reports').select('report_date').eq('author', who).order('report_date', { ascending: false }).limit(10); if (error) throw error; return data.map(x => x.report_date); }
+    return ls('at_bil', '[]').filter(x => x.author === who).map(x => x.report_date).sort().reverse().slice(0, 10);
+  },
+  async bilanSave(r) {
+    r = { ...r, updated_at: new Date().toISOString() };
+    if (sb) { const { error } = await sb.from('day_reports').upsert(r, { onConflict: 'report_date,author' }); if (error) throw error; return; }
+    const a = ls('at_bil', '[]'), i = a.findIndex(x => x.report_date === r.report_date && x.author === r.author);
+    if (i >= 0) a[i] = { ...a[i], ...r }; else a.push(r);
+    localStorage.setItem('at_bil', JSON.stringify(a));
+  },
+  async tplList() {
+    if (sb) { const { data, error } = await sb.from('app_texts').select('*'); if (error) throw error; return data; }
+    return ls('at_tpl', '[]');
+  },
+  async tplSave(key, body) {
+    if (sb) { const { error } = await sb.from('app_texts').upsert({ key, body, updated_at: new Date().toISOString() }); if (error) throw error; return; }
+    localStorage.setItem('at_tpl', JSON.stringify([...ls('at_tpl', '[]').filter(x => x.key !== key), { key, body }]));
+  },
+  async tplReset(key) {
+    if (sb) { const { error } = await sb.from('app_texts').delete().eq('key', key); if (error) throw error; return; }
+    localStorage.setItem('at_tpl', JSON.stringify(ls('at_tpl', '[]').filter(x => x.key !== key)));
+  },
+  async fuSave(f) {
+    if (sb) { const { data, error } = await sb.from('followups').upsert(f).select().single(); if (error) throw error; return data; }
+    const a = ls('at_fu', '[]'), i = a.findIndex(x => x.id === f.id);
+    if (i >= 0) a[i] = { ...a[i], ...f }; else a.push({ created_at: new Date().toISOString(), ...f });
+    localStorage.setItem('at_fu', JSON.stringify(a)); return f;
+  },
+  async visitsFor(id) {
+    if (sb) { const { data } = await sb.from('visits').select('*').eq('restaurant_id', id).order('created_at', { ascending: false }).limit(200); return data || []; }
+    return ls('at_visits', '[]').filter(v => v.restaurant_id === id).sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 200);
+  },
+  async updateVisit(id, p) {
+    if (sb) { const { data, error } = await sb.from('visits').update(p).eq('id', id).select(); if (error) throw error; if (!data || !data.length) throw new Error(tx('modification refusée : lance schema-update-7.sql dans Supabase.', 'wijzigen geweigerd: voer schema-update-7.sql uit in Supabase.')); return; }
+    localStorage.setItem('at_visits', JSON.stringify(ls('at_visits', '[]').map(v => v.id === id ? { ...v, ...p } : v)));
+  },
+  async removeVisit(id) {
+    if (sb) { const { error } = await sb.from('visits').delete().eq('id', id); if (error) throw error; return; }
+    localStorage.setItem('at_visits', JSON.stringify(ls('at_visits', '[]').filter(v => v.id !== id)));
+  }
+};
+
+// ====== State ======
+let rows = [], fus = [], visCache = [];
+let selected = new Set(JSON.parse(localStorage.getItem('at_sel') || '[]'));
+let start = JSON.parse(localStorage.getItem('at_start') || 'null') || { ...DEFAULT_START };
+let route = null;              // { order:[rows], geometry:[[lat,lng]], distance, duration, estimated }
+let pickMode = false;
+let editingId = null, visitId = null;
+
+// ====== Map ======
+const map = L.map('map', { zoomControl: true }).setView(RABAT, 13);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+const markerLayer = L.layerGroup().addTo(map);
+const routeLayer = L.layerGroup().addTo(map);
+const startMarker = L.marker([start.lat, start.lng], {
+  draggable: true, zIndexOffset: 1000,
+  icon: L.divIcon({ className: '', html: '<div class="pin start">D</div>', iconSize: [28, 28], iconAnchor: [14, 14] })
+}).addTo(map).bindTooltip('Départ');
+startMarker.on('dragend', e => { const p = e.target.getLatLng(); start = { lat: p.lat, lng: p.lng }; localStorage.setItem('at_start', JSON.stringify(start)); route = null; renderRoute(); });
+map.on('click', e => {
+  if (!pickMode) return;
+  pickMode = false; $('#hint').classList.remove('on');
+  const f = $('#fEdit');
+  f.lat.value = e.latlng.lat.toFixed(6); f.lng.value = e.latlng.lng.toFixed(6);
+  $('#dlgEdit').showModal();
+});
+
+// ====== Rendering ======
+function filtered() {
+  const q = $('#q').value.trim().toLowerCase(), s = $('#fStatus').value, d = $('#fDistrict').value;
+  const toks = norm(q).split(/\s+/).filter(Boolean);
+  return rows.filter(r => (!s || (s === 'due' ? r.next_contact && r.next_contact <= new Date().toISOString().slice(0, 10) : s === 'todo' ? !r.last_visit_at : r.status === s)) && (!d || r.district === d) && (!toks.length || (h => toks.every(t => h.includes(t)))(norm([r.name, r.address, r.district, r.phone, (r.phone || '').replace(/\D/g, ''), STATUS[r.status]?.label].join(' ')))));
+}
+function renderFilters() {
+  const s = $('#fStatus'), cur = s.value;
+  s.innerHTML = '<option value="">Tous statuts</option><option value="due">À relancer</option><option value="todo">Pas encore visité</option>' + Object.entries(STATUS).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('');
+  s.value = cur;
+  const ds = [...new Set(rows.map(r => r.district).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  const d = $('#fDistrict'), cd = d.value;
+  d.innerHTML = '<option value="">Tous quartiers</option>' + ds.map(x => `<option>${esc(x)}</option>`).join('');
+  d.value = cd;
+  $('#districts').innerHTML = ds.map(x => `<option value="${esc(x)}">`).join('');
+}
+function renderMarkers() {
+  markerLayer.clearLayers();
+  rows.filter(r => r.lat != null && r.lng != null).forEach(r => {
+    const sel = selected.has(r.id), c = STATUS[r.status]?.color || '#666';
+    const m = L.circleMarker([r.lat, r.lng], { radius: sel ? 12 : 9, color: sel ? '#14212B' : '#fff', weight: sel ? 4 : 2, fillColor: c, fillOpacity: .95 });
+    m.bindPopup(() => `<div class="pop"><b>${esc(r.name)}</b><br><span style="color:#5E6E7A">${esc(STATUS[r.status]?.label)}${r.district ? ' · ' + esc(r.district) : ''}</span><br>
+      <button class="btn" onclick="toggleStop('${r.id}')">${selected.has(r.id) ? 'Retirer de la tournée' : 'Ajouter à la tournée'}</button>
+      <button class="btn" onclick="openVisit('${r.id}')">Visite</button>
+      <button class="btn" onclick="openEdit('${r.id}')">Modifier</button></div>`);
+    markerLayer.addLayer(m);
+  });
+}
+const fmtD = d => { const x = new Date(d); return x.getDate() + '/' + (x.getMonth() + 1); };
+const W0 = { noSite: 25, hasSite: -15, reviews: 20, rating: 5, badArea: -25, badCafe: -10, goodArea: 10, warm: 10, interested: 15, trial: 20, due: 10 };
+const WL = [['noSite', 'Pas de site web'], ['hasSite', 'A déjà un site web'], ['reviews', 'Avis Google (maximum)'], ['rating', 'Bonne note Google'], ['badArea', 'Quartier difficile'], ['badCafe', 'Café dans un quartier difficile'], ['goodArea', 'Quartier agréable'], ['warm', 'Rendez-vous ou démo en cours'], ['interested', 'Déjà intéressé'], ['trial', 'En période d’essai'], ['due', 'Relance à faire']];
+let W = { ...W0, ...JSON.parse(localStorage.getItem('at_w') || '{}') };
+function scoreInfo(r) {
+  if (r.status === 'client' || r.status === 'lost') return null;
+  let n = 40; const why = [], todo = [];
+  const add = (p, t) => { if (p) { n += p; why.push({ p, t }); } };
+  if (r.website_status === 'no') add(W.noSite, 'Pas de site web'); else if (r.website_status === 'yes') add(W.hasSite, 'A déjà un site web'); else todo.push('Site web inconnu');
+  const v = r.g_reviews || 0;
+  if (r.g_reviews == null) todo.push('Avis Google manquants'); else add(Math.round(W.reviews * (v >= 300 ? 1 : v >= 100 ? .75 : v >= 30 ? .5 : v > 0 ? .25 : 0)), v + ' avis Google');
+  if (r.g_rating >= 4.3) add(W.rating, 'Bonne note Google'); else if (v && r.g_rating < 3.5) add(-W.rating, 'Note Google basse');
+  if (r.area === 'bad') { add(W.badArea, 'Quartier difficile'); if (r.kind === 'cafe') add(W.badCafe, 'Café dans un quartier difficile'); }
+  else if (r.area === 'good') add(W.goodArea, 'Quartier agréable'); else todo.push('Environnement non renseigné');
+  if (r.status === 'appt' || r.status === 'demo') add(W.warm, 'Rendez-vous ou démo en cours');
+  if (r.status === 'interested') add(W.interested, 'Déjà intéressé');
+  if (r.status === 'trial') add(W.trial, 'En période d’essai');
+  if (r.next_contact && r.next_contact <= new Date().toISOString().slice(0, 10)) add(W.due, 'Relance à faire');
+  return { n: Math.max(0, Math.min(100, n)), why, todo };
+}
+const leadScore = r => scoreInfo(r)?.n ?? null;
+window.showWhy = id => {
+  const r = rows.find(x => x.id === id), s = r && scoreInfo(r); if (!s) return;
+  $('#whyTitle').textContent = r.name;
+  $('#whyBody').innerHTML = '<div class="sr"><span>Base</span><b>40</b></div>' + s.why.map(w => `<div class="sr"><span>${esc(w.t)}</span><b style="color:${w.p > 0 ? '#00804A' : '#B8433A'}">${w.p > 0 ? '+' : ''}${w.p}</b></div>`).join('') + `<div class="sr"><b>Score</b><b>${s.n}</b></div>`;
+  $('#whyTodo').textContent = s.todo.length ? 'À compléter : ' + s.todo.join(' · ') : '';
+  $('#dlgWhy').showModal();
+};
+$('#btnW').onclick = () => {
+  $('#wFields').innerHTML = WL.map(([k, t]) => `<label>${t}<input type="number" inputmode="numeric" name="${k}" value="${W[k]}"></label>`).join('');
+  $('#dlgW').showModal();
+};
+$('#btnWReset').onclick = () => { localStorage.removeItem('at_w'); W = { ...W0 }; $('#dlgW').close(); renderList(); toast('Réglages réinitialisés.'); };
+$('#btnWCancel').onclick = () => $('#dlgW').close();
+$('#fW').addEventListener('submit', () => { WL.forEach(([k]) => { const v = parseInt($('#fW').elements[k].value, 10); if (!isNaN(v)) W[k] = v; }); localStorage.setItem('at_w', JSON.stringify(W)); renderList(); toast('Enregistré.'); });
+function renderList() {
+  const items = filtered().sort((a, b) => (leadScore(b) ?? -1) - (leadScore(a) ?? -1) || a.name.localeCompare(b.name)), today = new Date().toISOString().slice(0, 10);
+  if (!rows.length) { $('#list').innerHTML = '<div class="empty">Aucun restaurant pour l’instant. Ajoutez-en un ou importez une liste CSV.</div>'; return; }
+  if (!items.length) { $('#list').innerHTML = '<div class="empty">Aucun résultat pour ces filtres.<br><br><button class="btn primary" onclick="openSearch($(\'#q\').value)">Chercher en ligne</button></div>'; return; }
+  { const miss = rows.filter(r => r.lat == null || r.lng == null).length, lb = $('#lLocate'); if (lb && !geoBusy) { lb.hidden = !miss; lb.disabled = false; lb.textContent = 'Chercher les positions manquantes (' + miss + ')'; } }
+  $('#list').innerHTML = items.map(r => {
+    const noPos = r.lat == null || r.lng == null;
+    const due = r.next_contact && r.next_contact <= today;
+    return `<div class="row">
+      <span class="dot" style="background:${STATUS[r.status]?.color}" title="${esc(STATUS[r.status]?.label)}"></span>
+      <div>
+        <button class="name" onclick="focusRow('${r.id}')">${esc(r.name)}</button>${leadScore(r) != null ? `<button class="score ${leadScore(r) >= 70 ? 'hi' : leadScore(r) >= 50 ? 'mid' : ''}" onclick="showWhy('${r.id}')" title="Pourquoi ce score ?">${leadScore(r)}</button>` : ''}
+        <div class="meta">${esc(STATUS[r.status]?.label)}${r.district ? ' · ' + esc(r.district) : ''}${noPos ? ' · sans position' : isApprox(r) ? ' · position approximative' : ''}${r.last_visit_at ? ' · visité ' + fmtD(r.last_visit_at) : ''}</div>
+        ${r.next_step ? `<div class="next ${due ? 'due' : ''}">${due ? 'À relancer : ' : ''}${esc(r.next_step)}</div>` : ''}
+      </div>
+      <div class="acts">
+        <button class="btn" onclick="openVisit('${r.id}')">Visite</button>
+        <button class="btn" onclick="openEdit('${r.id}')" aria-label="Modifier ${esc(r.name)}">···</button>
+        <input class="chk" type="checkbox" ${selected.has(r.id) ? 'checked' : ''} ${noPos ? 'disabled' : ''} onchange="toggleStop('${r.id}')" aria-label="Ajouter ${esc(r.name)} à la tournée">
+      </div>
+    </div>`;
+  }).join('');
+}
+function renderRoute() {
+  const chosen = rows.filter(r => selected.has(r.id));
+  $('#badge').textContent = selected.size; $('#badge').toggleAttribute('data-zero', !selected.size);
+  routeLayer.clearLayers();
+  const list = route ? route.order : chosen;
+  $('#routeEmpty').hidden = list.length > 0;
+  $('#goBtns').hidden = !route;
+  $('#summary').innerHTML = route ? `<div class="summary">${list.length} arrêt${list.length > 1 ? 's' : ''} · ${km(route.distance)} · ${route.estimated ? '≈ ' : ''}${mins(route.duration)}</div>${route.estimated ? '<div style="color:var(--mute);font-size:13px">Estimation à vol d’oiseau (service de routage indisponible).</div>' : ''}` : '';
+  let prev = null;
+  const legs = route ? route.legs : [];
+  $('#stops').innerHTML = (list.length ? `<li class="stop"><span class="num start">D</span><div><b>Départ</b></div><span></span></li>` : '') + list.map((r, i) => `
+    <li class="stop"><span class="num">${route ? i + 1 : '·'}</span>
+      <div><b>${esc(r.name)}</b><div class="leg">${esc(r.district || '')}${route && legs[i] ? (r.district ? ' · ' : '') + km(legs[i].distance) + ', ' + mins(legs[i].duration) : ''}</div></div>
+      <div class="acts"><button class="btn" onclick="navTo('${r.id}')">Itinéraire</button><button class="btn" onclick="waPick('${r.id}')">WhatsApp</button><button class="btn" onclick="openVisit('${r.id}')">Visite</button></div>
+    </li>`).join('');
+  if (route) {
+    L.polyline(route.geometry, { color: '#1F5FBF', weight: 5, opacity: .85 }).addTo(routeLayer);
+    route.order.forEach((r, i) => L.marker([r.lat, r.lng], { interactive: false, icon: L.divIcon({ className: '', html: `<div class="pin">${i + 1}</div>`, iconSize: [28, 28], iconAnchor: [14, 14] }) }).addTo(routeLayer));
+  }
+}
+function renderAll() { renderFilters(); renderMarkers(); renderList(); renderRoute(); renderToday(); }
+function saveSel() { localStorage.setItem('at_sel', JSON.stringify([...selected])); }
+
+// ====== Actions ======
+window.toggleStop = id => {
+  selected.has(id) ? selected.delete(id) : selected.add(id);
+  route = null; saveSel(); map.closePopup(); renderMarkers(); renderList(); renderRoute();
+};
+window.focusRow = id => {
+  const r = rows.find(x => x.id === id);
+  if (r?.lat == null) { toast('Ce restaurant n’a pas encore de position.'); return openEdit(id); }
+  if (matchMedia('(max-width:820px)').matches) { showTab('route'); map.invalidateSize(); }
+  map.setView([r.lat, r.lng], 16);
+};
+window.openEdit = (id, preName) => {
+  map.closePopup();
+  const f = $('#fEdit'); f.reset(); editingId = id || null;
+  f.status.innerHTML = Object.entries(STATUS).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('');
+  const r = id ? rows.find(x => x.id === id) : null;
+  $('#editTitle').textContent = r ? 'Modifier le restaurant' : 'Nouveau restaurant';
+  $('#btnDelete').hidden = !r;
+  ['name', 'district', 'address', 'phone', 'lat', 'lng', 'status', 'kind', 'g_rating', 'g_reviews', 'area', 'website_status'].forEach(k => f[k].value = r?.[k] ?? (k === 'status' ? 'new' : k === 'website_status' ? 'unknown' : ''));
+  if (!r && preName) f.name.value = preName;
+  $('#hereRow').hidden = !!r; $('#hereNow').checked = !r && !!tour; // during a round: a new place is usually a walk-in
+  if (!r && tour) hereFill(true);
+  syncEditChips(); $('#dlgEdit').showModal(); f.scrollTop = 0;
+};
+function syncEditChips() { const f = $('#fEdit'); document.querySelectorAll('#fEdit [data-chip]').forEach(g => g.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v === f[g.dataset.chip].value))); }
+$('#fEdit').addEventListener('click', e => {
+  const b = e.target.closest('[data-chip] button'); if (!b) return;
+  const k = b.parentElement.dataset.chip, sel = $('#fEdit')[k];
+  sel.value = b.classList.contains('on') && k !== 'website_status' ? '' : b.dataset.v; syncEditChips();
+});
+$('#btnAdd').onclick = () => openEdit(null);
+$('#btnEditCancel').onclick = () => $('#dlgEdit').close();
+$('#fEdit').maps.addEventListener('input', e => {
+  const p = parseMapsLink(e.target.value);
+  if (p) { $('#fEdit').lat.value = p.lat.toFixed(6); $('#fEdit').lng.value = p.lng.toFixed(6); toast('Coordonnées trouvées.'); }
+  else if (/goo\.gl|maps\.app/.test(e.target.value)) toast('Lien court : ouvrez-le, puis collez le lien complet de la barre d’adresse.', 5000);
+});
+$('#btnGeocode').onclick = async () => {
+  const f = $('#fEdit'), q = [f.address.value, f.district.value].filter(Boolean).join(', ') || f.name.value;
+  if (!q) return toast('Saisissez une adresse ou un quartier.');
+  toast('Recherche…');
+  try { const p = await geocode(q); if (!p) return toast('Adresse introuvable. Essayez le lien Google Maps ou la carte.', 4500); f.lat.value = p.lat.toFixed(6); f.lng.value = p.lng.toFixed(6); toast('Position trouvée. Vérifiez-la avec « Placer sur la carte » si besoin.', 4500); }
+  catch { toast('Recherche impossible pour le moment.'); }
+};
+function hereFill(quiet) { // GPS -> lat/lng of the restaurant you are standing in front of
+  if (!navigator.geolocation) return quiet || toast(tx('Localisation non disponible.', 'Locatie niet beschikbaar.'));
+  navigator.geolocation.getCurrentPosition(p => { const f = $('#fEdit'); f.lat.value = p.coords.latitude.toFixed(6); f.lng.value = p.coords.longitude.toFixed(6); if (!quiet) toast(tx('Position enregistrée.', 'Locatie ingevuld.')); },
+    () => quiet || toast(tx('Autorisez la localisation dans le navigateur.', 'Sta locatie toe in de browser.'), 4000), { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 });
+}
+$('#btnHere').onclick = () => hereFill(false);
+$('#hereNow').onchange = e => { if (e.target.checked && !$('#fEdit').lat.value) hereFill(true); };
+$('#btnPick').onclick = () => { pickMode = true; $('#dlgEdit').close(); $('#hint').classList.add('on'); if (matchMedia('(max-width:820px)').matches) { showTab('route'); map.invalidateSize(); } };
+$('#fEdit').addEventListener('submit', async e => {
+  const f = e.target;
+  const num = v => v === '' || v == null ? null : parseFloat(String(v).replace(',', '.'));
+  const r = { id: editingId || uid(), name: f.name.value.trim(), district: f.district.value.trim() || null, address: f.address.value.trim() || null,
+    phone: f.phone.value.trim() || null, lat: num(f.lat.value), lng: num(f.lng.value), status: f.status.value,
+ kind: f.kind.value || null, website_status: f.website_status.value, g_rating: num(f.g_rating.value), g_reviews: num(f.g_reviews.value) == null ? null : Math.round(num(f.g_reviews.value)), area: f.area.value || null };
+  const visitNow = !editingId && $('#hereNow').checked;
+  try { await store.save(r); await reload(); toast('Enregistré.'); if (visitNow) openVisit(r.id); } catch (err) { toast('Erreur : ' + err.message, 5000); }
+});
+$('#btnDelete').onclick = async () => {
+  if (!editingId || !confirm('Supprimer ce restaurant et son historique ?')) return;
+  try { selected.delete(editingId); saveSel(); route = null; await store.remove(editingId); $('#dlgEdit').close(); await reload(); toast('Supprimé.'); } catch (err) { toast('Erreur : ' + err.message, 5000); }
+};
+
+// Visits
+window.openVisit = async id => {
+  map.closePopup();
+  const r = rows.find(x => x.id === id); if (!r) return;
+  visitId = id; const f = $('#fVisit'); f.reset(); document.querySelectorAll('#chips button, #dates button').forEach(x => x.classList.remove('on'));
+  f.status.innerHTML = Object.entries(STATUS).map(([k, v]) => `<option value="${k}">${v.label}</option>`).join('');
+  f.status.value = r.status; f.next_step.value = r.next_step || ''; f.next_contact.value = r.next_contact || ''; f.next_time.value = r.next_time || '';
+  $('#visitTitle').textContent = r.name;
+  { const ok = !!r.phone && isMobileMA(r.phone); $('#waTpl').hidden = !ok; $('#waNote').hidden = ok; }
+  $('#visitHist').innerHTML = ''; $('#visitMeta').innerHTML = '';
+  $('#dlgVisit').showModal();
+  $('#dlgVisit form').scrollTop = 0;
+  $('#fuList').innerHTML = ''; renderFu(id);
+  await paintVisitInfo(id);
+};
+let histVis = [];
+async function paintVisitInfo(id) { // contact moments + previous visits (editable)
+  let vs = [], fl = [];
+  try { [vs, fl] = await Promise.all([store.visitsFor(id), store.fuFor(id).catch(() => [])]); } catch {}
+  if (visitId !== id) return;
+  histVis = vs;
+  const done = fl.filter(a => a.status === 'done').length, r = rows.find(x => x.id === id);
+  const first = vs.length ? vs[vs.length - 1].created_at : r?.last_visit_at;
+  $('#visitMeta').innerHTML = [`<span>${vs.length} ${vs.length === 1 ? tx('contact', 'contactmoment') : tx('contacts', 'contactmomenten')}</span>`,
+    done ? `<span>${done} ${tx('actions terminées', 'acties afgerond')}</span>` : '',
+    first ? `<span>${tx('Premier contact', 'Eerste contact')} ${fmtD(first)}</span>` : '',
+    r ? `<span style="background:#E3E8E5;color:var(--ink)">${esc(stL(r.status))}</span>` : ''].join('');
+  renderHist();
+}
+function renderHist(editId) {
+  const box = $('#visitHist'), vs = histVis;
+  if (!vs.length) { box.innerHTML = ''; return; }
+  box.innerHTML = `<b style="color:var(--ink)">${tx('Visites précédentes', 'Eerdere bezoeken')}</b>` + vs.map(v => {
+    if (v.id === editId) return `<div class="vh" data-v="${v.id}"><div class="vh-edit"><div class="lbl">${fmtD(v.created_at)}</div>
+<select data-ve="outcome"><option value="">—</option>${Object.keys(OUTC).map(k => `<option value="${k}" ${v.outcome === k ? 'selected' : ''}>${esc(outL(k))}</option>`).join('')}</select>
+<input data-ve="contact_name" value="${esc(v.contact_name || '')}" placeholder="${tx('Parlé avec', 'Gesproken met')}">
+<textarea data-ve="note" rows="2" placeholder="${tx('Compte rendu', 'Verslag')}">${esc(v.note || '')}</textarea>
+<div style="display:flex;gap:8px"><button type="button" class="btn" data-vh="cancel" style="flex:1">${tx('Annuler', 'Annuleren')}</button><button type="button" class="btn primary" data-vh="save" style="flex:1">${tx('Enregistrer', 'Opslaan')}</button></div></div></div>`;
+    const head = [outL(v.outcome), v.contact_name, v.visited_by ? tx('par ', 'door ') + v.visited_by : ''].filter(Boolean).join(' · ');
+    return `<div class="vh" data-v="${v.id}"><div>${fmtD(v.created_at)} — ${esc(head)}${head && v.note ? ' — ' : ''}${esc(v.note || (head ? '' : tx('(sans note)', '(geen notitie)')))}</div><div style="display:flex;gap:6px"><button type="button" class="ib" data-vh="edit" aria-label="${tx('Modifier', 'Bewerken')}">✎</button><button type="button" class="ib" data-vh="del" aria-label="${tx('Supprimer', 'Verwijderen')}">🗑</button></div></div>`;
+  }).join('');
+}
+$('#visitHist').addEventListener('click', async e => {
+  const b = e.target.closest('[data-vh]'), row = e.target.closest('[data-v]'), rid = visitId; if (!b || !row || !rid) return;
+  const v = histVis.find(x => x.id === row.dataset.v); if (!v) return;
+  const act = b.dataset.vh;
+  if (act === 'edit') return renderHist(v.id);
+  if (act === 'cancel') return renderHist();
+  try {
+    if (act === 'save') {
+      const g = k => row.querySelector(`[data-ve="${k}"]`).value.trim() || null;
+      await store.updateVisit(v.id, { outcome: g('outcome'), contact_name: g('contact_name'), note: g('note') });
+      toast(tx('Visite modifiée.', 'Bezoek aangepast.'));
+    } else if (act === 'del') {
+      if (!confirm(tx('Supprimer cette visite du ' + fmtD(v.created_at) + ' ?', 'Dit bezoek van ' + fmtD(v.created_at) + ' verwijderen?'))) return;
+      await store.removeVisit(v.id);
+      const r = rows.find(x => x.id === rid), rest = (await store.visitsFor(rid));
+      if (r && r.last_visit_at && Math.abs(new Date(r.last_visit_at) - new Date(v.created_at)) < 5 * 60000) await store.save({ id: rid, name: r.name, last_visit_at: rest[0]?.created_at || null });
+      if (tour && !rest.some(x => localDate(x.created_at) === todayLocal())) { tour.done = tour.done.filter(x => x !== rid); saveTour(); }
+      toast(tx('Visite supprimée.', 'Bezoek verwijderd.'));
+    }
+  } catch (err) { return toast(tx('Erreur : ', 'Fout: ') + err.message, 6000); }
+  await reload(); await paintVisitInfo(rid);
+});
+$('#fVisit').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') e.preventDefault(); }); // Enter never saves a visit by accident
+// ---- Actions de suivi (liées à « Prochain contact » / « Prochaine étape ») ----
+const FU_TYPES = { revisit: 'Repasser', call: 'Appeler', wa: 'WhatsApp à envoyer', demo: 'Faire une démo', confirm: 'Confirmer le RDV', info: 'Envoyer des infos' };
+const fuL = k => FU_TYPES[k] ? tx(FU_TYPES[k], D[FU_TYPES[k]] || FU_TYPES[k]) : k;
+const todayLocal = () => new Date().toLocaleDateString('sv-SE');
+function downloadIcs(a) { // calendar file with a reminder: the phone's own calendar app sends the notification, even when this app is closed
+  const r = rows.find(x => x.id === a.restaurant_id); if (!r) return;
+  const esc2 = t => String(t || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+  const hasT = a.source === 'visit' && r.next_time && r.next_contact === a.due_date, hm = hasT ? r.next_time.slice(0, 5) : '09:00';
+  const d = a.due_date.replace(/-/g, ''), [h, m] = hm.split(':').map(Number), end = new Date(2000, 0, 1, h, m + 30), pad = n => String(n).padStart(2, '0');
+  const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Amplify Tournee//FR', 'BEGIN:VEVENT', 'UID:' + a.id + '@amplifyrounds', 'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').slice(0, 15) + 'Z',
+    `DTSTART:${d}T${pad(h)}${pad(m)}00`, `DTEND:${d}T${pad(end.getHours())}${pad(end.getMinutes())}00`,
+    'SUMMARY:' + esc2((FU_TYPES[a.type] || a.type) + ' — ' + r.name), 'DESCRIPTION:' + esc2([a.note, r.phone].filter(Boolean).join(' — ')), 'LOCATION:' + esc2(r.address || r.district || ''),
+    'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:' + esc2(r.name), hasT ? 'TRIGGER:-PT30M' : 'TRIGGER:PT0M', 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' })), l = document.createElement('a');
+  l.href = url; l.download = 'suivi.ics'; document.body.appendChild(l); l.click(); l.remove(); setTimeout(() => URL.revokeObjectURL(url), 4000);
+  toast('Fichier agenda prêt : ouvre-le pour ajouter le rappel.', 5000);
+}
+const GCAL_ACCOUNT = 'amar.amplifygrowth@gmail.com';
+function openGoogleCal(a) { // opens a pre-filled Google Calendar event for the Amplify account; the person taps Save there
+  const r = rows.find(x => x.id === a.restaurant_id); if (!r) return;
+  const hasT = a.source === 'visit' && r.next_time && r.next_contact === a.due_date, hm = hasT ? r.next_time.slice(0, 5) : '09:00';
+  const d = a.due_date.replace(/-/g, ''), [h, m] = hm.split(':').map(Number), end = new Date(2000, 0, 1, h, m + 30), pad = n => String(n).padStart(2, '0');
+  const q = new URLSearchParams({ action: 'TEMPLATE', text: (FU_TYPES[a.type] || a.type) + ' — ' + r.name,
+    dates: `${d}T${pad(h)}${pad(m)}00/${d}T${pad(end.getHours())}${pad(end.getMinutes())}00`, ctz: 'Africa/Casablanca',
+    details: [a.note, r.phone].filter(Boolean).join(' — '), location: r.address || r.district || '', authuser: GCAL_ACCOUNT });
+  window.open('https://calendar.google.com/calendar/render?' + q.toString(), '_blank', 'noopener');
+  toast('Google Agenda ouvert : enregistre l’événement.', 5000);
+}
+async function syncLinked(rid, date, note, type) { // one open action per restaurant follows the visit form; edits update it instead of duplicating
+  const cur = (await store.fuFor(rid)).find(x => x.status === 'open' && x.source === 'visit'), now = new Date().toISOString();
+  if (date) {
+    if (!cur) return void await store.fuSave({ id: uid(), restaurant_id: rid, type, due_date: date, note, status: 'open', source: 'visit', history: [] });
+    if (cur.due_date !== date || (cur.note || null) !== note || cur.type !== type) await store.fuSave({ ...cur, type, note, due_date: date, history: cur.due_date !== date ? [...(cur.history || []), { due: cur.due_date, at: now }] : (cur.history || []) });
+  } else if (cur) await store.fuSave({ ...cur, status: 'cancelled', done_at: now });
+}
+async function syncRestaurant(rid) { // keep the existing fields (used by the old lists) equal to the earliest open action
+  const r = rows.find(x => x.id === rid); if (!r) return;
+  const o = (await store.fuFor(rid)).filter(x => x.status === 'open').sort((a, b) => a.due_date.localeCompare(b.due_date))[0];
+  await store.save({ id: rid, name: r.name, next_contact: o ? o.due_date : null, next_step: o ? (o.note || FU_TYPES[o.type] || null) : null });
+}
+async function renderFu(rid) {
+  const box = $('#fuList'); let list;
+  try { list = await store.fuFor(rid); } catch { box.innerHTML = '<div class="hist">Actions indisponibles : lance schema-update-4.sql dans Supabase.</div>'; return; }
+  const today = todayLocal(), open = list.filter(x => x.status === 'open').sort((a, b) => a.due_date.localeCompare(b.due_date)), closed = list.length - open.length;
+  box.innerHTML = (open.length ? open.map(a => `<div class="fur" data-id="${a.id}"><b>${esc(fuL(a.type))}${a.note ? ' — ' + esc(a.note) : ''}</b><input type="date" data-fu="date" value="${a.due_date}" style="${a.due_date < today ? 'color:#C0392B;font-weight:600' : ''}"><button type="button" class="btn" data-fu="ics">Agenda</button><button type="button" class="btn" data-fu="done" aria-label="${tx('Terminé', 'Afgerond')}">✓</button><button type="button" class="btn" data-fu="cancel" aria-label="${tx('Annuler', 'Annuleren')}">✕</button></div>`).join('') : `<div class="hist">${tx('Aucune action ouverte.', 'Geen openstaande acties.')}</div>`) + (closed ? `<div class="hist">${closed} ${tx('terminée(s) ou annulée(s)', 'afgerond of geannuleerd')}</div>` : '');
+}
+async function fuChange(rid) {
+  try { await syncRestaurant(rid); await reload(); } catch (err) { toast('Erreur : ' + err.message, 5000); }
+  const r = rows.find(x => x.id === rid), f = $('#fVisit'); if (r) { f.next_contact.value = r.next_contact || ''; f.next_step.value = r.next_step || ''; }
+  renderFu(rid);
+}
+$('#fuBox').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); if (e.target.id === 'fuNote') $('#fuAdd').click(); } });
+$('#fuBox').addEventListener('click', async e => {
+  const rid = visitId; if (!rid) return;
+  if (e.target.closest('#fuAdd')) {
+    const d = $('#fuDate').value; if (!d) return toast('Choisis une date.');
+    try { await store.fuSave({ id: uid(), restaurant_id: rid, type: $('#fuType').value, due_date: d, note: $('#fuNote').value.trim() || null, status: 'open', source: 'manual', history: [] }); } catch (err) { return toast('Erreur : ' + err.message, 5000); }
+    $('#fuDate').value = ''; $('#fuNote').value = ''; return fuChange(rid);
+  }
+  const b = e.target.closest('button[data-fu]'), row = e.target.closest('[data-id]'); if (!b || !row) return;
+  if (b.dataset.fu === 'ics') { try { const a = (await store.fuFor(rid)).find(x => x.id === row.dataset.id); if (a) openGoogleCal(a); } catch {} return; }
+  try { const a = (await store.fuFor(rid)).find(x => x.id === row.dataset.id); if (!a) return; await store.fuSave({ ...a, status: b.dataset.fu === 'done' ? 'done' : 'cancelled', done_at: new Date().toISOString() }); } catch (err) { return toast('Erreur : ' + err.message, 5000); }
+  fuChange(rid);
+});
+$('#fuBox').addEventListener('change', async e => {
+  const i = e.target.closest('input[data-fu="date"]'), row = e.target.closest('[data-id]'), rid = visitId; if (!i || !row || !i.value) return;
+  try { const a = (await store.fuFor(rid)).find(x => x.id === row.dataset.id); if (!a || a.due_date === i.value) return; await store.fuSave({ ...a, due_date: i.value, history: [...(a.history || []), { due: a.due_date, at: new Date().toISOString() }] }); } catch (err) { return toast('Erreur : ' + err.message, 5000); }
+  fuChange(rid);
+});
+// ---- Modifier les messages WhatsApp (partagé via la table app_texts) ----
+$('#btnTpl').onclick = () => {
+  $('#tplFields').innerHTML = TPL_F.map(([k, t]) => `<label style="display:block;margin-top:8px"><div class="lbl">${t}</div><textarea data-tf="${k}" rows="12" style="width:100%"></textarea></label>`).join('');
+  TPL_F.forEach(([k]) => { $('#tplFields').querySelector(`[data-tf="${k}"]`).value = WA_TPL[k]; });
+  $('#dlgTpl').showModal();
+};
+$('#btnTplCancel').onclick = () => $('#dlgTpl').close();
+$('#btnTplReset').onclick = () => TPL_F.forEach(([k]) => { $('#tplFields').querySelector(`[data-tf="${k}"]`).value = WA_DEF[k]; });
+$('#btnTplSave').onclick = async () => {
+  const v = Object.fromEntries(TPL_F.map(([k]) => [k, $('#tplFields').querySelector(`[data-tf="${k}"]`).value.trim()]));
+  if (TPL_F.some(([k]) => !v[k])) return toast('Aucun texte ne peut être vide.', 4000);
+  try {
+    for (const [k] of TPL_F) { if (v[k] === WA_DEF[k]) await store.tplReset(k); else await store.tplSave(k, v[k]); }
+    applyTpl(await store.tplList()); $('#dlgTpl').close(); toast('Messages enregistrés.');
+  } catch (err) { toast('Erreur : ' + (/app_texts/.test(err.message || '') ? 'lance schema-update-6.sql dans Supabase.' : err.message), 6000); }
+};
+$('#btnVisitCancel').onclick = () => $('#dlgVisit').close();
+// ---- WhatsApp rapide (route, Aujourd’hui, suivis) : choix parmi les 3 messages ----
+let waPickId = null;
+window.waPick = id => {
+  const r = rows.find(x => x.id === id); if (!r) return;
+  if (!r.phone || !isMobileMA(r.phone)) return waNumOpen(id); // no usable mobile number yet: ask for it first
+  waPickId = id; const ok = true;
+  $('#waPickTitle').textContent = r.name;
+  $('#waPickSub').textContent = ok ? 'Choisis le message à envoyer :' : '';
+  $('#waPickBtns').hidden = !ok; $('#waPickNote').hidden = ok;
+  $('#dlgWaPick').showModal();
+};
+$('#waPickCancel').onclick = () => $('#dlgWaPick').close();
+// ---- Numéro WhatsApp : ajouter / corriger, puis ouvrir WhatsApp directement ----
+let waNumId = null;
+function waNumOpen(id) {
+  const r = rows.find(x => x.id === id); if (!r) return;
+  waNumId = id; $('#waNumTitle').textContent = r.name;
+  $('#waNumNote').textContent = r.phone ? 'Ce numéro est fixe ou non reconnu. Entre un numéro mobile : 06…, 07… ou +212…' : 'Pas encore de numéro pour ce restaurant. Entre un numéro mobile : 06…, 07… ou +212…';
+  $('#waNumInput').value = r.phone || '';
+  $('#dlgWaNum').showModal();
+  setTimeout(() => $('#waNumInput').focus(), 60);
+}
+window.waNumOpen = waNumOpen;
+$('#waNumCancel').onclick = () => $('#dlgWaNum').close();
+$('#fWaNum').addEventListener('submit', async e => {
+  e.preventDefault();
+  const r = rows.find(x => x.id === waNumId); if (!r) return;
+  const v = $('#waNumInput').value.trim();
+  if (!isMobileMA(v)) return toast('Numéro invalide : mobile marocain en 06…, 07… ou +212…', 5000);
+  try { await store.save({ id: r.id, name: r.name, phone: v }); await reload(); $('#dlgWaNum').close(); toast('Numéro enregistré.'); waPick(r.id); }
+  catch (err) { toast('Erreur : ' + err.message, 5000); }
+});
+$('#waAddNum').onclick = () => { if (visitId) waNumOpen(visitId); };
+$('#waPickBtns').addEventListener('click', e => {
+  const b = e.target.closest('[data-wp]'); const r = rows.find(x => x.id === waPickId); if (!b || !r || !isMobileMA(r.phone)) return;
+  window.open('https://wa.me/' + waNumber(r.phone) + '?text=' + encodeURIComponent(waBuild(b.dataset.wp)), '_blank');
+  $('#dlgWaPick').close();
+});
+$('#waTpl').addEventListener('click', e => {
+  const b = e.target.closest('[data-wa]'); const r = rows.find(x => x.id === visitId); if (!b || !r || !isMobileMA(r.phone)) return;
+  window.open('https://wa.me/' + waNumber(r.phone) + '?text=' + encodeURIComponent(waText(b.dataset.wa)), '_blank');
+});
+$('#fVisit').addEventListener('submit', async e => {
+  const f = e.target, r = rows.find(x => x.id === visitId); if (!r) return;
+  try {
+    let by = 'moi'; if (sb) { const { data } = await sb.auth.getSession(); by = (data.session?.user?.email || '').split('@')[0] || null; }
+await store.addVisit({ id: uid(), restaurant_id: r.id, note: f.note.value.trim() || null, status_after: f.status.value, outcome: f.outcome.value || null, contact_name: f.contact_name.value.trim() || null, product: null, objection: f.objection.value || null, visited_by: by });
+    const pt = { id: r.id, name: r.name, status: f.status.value, next_step: f.next_step.value.trim() || null, next_contact: f.next_contact.value || null, last_visit_at: new Date().toISOString() };
+    const tm = f.next_contact.value && f.next_time.value ? f.next_time.value : null;
+    try { await store.save({ ...pt, next_time: tm }); }
+    catch (err) { if (!/next_time/.test(err.message || '')) throw err; await store.save(pt); toast('Visite enregistrée, mais l’heure n’est pas sauvegardée : lance schema-update-3.sql dans Supabase.', 7000); await reload(); return; }
+    try { await syncLinked(r.id, f.next_contact.value || null, f.next_step.value.trim() || null, f.fu_type.value); } catch (err) { toast('Visite enregistrée, mais l’action de suivi n’est pas créée : lance schema-update-4.sql dans Supabase.', 7000); await reload(); return; }
+    const inTour = tour && (tour.ids.includes(r.id) || tour.date === todayLocal());
+    if (inTour) { fixPosIfNeeded(r); tourMark(r.id); }
+    await reload();
+    if (inTour) { const nx = rows.find(x => x.id === tourLeft()[0]); toast(tx('Visite enregistrée. ', 'Bezoek opgeslagen. ') + (nx ? tx('Suivant : ', 'Volgende: ') + nx.name : tx('Tournée terminée !', 'Ronde klaar!')), 4500); showTab('today'); $('#paneToday').scrollTo({ top: 0 }); }
+    else toast(tx('Visite enregistrée.', 'Bezoek opgeslagen.'));
+  } catch (err) { toast('Erreur : ' + err.message, 5000); }
+});
+function fixPosIfNeeded(r) { // standing at a restaurant whose map position is a guess: use the phone's GPS
+  if (!(r.lat == null || isApprox(r)) || !navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(async p => {
+    if (p.coords.accuracy > 80) return;
+    try {
+      await store.save({ id: r.id, name: r.name, lat: p.coords.latitude, lng: p.coords.longitude });
+      const am = ls(APPROX_KEY, '{}'); delete am[r.id]; localStorage.setItem(APPROX_KEY, JSON.stringify(am));
+      await reload(); toast(tx('Position du restaurant corrigée avec ta position.', 'Positie van het restaurant verbeterd met je locatie.'), 4000);
+    } catch {}
+  }, () => {}, { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 });
+}
+
+// Import
+function parseCSV(text) {
+  const first = text.split(/\r?\n/)[0] || '';
+  const delim = (first.match(/;/g) || []).length > (first.match(/,/g) || []).length ? ';' : ',';
+  const out = []; let row = [], cur = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (q) { if (c === '"' && text[i + 1] === '"') { cur += '"'; i++; } else if (c === '"') q = false; else cur += c; }
+    else if (c === '"') q = true;
+    else if (c === delim) { row.push(cur); cur = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; row.push(cur); out.push(row); row = []; cur = ''; }
+    else cur += c;
+  }
+  if (cur || row.length) { row.push(cur); out.push(row); }
+  return out.filter(r => r.some(x => x.trim()));
+}
+const ALIAS = { name: ['name', 'nom', 'restaurant'], address: ['address', 'adresse'], district: ['district', 'quartier', 'wijk'], phone: ['phone', 'telephone', 'téléphone', 'tel', 'tél'], lat: ['lat', 'latitude'], lng: ['lng', 'lon', 'long', 'longitude'], status: ['status', 'statut'], maps: ['maps', 'lien', 'link', 'url'], rating: ['rating', 'google_rating', 'g_rating', 'note'], reviews: ['reviews', 'review_count', 'user_ratings_total', 'google_reviews', 'g_reviews', 'avis', 'nb_avis'], website: ['website', 'site web', 'site_web', 'siteweb', 'site'], kind: ['type', 'kind'], wstatus: ['website_status', 'site_status', 'statut_site'], next_step: ['next_step', 'prochaine etape', 'prochaine étape', 'volgende stap'], next_contact: ['next_contact', 'relance', 'volgend contact'], last_visit: ['last_visit', 'last_visit_at', 'dernier passage', 'laatste bezoek'] };
+$('#btnImport').onclick = () => $('#dlgImport').showModal();
+$('#btnImportCancel').onclick = () => $('#dlgImport').close();
+$('#fImport').addEventListener('submit', async () => {
+  let text = $('#csvText').value.trim();
+  const file = $('#csvFile').files[0]; if (file) text = await file.text();
+  if (!text) return;
+  const table = parseCSV(text.replace(/^\uFEFF/, '')); if (table.length < 2) return toast('Aucune ligne trouvée.');
+  const head = table[0].map(h => h.trim().toLowerCase()), col = {};
+  for (const [k, names] of Object.entries(ALIAS)) col[k] = head.findIndex(h => names.includes(h));
+  if (col.name < 0) return toast('Colonne « name » introuvable.', 4500);
+  const get = (r, k) => col[k] >= 0 ? (r[col[k]] || '').trim() : '';
+const nz = v => { const x = parseFloat(String(v).replace(',', '.')); return isNaN(x) ? null : x; };
+const extra = r => ({ g_rating: nz(get(r, 'rating')), g_reviews: nz(get(r, 'reviews')) == null ? null : Math.round(nz(get(r, 'reviews'))), website_status: ['yes', 'no', 'unknown'].includes(get(r, 'wstatus').toLowerCase()) ? get(r, 'wstatus').toLowerCase() : (get(r, 'website') ? 'yes' : (col.website >= 0 ? 'no' : 'unknown')), kind: ['restaurant', 'cafe', 'snack', 'patisserie'].includes(get(r, 'kind').toLowerCase()) ? get(r, 'kind').toLowerCase() : null });
+  const allItems = table.slice(1).map(r => {
+    let lat = parseFloat(get(r, 'lat').replace(',', '.')), lng = parseFloat(get(r, 'lng').replace(',', '.'));
+    if (isNaN(lat) || isNaN(lng)) { const p = parseMapsLink(get(r, 'maps')); lat = p?.lat ?? null; lng = p?.lng ?? null; }
+    const st = get(r, 'status').toLowerCase();
+    return { id: uid(), name: get(r, 'name'), address: get(r, 'address') || null, district: get(r, 'district') || null, phone: get(r, 'phone') || null, lat, lng, status: STATUS[st] ? st : 'new', next_step: get(r, 'next_step') || null, next_contact: /^\d{4}-\d{2}-\d{2}$/.test(get(r, 'next_contact')) ? get(r, 'next_contact') : null, last_visit_at: /^\d{4}-\d{2}-\d{2}$/.test(get(r, 'last_visit')) ? get(r, 'last_visit') + 'T12:00:00Z' : null, ...extra(r) };
+  }).filter(r => r.name);
+let upd = 0;
+if ($('#csvUpdate').checked) {
+  for (const r of allItems) {
+    const m = rows.filter(x => norm(x.name) === norm(r.name)); if (m.length !== 1) continue;
+    const x = m[0], pt = {};
+    if (x.status === 'new' && r.status !== 'new') pt.status = r.status;
+    if (!x.next_step && r.next_step) pt.next_step = r.next_step;
+    if (!x.next_contact && r.next_contact) pt.next_contact = r.next_contact;
+    if (!x.last_visit_at && r.last_visit_at) pt.last_visit_at = r.last_visit_at;
+    if ((!x.website_status || x.website_status === 'unknown') && r.website_status !== 'unknown') pt.website_status = r.website_status;
+    if (!x.district && r.district) pt.district = r.district;
+    if (Object.keys(pt).length) { try { await store.save({ id: x.id, name: x.name, ...pt }); upd++; } catch {} }
+  }
+  if (upd) await reload();
+}
+const seen = new Set(rows.map(x => norm(x.name))); let skipped = 0;
+const items = allItems.filter(r => {
+  const k = norm(r.name);
+  const dup = seen.has(k) || rows.some(x => x.lat != null && r.lat != null && haversine(x, r) < 40 && (norm(x.name).includes(k) || k.includes(norm(x.name))));
+  if (dup) { skipped++; return false; } seen.add(k); return true;
+});
+if (!items.length) return toast(`0 importés, ${skipped} déjà dans la liste${upd ? ', ' + upd + ' mis à jour' : ''}.`, 6000);
+  const todo = items.filter(r => r.lat == null && (r.address || r.district));
+  for (let i = 0; i < todo.length; i++) {
+    toast(`Localisation ${i + 1}/${todo.length}…`, 2000);
+    try { const p = await geocode([todo[i].address, todo[i].district, todo[i].name].filter(Boolean).join(', ')); if (p) { todo[i].lat = p.lat; todo[i].lng = p.lng; } } catch {}
+    await sleep(1100);
+  }
+  try { await store.saveMany(items); await reload(); const miss = items.filter(r => r.lat == null).length; toast(`${items.length} importés${upd ? ', ' + upd + ' mis à jour' : ''}${skipped ? ', ' + skipped + ' déjà dans la liste' : ''}${miss ? ', ' + miss + ' sans position' : ''}.`, 6000); $('#csvText').value = ''; $('#csvFile').value = ''; }
+  catch (err) { toast('Erreur : ' + err.message, 6000); }
+});
+
+// ====== Routing ======
+function gPt(r) { // Google Maps point: always search by restaurant name (+ address or district), so Google shows the real place instead of a dropped pin
+  if (r && r.name) { const loc = [r.address, r.district].filter(Boolean).join(' '), city = /rabat|sal[eé]|t[eé]mara|harhoura|skhirat/i.test(loc) ? '' : 'Rabat'; return encodeURIComponent([r.name, r.address || r.district, city].filter(Boolean).join(', ')); }
+  return r.lat + ',' + r.lng;
+}
+const gTravel = () => day.mode === 'car' ? 'driving' : 'walking';
+// One destination at a time: Google Maps starts from where you are, so it never needs a restart with old stops.
+window.navTo = id => { const r = rows.find(x => x.id === id); if (r) window.open(`https://www.google.com/maps/dir/?api=1&travelmode=${gTravel()}&destination=${gPt(r)}`, '_blank'); };
+function navPoint(p) { window.open(`https://www.google.com/maps/dir/?api=1&travelmode=${gTravel()}&destination=${p.lat},${p.lng}`, '_blank'); }
+function gmapsRoute(list, end, origin) { // whole route in Google Maps; origin empty = your current location
+  if (!list.length) return;
+  const pt = p => p.lat + ',' + p.lng, dest = end || list[list.length - 1], via = end ? list : list.slice(0, -1);
+  if (via.length > 9) toast(tx('Google Maps accepte environ 10 arrêts : le reste est ignoré.', 'Google Maps neemt ongeveer 10 stops: de rest valt weg.'), 5000);
+  window.open(`https://www.google.com/maps/dir/?api=1&travelmode=${gTravel()}${origin ? '&origin=' + pt(origin) : ''}&destination=${end ? pt(end) : gPt(dest)}${via.length ? '&waypoints=' + via.slice(0, 9).map(gPt).join('|') : ''}`, '_blank');
+}
+function orderStops(from, list, end) { // shortest walking order from `from` through `list`, optionally finishing at `end` (the car)
+  if (!list.length) return [];
+  const pts = [from, ...list], seq = [from, ...nearestNeighbor(pts).map(i => pts[i])];
+  if (end) seq.push(end);
+  const last = seq.length - (end ? 1 : 0);
+  let imp = true, guard = 0;
+  while (imp && guard++ < 300) {
+    imp = false;
+    for (let i = 1; i < last - 1; i++) for (let j = i + 1; j < last; j++) {
+      const a = seq[i - 1], b = seq[i], c = seq[j], n = seq[j + 1];
+      const delta = haversine(a, c) + (n ? haversine(b, n) : 0) - haversine(a, b) - (n ? haversine(c, n) : 0);
+      if (delta < -1) { seq.splice(i, j - i + 1, ...seq.slice(i, j + 1).reverse()); imp = true; }
+    }
+  }
+  return seq.slice(1, last);
+}
+function nearestNeighbor(pts) { // pts[0] = start; returns order of indices (without 0)
+  const left = pts.map((_, i) => i).slice(1), order = []; let cur = 0;
+  while (left.length) { let b = 0; left.forEach((idx, k) => { if (haversine(pts[cur], pts[idx]) < haversine(pts[cur], pts[left[b]])) b = k; }); cur = left.splice(b, 1)[0]; order.push(cur); }
+  return order;
+}
+function twoOpt(pts, order, loop) {
+  const seq = [0, ...order].concat(loop ? [0] : []);
+  const w = loop ? 1 : 3; // open route: first leg counts extra, so the nearest stops come first
+  const d = (a, b) => haversine(pts[seq[a]], pts[seq[b]]) * (seq[a] === 0 || seq[b] === 0 ? w : 1);
+  let improved = true;
+  while (improved) {
+    improved = false;
+    for (let i = 1; i < seq.length - 2; i++) for (let j = i + 1; j < seq.length - (loop ? 1 : 0); j++) {
+      const after = j + 1 < seq.length;
+      const delta = (d(i - 1, j) + (after ? d(i, j + 1) : 0)) - (d(i - 1, i) + (after ? d(j, j + 1) : 0));
+      if (delta < -1) { seq.splice(i, j - i + 1, ...seq.slice(i, j + 1).reverse()); improved = true; }
+    }
+  }
+  return seq.slice(1, loop ? -1 : undefined);
+}
+async function computeRoute() {
+  const stops = rows.filter(r => selected.has(r.id) && r.lat != null);
+  if (!stops.length) { toast('Choisissez au moins un restaurant.'); return null; }
+  const loop = $('#loop').checked, pts = [start, ...stops];
+  try {
+    const coords = pts.map(p => p.lng + ',' + p.lat).join(';');
+    const walk = day.mode !== 'car', base = walk ? 'https://routing.openstreetmap.de/routed-foot/trip/v1/driving/' : 'https://router.project-osrm.org/trip/v1/driving/';
+    const url = `${base}${coords}?source=first&roundtrip=${loop}&geometries=geojson&overview=full&steps=false`;
+    const res = await fetch(url); const j = await res.json();
+    if (j.code !== 'Ok') throw new Error(j.code);
+    const trip = j.trips[0];
+    const order = j.waypoints.map((w, i) => ({ i, k: w.waypoint_index })).filter(x => x.i > 0).sort((a, b) => a.k - b.k).map(x => stops[x.i - 1]);
+    return { order, geometry: trip.geometry.coordinates.map(c => [c[1], c[0]]), distance: trip.distance, duration: trip.duration, legs: trip.legs.slice(0, order.length), estimated: false };
+  } catch {
+    const idx = twoOpt(pts, nearestNeighbor(pts), loop), order = idx.map(i => pts[i]);
+    const seq = [start, ...order].concat(loop ? [start] : []);
+    let dist = 0; const legs = [];
+    const v = day.mode === 'car' ? 7 : 1.25;
+    for (let i = 1; i < seq.length; i++) { const d = haversine(seq[i - 1], seq[i]) * 1.3; dist += d; legs.push({ distance: d, duration: d / v }); }
+    return { order, geometry: seq.map(p => [p.lat, p.lng]), distance: dist, duration: dist / v, legs, estimated: true };
+  }
+}
+$('#btnOptimize').onclick = async () => {
+  const b = $('#btnOptimize'); b.disabled = true; b.textContent = 'Calcul…';
+  route = await computeRoute();
+  b.disabled = false; b.textContent = 'Calculer la meilleure route';
+  renderRoute();
+  if (route) map.fitBounds(L.latLngBounds(route.geometry).pad(.15));
+};
+$('#loop').onchange = () => { day.loop = $('#loop').checked; saveDay(); route = null; renderRoute(); renderToday(); };
+$('#btnClear').onclick = () => { selected.clear(); saveSel(); route = null; renderAll(); };
+$('#btnGeo').onclick = () => {
+  if (!navigator.geolocation) return toast('Localisation non disponible.');
+  navigator.geolocation.getCurrentPosition(p => {
+    start = { lat: p.coords.latitude, lng: p.coords.longitude }; localStorage.setItem('at_start', JSON.stringify(start));
+    startMarker.setLatLng([start.lat, start.lng]); map.setView([start.lat, start.lng], 14); route = null; renderRoute();
+  }, () => toast('Autorisez la localisation dans le navigateur.', 4000), { enableHighAccuracy: true, timeout: 10000 });
+};
+$('#btnGmaps').onclick = () => { if (route) gmapsRoute(route.order, $('#loop').checked ? start : null, start); };
+window.wazeTo = id => { const r = rows.find(x => x.id === id); if (r) window.open(`https://waze.com/ul?ll=${r.lat},${r.lng}&navigate=yes`, '_blank'); };
+
+// ====== Tabs & filters ======
+function showTab(w) {
+  [['today', '#paneToday', '#tabToday'], ['list', '#paneList', '#tabList'], ['route', '#paneRoute', '#tabRoute'], ['stats', '#paneStats', '#tabStats'], ['overview', '#paneOverview', '#tabOverview']].forEach(([k, pn, t]) => { $(pn).hidden = k !== w; $(t).setAttribute('aria-selected', k === w); });
+  document.body.dataset.tab = w;
+  if (w === 'route') map.invalidateSize();
+  if (w === 'today') renderToday();
+  if (w === 'stats') renderStats();
+  if (w === 'overview') renderOverview();
+}
+$('#tabToday').onclick = () => showTab('today'); $('#tabList').onclick = () => showTab('list'); $('#tabRoute').onclick = () => showTab('route'); $('#tabStats').onclick = () => showTab('stats'); $('#tabOverview').onclick = () => showTab('overview');
+['#q', '#fStatus', '#fDistrict'].forEach(s => $(s).addEventListener('input', renderList));
+
+// ====== Boot ======
+async function reload() {
+  rows = await store.list();
+  try { fus = await store.fuOpen(); } catch { fus = []; }
+  try { visCache = await store.allVisits(); } catch { visCache = []; }
+  if (!reload.tpl) { reload.tpl = true; try { applyTpl(await store.tplList()); } catch {} }
+  selected = new Set([...selected].filter(id => rows.some(r => r.id === id)));
+  renderAll();
+  if (rows.some(r => r.lat != null) && !reload.done) { map.fitBounds(L.latLngBounds(rows.filter(r => r.lat != null).map(r => [r.lat, r.lng])).pad(.2)); reload.done = true; }
+}
+async function boot() {
+  if (sb) {
+    $('#btnLogout').hidden = false;
+    $('#btnLogout').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+    const { data } = await sb.auth.getSession();
+    if (!data.session) {
+      $('#dlgLogin').showModal();
+      $('#dlgLogin').addEventListener('cancel', e => e.preventDefault());
+      await new Promise(res => {
+        $('#fLogin').addEventListener('submit', async e => {
+          const f = e.target; const { error } = await sb.auth.signInWithPassword({ email: f.email.value, password: f.password.value });
+          if (error) { $('#loginErr').textContent = 'E-mail ou mot de passe incorrect.'; $('#dlgLogin').showModal(); } else res();
+        });
+      });
+    }
+  }
+  try { await reload(); } catch (err) { toast('Chargement impossible : ' + err.message, 6000); }
+  if (!useDb && !rows.length) toast('Mode local : les données restent dans ce navigateur.', 5000);
+}
+// ====== Recherche en ligne (OpenStreetMap) ======
+const BBOX = { s: 33.85, w: -7.05, n: 34.12, e: -6.60 }; // Témara · Rabat · Salé
+let sres = [], smode = 'name';
+const isDup = r => { const k = norm(r.name); return rows.some(x => norm(x.name) === k || (x.lat != null && haversine(x, r) < 40 && (norm(x.name).includes(k) || k.includes(norm(x.name))))); };
+function fromNom(o) {
+  const a = o.address || {}, t = o.extratags || {};
+  const district = a.suburb || a.neighbourhood || a.city_district || a.quarter || a.town || a.city || null;
+  const street = [a.house_number, a.road].filter(Boolean).join(' ');
+  return { name: o.name || (o.display_name || '').split(',')[0], district, address: [street, district].filter(Boolean).join(', ') || null, phone: t.phone || t['contact:phone'] || null, website: t.website || t['contact:website'] || null, lat: +o.lat, lng: +o.lon };
+}
+function fromOverpass(e) {
+  const t = e.tags || {}; if (!t.name) return null;
+  const lat = e.lat ?? e.center?.lat, lng = e.lon ?? e.center?.lon; if (lat == null) return null;
+  const district = t['addr:suburb'] || t['addr:city'] || null, street = [t['addr:housenumber'], t['addr:street']].filter(Boolean).join(' ');
+  const kind = t.amenity === 'cafe' ? 'cafe' : t.amenity === 'fast_food' ? 'snack' : (t.amenity === 'ice_cream' || t.shop) ? 'patisserie' : t.amenity === 'restaurant' ? 'restaurant' : null;
+  return { name: t.name, district, address: [street, district].filter(Boolean).join(', ') || null, phone: t.phone || t['contact:phone'] || null, website: t.website || t['contact:website'] || null, lat, lng, kind };
+}
+function renderSearch() {
+  const toks = smode === 'area' ? norm($('#sq').value).split(/\s+/).filter(Boolean) : [];
+  const shown = sres.filter(r => toks.every(t => norm(r.name + ' ' + (r.district || '')).includes(t)));
+  const fresh = shown.filter(r => !isDup(r)).length;
+  $('#sres').hidden = !shown.length;
+  $('#btnAddAll').hidden = fresh < 2;
+  $('#sinfo').textContent = sres.length ? `${shown.length} résultats · ${fresh} nouveaux` : '';
+  $('#sres').innerHTML = shown.slice(0, 150).map(r => `<div class="sr"><div><b>${esc(r.name)}</b><div class="meta">${esc(r.address || r.district || '')}${r.phone ? ' · ' + esc(r.phone) : ''}</div></div>${isDup(r) ? '<span class="meta">Déjà dans la liste</span>' : `<button type="button" class="btn primary" data-i="${sres.indexOf(r)}">Ajouter</button>`}</div>`).join('');
+}
+window.openSearch = q => { $('#sq').value = q || ''; sres = []; renderSearch(); $('#sinfo').textContent = ''; $('#dlgSearch').showModal(); if (q) doNameSearch(); };
+async function doNameSearch() {
+  const q = $('#sq').value.trim(); if (!q) return;
+  smode = 'name'; $('#sinfo').textContent = 'Recherche…';
+  try {
+    const url = 'https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&extratags=1&limit=25&countrycodes=ma&bounded=1&viewbox=' + [BBOX.w, BBOX.n, BBOX.e, BBOX.s].join(',') + '&q=' + encodeURIComponent(q);
+    sres = (await (await fetch(url, { headers: { 'Accept-Language': 'fr' } })).json()).map(fromNom);
+    renderSearch(); if (!sres.length) $('#sinfo').textContent = 'Aucun résultat en ligne.';
+  } catch { $('#sinfo').textContent = 'Service indisponible, réessayez.'; }
+}
+async function doAreaSearch() {
+  smode = 'area'; $('#sinfo').textContent = 'Chargement des restaurants…'; $('#sres').hidden = true;
+  const bb = `(${BBOX.s},${BBOX.w},${BBOX.n},${BBOX.e})`, ql = `[out:json][timeout:90];(nwr["amenity"~"^(restaurant|fast_food|cafe|ice_cream|food_court)$"]${bb};nwr["shop"~"^(bakery|pastry|confectionery|chocolate)$"]${bb};);out center tags;`;
+  for (const host of ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter']) {
+    try {
+      const j = await (await fetch(host, { method: 'POST', body: 'data=' + encodeURIComponent(ql) })).json();
+      const seen = new Set();
+      sres = j.elements.map(fromOverpass).filter(r => r && !seen.has(norm(r.name) + r.lat.toFixed(3)) && seen.add(norm(r.name) + r.lat.toFixed(3))).sort((a, b) => a.name.localeCompare(b.name));
+      $('#sq').value = ''; $('#sq').focus(); return renderSearch();
+    } catch {}
+  }
+  $('#sinfo').textContent = 'Service indisponible, réessayez.';
+}
+const toRow = r => ({ id: uid(), name: r.name, district: r.district, address: r.address, phone: r.phone, lat: r.lat, lng: r.lng, status: 'new', kind: r.kind || null, website_status: r.website ? 'yes' : 'unknown' });
+$('#btnOnline').onclick = () => openSearch($('#q').value);
+$('#btnSq').onclick = doNameSearch;
+$('#sq').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); smode === 'area' && sres.length ? renderSearch() : doNameSearch(); } });
+$('#sq').addEventListener('input', () => { if (smode === 'area' && sres.length) renderSearch(); });
+$('#btnArea').onclick = doAreaSearch;
+$('#btnSClose').onclick = () => $('#dlgSearch').close();
+$('#sres').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-i]'); if (!b) return;
+  b.disabled = true;
+  try { await store.save(toRow(sres[+b.dataset.i])); await reload(); renderSearch(); toast('Ajouté.'); } catch (err) { b.disabled = false; toast('Erreur : ' + err.message, 5000); }
+});
+$('#btnAddAll').onclick = async () => {
+  const toks = smode === 'area' ? norm($('#sq').value).split(/\s+/).filter(Boolean) : [];
+  const add = sres.filter(r => toks.every(t => norm(r.name + ' ' + (r.district || '')).includes(t)) && !isDup(r)).map(toRow);
+  if (!add.length) return;
+  if (!confirm(add.length + ' restaurants ?')) return;
+  try { await store.saveMany(add); await reload(); renderSearch(); toast(`${add.length} ajoutés.`, 4000); } catch (err) { toast('Erreur : ' + err.message, 5000); }
+};
+
+const RANK = ['new', 'visited', 'interested', 'appt', 'demo', 'trial', 'client'], OUT = { talked: 'visited', owner: 'visited', interested: 'interested', appt: 'appt', no: 'lost' };
+$('#chips').addEventListener('click', e => {
+  const b = e.target.closest('button[data-o]'); if (!b) return;
+  const f = $('#fVisit'); f.outcome.value = b.dataset.o;
+  document.querySelectorAll('#chips button').forEach(x => x.classList.toggle('on', x === b));
+  const st = OUT[b.dataset.o]; if (st && (st === 'lost' || RANK.indexOf(st) > RANK.indexOf(f.status.value))) f.status.value = st;
+});
+$('#dates').addEventListener('click', e => {
+  const b = e.target.closest('button[data-d]'); if (!b) return;
+  const f = $('#fVisit');
+  if (b.dataset.d === '0') { f.next_contact.value = ''; f.next_time.value = ''; f.next_step.value = ''; }
+  else f.next_contact.value = new Date(Date.now() + b.dataset.d * 864e5).toISOString().slice(0, 10);
+  document.querySelectorAll('#dates button').forEach(x => x.classList.toggle('on', x === b));
+});
+
+// ====== Aujourd’hui : tournée intelligente ======
+const HI = 55; // minimum lead score for "high potential"
+let day = Object.assign({ n: 8, region: '', newOnly: true, followUps: true, mode: 'walk', addr: '', radius: 2, loop: true, extra: [], skip: [], skipDate: '' }, ls('at_day', '{}')), lastPlan = null, geoBusy = false;
+const saveDay = () => localStorage.setItem('at_day', JSON.stringify(day));
+$('#loop').checked = !!day.loop;
+// ---- Ronde: a fixed list for today. Visiting a stop ticks it off; the plan no longer reshuffles while you walk. ----
+let tour = (t => t && t.date === todayLocal() ? t : null)(ls('at_tour', 'null'));
+const saveTour = () => localStorage.setItem('at_tour', JSON.stringify(tour));
+const tourLeft = () => tour ? tour.ids.filter(id => !tour.done.includes(id) && !tour.skipped.includes(id) && rows.some(r => r.id === id)) : [];
+const tourFrom = () => { const d = tour.done.slice().reverse().map(id => rows.find(r => r.id === id)).find(r => r && r.lat != null); return d || tour.start || start; };
+function tourRebuild(left) { tour.ids = [...tour.done, ...left, ...tour.skipped.filter(id => !tour.done.includes(id) && !left.includes(id))]; saveTour(); }
+function tourReorder() { // remaining stops in the shortest order from where you are now
+  const ids = tourLeft(), pos = ids.map(id => rows.find(r => r.id === id)).filter(r => r && r.lat != null), nop = ids.filter(id => !pos.some(r => r.id === id));
+  tourRebuild([...orderStops(tourFrom(), pos, tour.loop ? tour.start : null).map(r => r.id), ...nop]);
+}
+function tourMark(id) {
+  if (!tour) return;
+  if (!tour.ids.includes(id)) tour.ids.push(id); // walk-in: joins the round as visited
+  if (!tour.done.includes(id)) tour.done.push(id);
+  tour.skipped = tour.skipped.filter(x => x !== id);
+  tourReorder();
+}
+function startTour() {
+  const items = lastPlan?.items || []; if (!items.length) return;
+  tour = { date: todayLocal(), ids: items.map(x => x.r.id), done: [], skipped: [], loop: !!day.loop, start: { ...start } };
+  saveTour(); selected = new Set(tour.ids); saveSel(); route = null; renderMarkers(); renderList(); renderRoute(); renderToday();
+  $('#paneToday').scrollTo({ top: 0 });
+}
+const visitedToday = () => new Set(visCache.filter(v => localDate(v.created_at) === todayLocal()).map(v => v.restaurant_id));
+const startLabel = () => localStorage.getItem('at_start_label') || '';
+function setStart(p, label) {
+  start = { lat: p.lat, lng: p.lng }; localStorage.setItem('at_start', JSON.stringify(start)); localStorage.setItem('at_start_label', label || '');
+  startMarker.setLatLng([start.lat, start.lng]); route = null; renderRoute(); renderToday();
+}
+function regionOptions() {
+  const m = new Map();
+  rows.filter(r => r.lat != null && r.district && r.status !== 'client' && r.status !== 'lost').forEach(r => { const k = norm(r.district); const o = m.get(k) || { k, label: r.district, n: 0 }; o.n++; m.set(k, o); });
+  return [...m.values()].sort((a, b) => b.n - a.n);
+}
+function planDay() {
+  const today = todayLocal(), n = day.n;
+  if (day.skipDate !== today) { day.skip = []; day.extra = []; day.skipDate = today; saveDay(); }
+  const doneToday = visitedToday();
+  const inReg = r => !day.region || norm(r.district || '') === day.region;
+  const live = rows.filter(r => r.lat != null && r.lng != null && r.status !== 'client' && r.status !== 'lost' && !doneToday.has(r.id) && !day.skip.includes(r.id));
+  const isDue = r => r.next_contact && r.next_contact <= today;
+  // Radius: every stop lies within this distance of the anchor (your start; or the region centre when the region is far from your start).
+  const R = (+day.radius || 2) * 1000;
+  let anchor = start;
+  if (day.region && !live.some(r => inReg(r) && haversine(start, r) <= R)) {
+    const rr = live.filter(inReg), med = a => { a = a.slice().sort((x, y) => x - y); return a[Math.floor(a.length / 2)]; };
+    if (rr.length) anchor = { lat: med(rr.map(r => +r.lat)), lng: med(rr.map(r => +r.lng)) };
+  }
+  const near = r => haversine(anchor, r) <= R;
+  const picks = [];
+  // 0) restaurants you added by hand: always in
+  day.extra.forEach(id => { const r = rows.find(x => x.id === id); if (r && !doneToday.has(r.id)) picks.push({ r, due: !!isDue(r), extra: true }); });
+  const has = r => picks.some(p => p.r.id === r.id);
+  // 1) follow-ups that are due (or late), inside the radius
+  if (day.followUps) {
+    live.filter(r => !has(r) && isDue(r) && inReg(r) && near(r)).sort((a, b) => a.next_contact.localeCompare(b.next_contact) || haversine(anchor, a) - haversine(anchor, b))
+      .slice(0, Math.max(1, Math.ceil(n / 2))).forEach(r => picks.length < n && picks.push({ r, due: true }));
+  }
+  // 2) never visited, inside the radius; close together first, score breaks ties
+  const ok = r => !r.last_visit_at && r.status === 'new' && inReg(r) && near(r) && (!day.newOnly || leadScore(r) >= HI);
+  let pool = live.filter(r => !has(r) && ok(r));
+  const poolSize = pool.length;
+  while (picks.length < n && pool.length) {
+    const pts = [anchor, ...picks.filter(p => p.r.lat != null).map(p => p.r)], c = { lat: pts.reduce((s, x) => s + +x.lat, 0) / pts.length, lng: pts.reduce((s, x) => s + +x.lng, 0) / pts.length };
+    let best = null, bv = -1e9;
+    for (const r of pool) { const v = (leadScore(r) ?? 0) - 20 * haversine(c, r) / 1000; if (v > bv) { bv = v; best = r; } }
+    picks.push({ r: best, due: false }); pool = pool.filter(x => x !== best);
+  }
+  if (!picks.length) return { items: [], dist: 0, dur: 0, poolSize, moved: anchor !== start };
+  const withPos = picks.filter(p => p.r.lat != null), noPos = picks.filter(p => p.r.lat == null);
+  const order = orderStops(start, withPos.map(p => p.r), day.loop ? start : null);
+  const items = [...order.map(r => withPos.find(p => p.r === r)), ...noPos];
+  const seq = [start, ...order].concat(day.loop ? [start] : []);
+  let dist = 0; for (let i = 1; i < seq.length; i++) dist += haversine(seq[i - 1], seq[i]) * 1.3;
+  return { items, dist, dur: dist / (day.mode === 'walk' ? 1.25 : 7), poolSize, moved: anchor !== start };
+}
+function tipFor(r) {
+  if (['interested', 'appt', 'demo', 'trial'].includes(r.status)) return 'Reprenez où vous en étiez.';
+  if (r.website_status === 'no') return 'Pas de site : proposez Amplify Site (dès 250 DH).';
+  if ((r.g_reviews || 0) >= 100) return 'Beaucoup d’avis, donc du passage : parlez marges et caisse (POS dès 199 DH/mois).';
+  return 'Premier contact : demandez comment ils suivent leurs marges aujourd’hui.';
+}
+// ---- Bilan de la journée ----
+const BIL_F = [['went_well', 'Qu’est-ce qui s’est bien passé ?'], ['went_bad', 'Qu’est-ce qui s’est mal passé ?'], ['objections', 'Quelles objections ai-je entendues ?'], ['openers', 'Quelles phrases d’accroche ont bien marché ?'], ['learned', 'Qu’ai-je appris ?'], ['tomorrow', 'Que changer demain ?']];
+let bil = { open: false, loaded: false, date: null, f: {}, auto: null, recent: [], err: '' }, whoCache = null;
+async function whoAmI() { if (whoCache) return whoCache; let by = 'moi'; if (sb) { const { data } = await sb.auth.getSession(); by = (data.session?.user?.email || '').split('@')[0] || 'moi'; } return whoCache = by; }
+async function bilAuto(date) { // same source as « Chiffres » : the visits table; one visit = one row
+  const vs = (await store.allVisits()).filter(v => new Date(v.created_at).toLocaleDateString('sv-SE') === date);
+  const a = new Date(date + 'T00:00:00'); let done = 0;
+  try { done = (await store.fuDoneBetween(a.toISOString(), new Date(a.getTime() + 864e5).toISOString())).length; } catch {}
+  return { visits: vs.length, talks: vs.filter(v => TALK.includes(v.outcome)).length, interested: vs.filter(v => v.outcome === 'interested').length, appts: vs.filter(v => v.outcome === 'appt').length, done, open: fus.length, late: fus.filter(x => x.due_date < todayLocal()).length };
+}
+function bilanSection() {
+  const a = bil.auto, pill = (n, t) => `<span class="pill">${n} ${t}</span>`;
+  return `<details class="card" id="bilan"${bil.open ? ' open' : ''}><summary><b>Bilan de la journée</b></summary>
+<label style="display:block;margin-top:10px"><div class="lbl">Date</div><input type="date" id="bDate" value="${bil.date || todayLocal()}"></label>
+${bil.err ? `<div class="hist">${esc(bil.err)}</div>` : ''}
+${a ? `<div class="lbl" style="margin-top:10px">Chiffres calculés automatiquement</div><div class="strip">${pill(a.visits, 'visites')}${pill(a.talks, 'conversations')}${pill(a.interested, 'intéressés')}${pill(a.appts, 'RDV pris')}${pill(a.done, 'suivis terminés')}${pill(a.open, 'suivis ouverts')}${pill(a.late, 'suivis en retard')}</div>` : ''}
+<div class="lbl" style="margin-top:10px">Notes (à remplir)</div>
+${BIL_F.map(([k, t]) => `<label style="display:block;margin-top:6px"><div class="lbl">${t}</div><textarea data-bf="${k}" rows="2" style="width:100%">${esc(bil.f[k] || '')}</textarea></label>`).join('')}
+<div style="margin-top:8px"><button type="button" class="btn primary" id="bSave">Enregistrer le bilan</button></div>
+${bil.recent.length ? `<div class="lbl" style="margin-top:10px">Bilans précédents</div><div style="display:flex;gap:6px;flex-wrap:wrap">${bil.recent.map(d => `<button type="button" class="btn" data-bd="${d}">${fmtD(d + 'T12:00:00')}</button>`).join('')}</div>` : ''}
+</details>`;
+}
+const bilPaint = () => { const e = $('#bilan'); if (e) e.outerHTML = bilanSection(); };
+async function bilLoad(date) {
+  bil.date = date; bil.loaded = true; bil.err = '';
+  try { const who = await whoAmI(); const [rep, rec, auto] = await Promise.all([store.bilanGet(date, who), store.bilanRecent(who), bilAuto(date)]); bil.f = rep || {}; bil.recent = rec; bil.auto = auto; }
+  catch { bil.err = 'Bilan indisponible : lance schema-update-5.sql dans Supabase.'; bil.f = {}; try { bil.auto = await bilAuto(date); } catch {} }
+  bilPaint();
+}
+async function bilSave() {
+  try {
+    const who = await whoAmI(); await store.bilanSave({ report_date: bil.date || todayLocal(), author: who, ...Object.fromEntries(BIL_F.map(([k]) => [k, (bil.f[k] || '').trim() || null])) });
+    bil.recent = await store.bilanRecent(who); bilPaint(); toast('Bilan enregistré.');
+  } catch (err) { toast('Erreur : ' + err.message, 5000); }
+}
+function fuSection() {
+  if (!fus.length) return '';
+  const t = todayLocal(), srt = a => a.slice().sort((x, y) => x.due_date.localeCompare(y.due_date));
+  const item = a => {
+    const r = rows.find(x => x.id === a.restaurant_id); if (!r) return '';
+    return `<div class="fu-item" data-id="${a.id}" data-r="${r.id}"><div class="fu-info"><b>${esc(r.name)}</b><div class="leg ${a.due_date < t ? 'late' : ''}">${esc(FU_TYPES[a.type] || a.type)} · ${fmtD(a.due_date)}${a.note ? ' · ' + esc(a.note) : ''}</div></div><div class="fu-acts"><button class="btn go" data-fu2="visit" type="button">Visite</button><button class="btn" data-fu2="ics" type="button">Agenda</button><button class="btn" data-fu2="wa" type="button">WhatsApp</button><button class="btn fu-done" data-fu2="done" type="button" aria-label="Terminer">✓</button></div></div>`;
+  };
+  const grp = (title, arr, st) => arr.length ? `<div class="lbl" style="margin-top:8px;${st}">${title} (${arr.length})</div>` + srt(arr).slice(0, 8).map(item).join('') + (arr.length > 8 ? `<div class="leg">+${arr.length - 8}</div>` : '') : '';
+  return `<section class="card"><b style="color:var(--ink)">Suivis</b>${grp('En retard', fus.filter(a => a.due_date < t), 'color:#C0392B;font-weight:700')}${grp('Aujourd’hui', fus.filter(a => a.due_date === t), '')}${grp('À venir', fus.filter(a => a.due_date > t), 'color:var(--mute)')}</section>`;
+}
+const pinSvg = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>';
+const addBox = () => `<div class="addq"><input id="addQ" type="search" autocomplete="off" autocapitalize="off" autocorrect="off" enterkeyhint="search" placeholder="${tx('+ Ajouter un restaurant à la tournée', '+ Restaurant aan de ronde toevoegen')}"><div id="addSug" class="sug"></div></div>`;
+function addSuggest(q) { // existing restaurants by name, nearest first; plus "new restaurant" for walk-ins
+  const t = norm(q).split(/\s+/).filter(Boolean), box = $('#addSug'); if (!box) return;
+  if (!t.length) { box.innerHTML = ''; return; }
+  const from = tour ? tourFrom() : start, inR = tour ? new Set(tourLeft()) : new Set((lastPlan?.items || []).map(x => x.r.id));
+  const m = rows.filter(r => t.every(w => norm(r.name + ' ' + (r.district || '')).includes(w)))
+    .sort((a, b) => (a.lat == null) - (b.lat == null) || (a.lat != null && b.lat != null ? haversine(from, a) - haversine(from, b) : 0)).slice(0, 6);
+  box.innerHTML = m.map(r => `<button type="button" data-add="${r.id}" ${inR.has(r.id) ? 'disabled' : ''}><b>${esc(r.name)}</b> <span style="color:var(--mute);font-size:13px">${esc(r.district || '')}${r.lat != null ? ' · ' + km(haversine(from, r)) : ''}${inR.has(r.id) ? ' · ' + tx('déjà dans la tournée', 'zit al in de ronde') : ''}</span></button>`).join('')
+    + `<button type="button" data-addnew="1">+ ${tx('Nouveau restaurant', 'Nieuw restaurant')} « ${esc(q.trim())} »</button>`;
+}
+function tourSection() {
+  const left = tourLeft(), cur = rows.find(r => r.id === left[0]), total = tour.ids.filter(id => rows.some(r => r.id === id)).length, nd = tour.done.length;
+  const from = tourFrom(), rest = left.map(id => rows.find(r => r.id === id)).filter(r => r && r.lat != null);
+  const seq = [from, ...rest].concat(tour.loop && tour.start ? [tour.start] : []);
+  let dist = 0; for (let i = 1; i < seq.length; i++) dist += haversine(seq[i - 1], seq[i]) * 1.3;
+  const vt = new Map(); visCache.filter(v => localDate(v.created_at) === todayLocal()).forEach(v => { if (!vt.has(v.restaurant_id)) vt.set(v.restaurant_id, v); });
+  const curBox = cur ? `<div class="cur"><div class="m2">${tx('Prochain arrêt', 'Volgende stop')}${cur.lat != null ? ' · ' + km(haversine(from, cur) * 1.3) : ''}</div><b class="nm">${esc(cur.name)}</b>
+<div class="m2">${esc(cur.address || cur.district || '')}${cur.lat == null || isApprox(cur) ? ' · ' + tx('position approximative, Google cherche par nom', 'positie bij benadering, Google zoekt op naam') : ''}</div>
+<div class="g3"><button class="btn primary" data-tg="nav" data-id="${cur.id}">${tx('Itinéraire', 'Navigeer')}</button><button class="btn" data-tg="visit" data-id="${cur.id}">${tx('Visite', 'Bezoek')}</button><button class="btn" data-tg="skip" data-id="${cur.id}">${tx('Passer', 'Overslaan')}</button></div></div>`
+    : `<div class="cur"><b class="nm">${tx('Tournée terminée !', 'Ronde klaar!')}</b><div class="m2">${nd} ${tx('visités', 'bezocht')}${tour.skipped.length ? ' · ' + tour.skipped.length + ' ' + tx('passés', 'overgeslagen') : ''}</div>
+<div class="g2"><button class="btn primary" data-tg="home">${tx('Retour au départ', 'Terug naar start')}</button><button class="btn" data-tg="next">${tx('Nouvelle tournée ici', 'Nieuwe ronde vanaf hier')}</button></div></div>`;
+  const list = `<ol class="stops">${tour.ids.map(id => rows.find(r => r.id === id)).filter(Boolean).map((r, i) => {
+    const done = tour.done.includes(r.id), sk = tour.skipped.includes(r.id), now = r.id === left[0], v = vt.get(r.id);
+    const info = done ? (v ? [outL(v.outcome), v.contact_name].filter(Boolean).join(' · ') || tx('visité', 'bezocht') : tx('visité', 'bezocht')) : sk ? tx('passé', 'overgeslagen') : (r.district || '');
+    const acts = done ? `<button class="btn sm" data-tg="visit" data-id="${r.id}">${tx('Visite', 'Bezoek')}</button><button class="btn sm" onclick="waPick('${r.id}')">WhatsApp</button>`
+      : sk ? `<button class="btn sm" data-tg="unskip" data-id="${r.id}">${tx('Remettre', 'Terugzetten')}</button>`
+      : `<button class="btn sm" data-tg="nav" data-id="${r.id}">${tx('Itinéraire', 'Navigeer')}</button><button class="btn sm go" data-tg="visit" data-id="${r.id}">${tx('Visite', 'Bezoek')}</button>${now ? '' : `<button class="btn sm" data-tg="first" data-id="${r.id}">${tx('Y aller maintenant', 'Nu hierheen')}</button>`}`;
+    return `<li class="stop${done ? ' done' : sk ? ' skip' : now ? ' now' : ''}"><span class="num">${done ? '✓' : i + 1}</span><div><b>${esc(r.name)}</b><div class="leg">${esc(info)}</div><div class="acts">${acts}</div></div></li>`;
+  }).join('')}${tour.loop ? `<li class="stop"><span class="num start">D</span><div><b>${tx('Retour au départ', 'Terug naar start')}</b></div></li>` : ''}</ol>`;
+  return `<section class="tour"><div class="hd"><span class="summary">${tx('Tournée', 'Ronde')} · ${nd}/${total}</span><span class="m2">${left.length ? '≈ ' + km(dist) + ' · ' + mins(dist / (day.mode === 'walk' ? 1.25 : 7)) + ' ' + tx('restants', 'te gaan') : ''}</span></div>
+<div class="prog"><i style="width:${total ? Math.round(nd / total * 100) : 0}%"></i></div>${curBox}${addBox()}
+<div class="g2">${left.length > 1 ? `<button class="btn" data-tg="all">${tx('Google Maps (tout)', 'Google Maps (alles)')}</button>` : `<button class="btn" data-tg="home">${tx('Retour au départ', 'Terug naar start')}</button>`}<button class="btn" data-tg="stop">${tx('Arrêter la tournée', 'Ronde stoppen')}</button></div></section>${list}`;
+}
+function visitListHtml(vs, group) { // one line per restaurant per day (latest visit), with quick actions
+  const byDay = new Map();
+  vs.slice().sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))).forEach(v => { const d = localDate(v.created_at), m = byDay.get(d) || new Map(); if (!m.has(v.restaurant_id)) m.set(v.restaurant_id, { v, n: 0 }); m.get(v.restaurant_id).n++; byDay.set(d, m); });
+  const t = todayLocal(), POSO = ['interested', 'appt', 'owner'];
+  return [...byDay].map(([d, m]) => (group ? `<div class="dvh">${new Date(d + 'T12:00:00').toLocaleDateString(lang === 'fr' ? 'fr-FR' : 'nl-NL', { weekday: 'long', day: 'numeric', month: 'long' })} · ${m.size}</div>` : '') + [...m.values()].map(({ v, n }) => {
+    const r = rows.find(x => x.id === v.restaurant_id); if (!r) return '';
+    const fu = fus.filter(a => a.restaurant_id === r.id).sort((a, b) => a.due_date.localeCompare(b.due_date))[0];
+    const tm = new Date(v.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    return `<div class="dvi" data-r="${r.id}"><div class="t"><div><b>${esc(r.name)}</b>${n > 1 ? ` <span class="n">(${n}×)</span>` : ''}<div class="n">${tm} · ${esc(stL(r.status))}${r.district ? ' · ' + esc(r.district) : ''}${v.contact_name ? ' · ' + esc(v.contact_name) : ''}${v.visited_by ? ' · ' + esc(v.visited_by) : ''}</div></div><span class="o ${POSO.includes(v.outcome) ? 'pos' : v.outcome === 'no' ? 'neg' : ''}">${esc(outL(v.outcome) || '—')}</span></div>
+${v.note ? `<div class="n">${esc(v.note)}</div>` : ''}<div class="n ${fu && fu.due_date < t ? 'late' : ''}">${fu ? '→ ' + esc(fuL(fu.type)) + ' · ' + fmtD(fu.due_date) + (fu.note ? ' · ' + esc(fu.note) : '') : tx('Aucune action prévue', 'Geen actie gepland')}</div>
+<div class="a"><button class="btn" type="button" data-dv="wa">WhatsApp</button><button class="btn" type="button" data-dv="call" ${r.phone ? '' : 'disabled'}>${tx('Appeler', 'Bellen')}</button><button class="btn" type="button" data-dv="cal">Agenda</button><button class="btn go" type="button" data-dv="visit">${tx('Ouvrir', 'Openen')}</button></div></div>`;
+  }).join('')).join('');
+}
+let dvDate = null, dvOpen = null;
+function daySection() {
+  const d = dvDate || todayLocal(), vs = visCache.filter(v => localDate(v.created_at) === d), nR = new Set(vs.map(v => v.restaurant_id)).size;
+  const open = dvOpen ?? false;
+  return `<details class="card" id="dayv"${open ? ' open' : ''}><summary><b>${tx('Visites du jour', 'Bezoeken van de dag')} (${nR})</b></summary>
+<label style="display:block"><div class="lbl">${tx('Date', 'Datum')}</div><input type="date" id="dvDate" value="${d}" style="width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:8px 10px"></label>
+${vs.length ? visitListHtml(vs, false) : `<div class="hist">${tx('Aucune visite ce jour-là.', 'Geen bezoeken op deze dag.')}</div>`}</details>`;
+}
+function renderToday() {
+  const el = $('#today'); if (!el || geoBusy) return;
+  if (el.contains(document.activeElement) && document.activeElement.id === 'addQ' && document.activeElement.value) return; // don't wipe what you're typing
+  const today = new Date().toISOString().slice(0, 10), now = Date.now();
+  if (tour && tour.date !== todayLocal()) { tour = null; saveTour(); }
+  if (tour) { const vt = visitedToday(); let ch = false; tour.ids.forEach(id => { if (vt.has(id) && !tour.done.includes(id)) { tour.done.push(id); ch = true; } }); if (ch) tourReorder(); }
+  const live = rows.filter(r => r.status !== 'client' && r.status !== 'lost');
+  const nDue = live.filter(r => r.next_contact && r.next_contact <= today).length, nNew = live.filter(r => !r.last_visit_at).length,
+    nWeek = rows.filter(r => r.last_visit_at && now - new Date(r.last_visit_at) < 7 * 864e5).length;
+  const nLate = fus.filter(a => a.due_date < todayLocal()).length;
+  const strip = `<div class="strip">${nLate ? `<span class="pill hot">${nLate} suivis en retard</span>` : ''}<span class="pill${nDue ? ' hot' : ''}">${nDue} à relancer</span><span class="pill">${nNew} pas encore visités</span><span class="pill">${nWeek} visites cette semaine</span></div>`;
+  if (tour) { el.innerHTML = strip + tourSection() + daySection() + fuSection() + bilanSection(); return; }
+  const regs = regionOptions(), missing = rows.filter(r => r.lat == null).length, sl = startLabel();
+  if (day.region && !regs.some(o => o.k === day.region)) day.region = '';
+  lastPlan = planDay();
+  const P = lastPlan, tog = (k, t) => `<label class="tg"><input type="checkbox" data-t="${k}" ${day[k] ? 'checked' : ''}><span>${t}</span></label>`;
+  const seg = (a, items, cur) => items.map(([v, t]) => `<button type="button" data-${a}="${v}" aria-pressed="${String(v) === String(cur)}" class="${String(v) === String(cur) ? 'on' : ''}">${t}</button>`).join('');
+  const stops = P.items.length ? `<ol class="stops"><li class="stop"><span class="num start">D</span><div><b>Départ</b></div></li>${P.items.map(({ r, due, extra }, i) => {
+    const v = r.g_reviews, late = due && r.next_contact < today;
+    const why = due ? `Relance prévue le ${fmtD(r.next_contact)}${late ? ' (en retard)' : ''}${r.next_step ? ' : ' + esc(r.next_step) : ''}`
+      : `Score ${leadScore(r) ?? '—'}${r.website_status === 'no' ? ' · pas de site' : ''}${v ? ' · ' + v + ' avis' : ''}${r.last_visit_at ? '' : ' · jamais visité'}`;
+    return `<li class="stop${due ? ' fu' : ''}${late ? ' late' : ''}"><span class="num">${i + 1}</span><div><b>${esc(r.name)}${extra ? `<span class="tag">${tx('ajouté', 'toegevoegd')}</span>` : ''}</b><div class="leg ${late ? 'late' : ''}">${esc(r.district || '')}${r.district ? ' · ' : ''}${why}${r.lat == null || isApprox(r) ? ' · ' + tx('position approximative', 'positie bij benadering') : ''}</div><div class="tip">${tipFor(r)}</div><div class="acts"><button class="btn sm" onclick="navTo('${r.id}')">${tx('Itinéraire', 'Navigeer')}</button><button class="btn sm" onclick="waPick('${r.id}')">WhatsApp</button><button class="btn sm go" onclick="openVisit('${r.id}')">Visite</button><button class="btn sm" data-px="${r.id}" aria-label="${tx('Retirer', 'Weghalen')}">✕</button></div></div></li>`;
+  }).join('')}${day.loop ? `<li class="stop"><span class="num start">D</span><div><b>${tx('Retour au départ', 'Terug naar start')}</b></div></li>` : ''}</ol>${P.items.length < day.n ? `<div class="empty">Plus de restaurants ne correspondent pas aux filtres${missing ? ' (certains n’ont pas encore de position)' : ''}. ${tx('Agrandis le rayon, change le départ ou choisis une région.', 'Vergroot de straal, verander je start of kies een regio.')}</div>` : ''}`
+  : `<div class="empty">${rows.length ? tx('Aucun restaurant dans ce rayon. Agrandis le rayon, change le départ ou désactive « nouveaux et fort potentiel ».', 'Geen restaurants binnen deze straal. Vergroot de straal, verander je start of zet “alleen nieuwe en hoge potentie” uit.') + (missing ? ' ' + tx('Ou cherche les positions manquantes.', 'Of zoek de ontbrekende posities op.') : '') : 'Ajoutez des restaurants avec une position (liste, import ou recherche en ligne) pour recevoir un conseil.'}</div>`;
+  el.innerHTML = `${strip}
+${fuSection()}
+<section class="card">
+<div class="find"><input id="dAddr" type="search" aria-label="Adresse ou quartier" placeholder="Adresse ou quartier" value="${esc(day.addr)}"><button class="btn" id="dFind" type="button">Chercher</button></div>
+<div id="dSug" class="sug"></div>
+<div class="from">${pinSvg}<span class="fl">${sl ? 'Départ : ' + esc(sl) : 'Départ : repère sur la carte (Agdal par défaut)'}</span><span class="lks"><button class="lk" id="dGeo" type="button">Ma position</button><a href="#" class="lk" id="dPin">Déplacer sur la carte</a></span></div>
+<label><div class="lbl">Région</div><select id="dRegion"><option value="">Peu importe, le plus proche du départ</option>${regs.map(o => `<option value="${esc(o.k)}" ${o.k === day.region ? 'selected' : ''}>${esc(o.label)} (${o.n})</option>`).join('')}</select></label>
+<div class="two2"><div><div class="lbl">Nombre d’arrêts</div><div class="seg" id="dN">${seg('n', [6, 8, 12, 16].map(h => [h, h]), day.n)}</div></div>
+<div><div class="lbl">Déplacement</div><div class="seg" id="dMode">${seg('m', [['walk', 'À pied'], ['car', 'En voiture']], day.mode)}</div></div>
+<div><div class="lbl">${tx('Rayon autour du départ', 'Straal rond je start')}</div><div class="seg">${seg('rad', [1, 2, 3, 5, 10].map(k => [k, k + ' km']), day.radius)}</div></div></div>
+${P.moved ? `<div class="hist">${tx('Ton départ est loin de cette région : le rayon part du centre de la région.', 'Je start ligt ver van deze regio: de straal gaat uit van het midden van de regio.')}</div>` : ''}
+<div class="tgs">${tog('newOnly', 'Seulement nouveaux et fort potentiel')}${tog('followUps', 'Inclure les relances')}${tog('loop', tx('Revenir au point de départ (voiture)', 'Terug naar startpunt (auto)'))}</div>
+${addBox()}
+${missing ? `<button class="btn miss" id="dLocate" type="button">Chercher les positions manquantes (${missing})</button>` : ''}
+</section>
+${P.items.length ? `<section class="plan"><div class="summary">${P.items.length} arrêts · ${km(P.dist)} · ≈ ${mins(P.dur)}</div><div class="line"><button class="btn primary" id="btnTour" type="button">${tx('Démarrer la tournée', 'Ronde starten')}</button><button class="btn" id="dGmaps" type="button">Ouvrir dans Google Maps</button><button class="btn" id="btnPlanGo" type="button">${tx('Voir sur la carte', 'Op de kaart bekijken')}</button></div></section>` : ''}
+${stops}
+${daySection()}
+${bilanSection()}`;
+}
+async function locateMissing(b) {
+  const todo = rows.filter(r => r.lat == null || r.lng == null); if (!todo.length || geoBusy) return;
+  geoBusy = true; b = b || $('#dLocate'); if (b) b.disabled = true; let ok = 0, ap = 0; const am = ls(APPROX_KEY, '{}');
+  for (let i = 0; i < todo.length; i++) {
+    if (b) b.textContent = (i + 1) + '/' + todo.length;
+    let p = null, approx = false;
+    try { p = await findPos(todo[i]); } catch {}
+    if (!p) { p = approxPos(todo[i]); approx = true; }
+    try { await store.save({ id: todo[i].id, name: todo[i].name, lat: p.lat, lng: p.lng }); if (approx) { am[todo[i].id] = posKey(p.lat, p.lng); ap++; } else ok++; } catch {}
+    await sleep(300);
+  }
+  localStorage.setItem(APPROX_KEY, JSON.stringify(am));
+  geoBusy = false;
+  try { await reload(); } catch {}
+  toast(`${ok} positions trouvées, ${ap} approximatives.`, 6000);
+}
+$('#lLocate').onclick = e => locateMissing(e.currentTarget);
+$('#stats').addEventListener('click', e => { const b = e.target.closest('[data-sp]'); if (b) { statP = b.dataset.sp; renderStats(); } });
+$('#today').addEventListener('toggle', e => { if (e.target.id !== 'bilan') return; bil.open = e.target.open; if (bil.open && !bil.loaded) bilLoad(bil.date || todayLocal()); }, true);
+$('#today').addEventListener('input', e => { const k = e.target.dataset?.bf; if (k) bil.f[k] = e.target.value; });
+$('#today').addEventListener('change', e => { if (e.target.id === 'bDate' && e.target.value) bilLoad(e.target.value); });
+$('#today').addEventListener('click', e => { const b = e.target.closest('[data-bd]'); if (b) return bilLoad(b.dataset.bd); if (e.target.closest('#bSave')) bilSave(); });
+$('#today').addEventListener('click', async e => {
+  const b = e.target.closest('[data-fu2]'); if (!b) return;
+  const row = b.closest('[data-id]'), rid = row.dataset.r, a = fus.find(x => x.id === row.dataset.id);
+  if (b.dataset.fu2 === 'visit') return openVisit(rid);
+  if (b.dataset.fu2 === 'ics') return void (a && openGoogleCal(a));
+  if (b.dataset.fu2 === 'wa') return waPick(rid);
+  if (b.dataset.fu2 === 'done' && a) { try { await store.fuSave({ ...a, status: 'done', done_at: new Date().toISOString() }); await syncRestaurant(rid); await reload(); toast('Action terminée.'); } catch (err) { toast('Erreur : ' + err.message, 5000); } }
+});
+$('#today').addEventListener('click', async e => {
+  const t = e.target;
+  const n = t.closest('button[data-n]'); if (n) { day.n = +n.dataset.n; saveDay(); return renderToday(); }
+  const m = t.closest('button[data-m]'); if (m) { day.mode = m.dataset.m; saveDay(); return renderToday(); }
+  const rd = t.closest('button[data-rad]'); if (rd) { day.radius = +rd.dataset.rad; saveDay(); return renderToday(); }
+  const px = t.closest('[data-px]'); if (px) { const id = px.dataset.px; if (day.extra.includes(id)) day.extra = day.extra.filter(x => x !== id); else day.skip.push(id); saveDay(); return renderToday(); }
+  const ad = t.closest('[data-add]'), an = t.closest('[data-addnew]');
+  if (ad || an) {
+    const q = $('#addQ')?.value.trim() || ''; if ($('#addQ')) { $('#addQ').value = ''; $('#addQ').blur(); }
+    if (an) return openEdit(null, q);
+    const id = ad.dataset.add, r = rows.find(x => x.id === id);
+    if (tour) { tour.skipped = tour.skipped.filter(x => x !== id); if (!tour.ids.includes(id)) tour.ids.push(id); tourReorder(); selected.add(id); saveSel(); renderMarkers(); }
+    else { if (!day.extra.includes(id)) day.extra.push(id); day.skip = day.skip.filter(x => x !== id); saveDay(); }
+    toast((r ? r.name : '') + tx(' ajouté à la tournée.', ' toegevoegd aan de ronde.'));
+    return renderToday();
+  }
+  if (t.closest('#btnTour')) return startTour();
+  const tg = t.closest('[data-tg]');
+  if (tg && tour) {
+    const id = tg.dataset.id, k = tg.dataset.tg;
+    if (k === 'nav') return navTo(id);
+    if (k === 'visit') return openVisit(id);
+    if (k === 'skip') { if (!tour.skipped.includes(id)) tour.skipped.push(id); tourReorder(); return renderToday(); }
+    if (k === 'unskip') { tour.skipped = tour.skipped.filter(x => x !== id); tourReorder(); return renderToday(); }
+    if (k === 'first') { tourRebuild([id, ...tourLeft().filter(x => x !== id)]); return renderToday(); }
+    if (k === 'home') return navPoint(tour.start || start);
+    if (k === 'all') { const o = tourLeft().map(i => rows.find(r => r.id === i)).filter(Boolean); return gmapsRoute(o, tour.loop ? (tour.start || start) : null, null); }
+    if (k === 'stop') { if (!confirm(tx('Arrêter la tournée ? Les visites restent enregistrées.', 'Ronde stoppen? De bezoeken blijven opgeslagen.'))) return; tour = null; saveTour(); return renderToday(); }
+    if (k === 'next') {
+      if (!navigator.geolocation) { tour = null; saveTour(); return renderToday(); }
+      return navigator.geolocation.getCurrentPosition(p => { tour = null; saveTour(); map.setView([p.coords.latitude, p.coords.longitude], 14); setStart({ lat: p.coords.latitude, lng: p.coords.longitude }, tx('Ma position', 'Mijn locatie')); toast(tx('Nouvelle tournée calculée depuis ta position.', 'Nieuwe ronde berekend vanaf je locatie.'), 4000); $('#paneToday').scrollTo({ top: 0 }); },
+        () => toast(tx('Autorisez la localisation dans le navigateur.', 'Sta locatie toe in de browser.'), 4000), { enableHighAccuracy: true, timeout: 10000 });
+    }
+    return;
+  }
+  if (t.closest('#dPin')) { e.preventDefault(); showTab('route'); return toast('Déplacez le repère D sur la carte, puis revenez sur Aujourd’hui.', 5000); }
+  if (t.closest('#dGeo')) {
+    if (!navigator.geolocation) return toast('Localisation non disponible.');
+    return navigator.geolocation.getCurrentPosition(p => { map.setView([p.coords.latitude, p.coords.longitude], 14); setStart({ lat: p.coords.latitude, lng: p.coords.longitude }, 'Ma position'); }, () => toast('Autorisez la localisation dans le navigateur.', 4000), { enableHighAccuracy: true, timeout: 10000 });
+  }
+  const sg = t.closest('button[data-sug]');
+  if (sg) { const p = sugList[+sg.dataset.sug]; if (p) { day.addr = p.label; saveDay(); map.setView([p.lat, p.lng], 14); setStart(p, p.label); } return; }
+  if (t.closest('#dFind')) {
+    const q = $('#dAddr').value.trim(); if (!q) return;
+    day.addr = q; saveDay();
+    try { const p = await geocodeFuzzy(q); if (!p) return toast('Adresse introuvable. Essayez un quartier ou « Déplacer sur la carte ».', 4500); map.setView([p.lat, p.lng], 14); setStart(p, q); } catch { toast('Service indisponible, réessayez.'); }
+    return;
+  }
+  if (t.closest('#dLocate')) return locateMissing(t.closest('#dLocate'));
+  if (t.closest('#dGmaps')) { const o = (lastPlan?.items || []).map(x => x.r); return gmapsRoute(o, day.loop ? start : null, start); }
+  if (t.closest('#btnPlanGo')) {
+    selected = new Set(lastPlan.items.map(p => p.r.id)); saveSel(); route = null;
+    renderMarkers(); renderList(); showTab('route'); renderRoute(); $('#btnOptimize').click();
+  }
+});
+$('#today').addEventListener('change', e => {
+  if (e.target.id === 'dRegion') { day.region = e.target.value; saveDay(); renderToday(); }
+  else if (e.target.dataset.t) { day[e.target.dataset.t] = e.target.checked; if (e.target.dataset.t === 'loop') { $('#loop').checked = day.loop; route = null; renderRoute(); } saveDay(); renderToday(); }
+  else if (e.target.id === 'dvDate') { dvDate = e.target.value || null; dvOpen = true; renderToday(); }
+});
+$('#today').addEventListener('input', e => { if (e.target.id === 'addQ') addSuggest(e.target.value); });
+$('#today').addEventListener('toggle', e => { if (e.target.id === 'dayv') dvOpen = e.target.open; }, true);
+// Day list actions (Vandaag and Cijfers)
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-dv]'); if (!b) return;
+  const id = b.closest('[data-r]')?.dataset.r, r = rows.find(x => x.id === id); if (!r) return;
+  const k = b.dataset.dv;
+  if (k === 'wa') return waPick(id);
+  if (k === 'call') return void (r.phone && (location.href = 'tel:' + r.phone.replace(/[^\d+]/g, '')));
+  if (k === 'visit') return openVisit(id);
+  if (k === 'cal') { const a = fus.filter(x => x.restaurant_id === id).sort((x, y) => x.due_date.localeCompare(y.due_date))[0] || { id: uid(), restaurant_id: id, type: 'revisit', due_date: r.next_contact || new Date(Date.now() + 864e5).toLocaleDateString('sv-SE'), note: r.next_step, source: 'manual' }; return openGoogleCal(a); }
+});
+$('#today').addEventListener('input', e => {
+  if (e.target.id !== 'dAddr') return;
+  day.addr = e.target.value; saveDay();
+  clearTimeout(sugTimer); const q = day.addr.trim(), box = $('#dSug');
+  if (q.length < 3) { sugList = []; if (box) box.innerHTML = ''; return; }
+  sugTimer = setTimeout(async () => {
+    try { sugList = await suggestPlaces(q); } catch { sugList = []; }
+    const b = $('#dSug'); if (!b || $('#dAddr').value.trim() !== q) return;
+    b.innerHTML = sugList.map((p, i) => `<button type="button" data-sug="${i}">${esc(p.label)}</button>`).join('');
+  }, 400);
+});
+$('#today').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'dAddr') { e.preventDefault(); $('#dFind').click(); } if (e.key === 'Enter' && e.target.id === 'addQ') { e.preventDefault(); $('#addSug button:not([disabled])')?.click(); } });
+// keep the Vandaag tab in sync when the start pin is dragged on the map
+startMarker.on('dragend', () => { localStorage.setItem('at_start_label', ''); renderToday(); });
+
+// ====== Chiffres ======
+store.allVisits = async () => sb ? ((await sb.from('visits').select('*').order('created_at', { ascending: false }).limit(2000)).data || []) : ls('at_visits', '[]');
+function renderOverview() {
+  const el = $('#overview'); if (!el) return;
+  const today = new Date().toISOString().slice(0, 10), live = rows.filter(r => r.status !== 'client' && r.status !== 'lost');
+  const tiles = Object.keys(STATUS).map(k => `<button type="button" class="kpi" data-st="${k}" style="text-align:left;cursor:pointer"><b>${rows.filter(r => r.status === k).length}</b>${esc(STATUS[k].label)}</button>`).join('');
+  const due = live.filter(r => r.next_contact && r.next_contact <= today).sort((a, b) => a.next_contact.localeCompare(b.next_contact)).slice(0, 12);
+  const best = live.filter(r => !r.last_visit_at).map(r => ({ r, n: leadScore(r) ?? 0 })).sort((a, b) => b.n - a.n).slice(0, 12);
+  const li = (r, t) => `<li><button type="button" class="btn" data-go="${esc(r.name)}" style="width:100%;text-align:left"><b>${esc(r.name)}</b> <span style="color:var(--mute)">${esc(r.district || '')}</span><br><span style="font-size:13px">${t}</span></button></li>`;
+  el.innerHTML = `<div class="kpis" style="flex-wrap:wrap">${tiles}</div>
+<h3>Relances à faire</h3>${due.length ? `<ul class="stops" style="list-style:none;padding:0">${due.map(r => li(r, (r.next_contact < today ? 'En retard · ' : '') + fmtD(r.next_contact) + (r.next_step ? ' · ' + esc(r.next_step) : ''))).join('')}</ul>` : '<p class="empty">Aucune relance en attente.</p>'}
+<h3>Meilleures pistes pas encore visitées</h3>${best.length ? `<ul class="stops" style="list-style:none;padding:0">${best.map(({ r, n }) => li(r, 'Score ' + n)).join('')}</ul>` : '<p class="empty">Rien à afficher.</p>'}`;
+  el.querySelectorAll('[data-st]').forEach(b => b.onclick = () => { $('#fStatus').value = b.dataset.st; $('#q').value = ''; showTab('list'); renderList(); });
+  el.querySelectorAll('[data-go]').forEach(b => b.onclick = () => { $('#fStatus').value = ''; $('#q').value = b.dataset.go; showTab('list'); renderList(); });
+}
+let statP = '7';
+async function renderStats() {
+  const el = $('#stats'); let vs = visCache; try { vs = visCache = await store.allVisits(); } catch {}
+  const bars = (items, max) => items.map(([t, n, c]) => `<div class="brow"><span>${esc(t)}${c ? '' : ''}</span><div class="bar"><i style="width:${max ? Math.round(n / max * 100) : 0}%"></i></div><b>${n}</b></div>`).join('');
+  const POS = ['interested', 'appt', 'demo', 'trial', 'client'], now = Date.now();
+  const wkStart = d => { const x = new Date(d); x.setHours(0, 0, 0, 0); x.setDate(x.getDate() - (x.getDay() + 6) % 7); return x.getTime(); };
+  const cur = wkStart(now), weeks = [...Array(6)].map((_, i) => cur - (5 - i) * 7 * 864e5);
+  const wk = weeks.map(w => [fmtD(w), vs.filter(v => wkStart(v.created_at) === w).length]);
+  const st = Object.keys(STATUS).map(k => [STATUS[k].label, rows.filter(r => r.status === k).length]);
+  const who = {}; vs.filter(v => now - new Date(v.created_at) < 30 * 864e5).forEach(v => { const k = v.visited_by || '?'; who[k] = (who[k] || 0) + 1; });
+  const cnt = key => { const m = {}; vs.forEach(v => { if (v[key]) m[v[key]] = (m[v[key]] || 0) + 1; }); return Object.entries(m).sort((a, b) => b[1] - a[1]); };
+  const OBJ = { price: 'Prix', equipped: 'Déjà équipé', time: 'Pas le temps', decider: 'Pas le décideur', other: 'Autre' };
+  const dist = {}; rows.filter(r => r.last_visit_at && r.district).forEach(r => { const d = dist[r.district] || (dist[r.district] = { v: 0, p: 0 }); d.v++; if (POS.includes(r.status)) d.p++; });
+  const dl = Object.entries(dist).sort((a, b) => b[1].p - a[1].p || b[1].v - a[1].v).slice(0, 8);
+  const visited = rows.filter(r => r.last_visit_at).length;
+  const sec = (h, body) => `<div class="blk"><h3>${h}</h3>${body}</div>`;
+  // ---- Analyse de la période (nouveau ; les blocs ci-dessous restent inchangés) ----
+  const nP = statP === 'all' ? null : +statP, since = nP ? new Date(new Date().setHours(0, 0, 0, 0) - (nP - 1) * 864e5) : new Date(0);
+  const pv = vs.filter(v => new Date(v.created_at) >= since), uniq = new Set(pv.map(v => v.restaurant_id)), todayS = todayLocal();
+  let doneN = 0; try { doneN = (await store.fuDoneBetween(since.toISOString(), new Date(Date.now() + 864e5).toISOString())).length; } catch {}
+  const oc = k => pv.filter(v => v.outcome === k).length, talks = pv.filter(v => TALK.includes(v.outcome)).length;
+  const pct = (a, b) => b ? Math.round(a / b * 100) + ' %' : '—', lateN = fus.filter(a => a.due_date < todayS).length;
+  const clientsN = rows.filter(r => uniq.has(r.id) && r.status === 'client').length;
+  const noFu = rows.filter(r => ['interested', 'appt', 'demo', 'trial'].includes(r.status) && !fus.some(a => a.restaurant_id === r.id));
+  const ln = (t, v, d) => `<div class="brow" style="grid-template-columns:1fr auto"><span>${t}${d ? ` <small style="color:var(--mute)">${d}</small>` : ''}</span><b>${v}</b></div>`;
+  const OUTP = { absent: 'Pas là', talked: 'Parlé au gérant', owner: 'Parlé au patron', interested: 'Intéressé', appt: 'RDV pris', no: 'Pas intéressé' }, OBJP = { price: 'Prix', equipped: 'Déjà équipé', time: 'Pas le temps', decider: 'Pas le décideur', other: 'Autre' };
+  const cnt2 = (key, map) => { const m = {}; pv.forEach(v => { if (v[key]) m[v[key]] = (m[v[key]] || 0) + 1; }); return Object.entries(m).sort((a, b) => b[1] - a[1]).map(([k, n]) => [map[k] || k, n]); };
+  const DJ = ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'], wd = DJ.map((d, i) => { const x = pv.filter(v => new Date(v.created_at).getDay() === i); return [d, x.length, x.filter(v => TALK.includes(v.outcome)).length]; }).filter(x => x[1]);
+  const seg2 = [['1', 'Aujourd’hui'], ['7', '7 jours'], ['30', '30 jours'], ['all', 'Tout']].map(([v, t]) => `<button type="button" data-sp="${v}" class="${v === statP ? 'on' : ''}" aria-pressed="${v === statP}">${t}</button>`).join('');
+  const oB = cnt2('outcome', OUTP), bB = cnt2('objection', OBJP);
+  const periodBlock = `<div class="blk"><h3>Analyse de la période</h3><div class="seg" style="margin-bottom:8px">${seg2}</div>` +
+    ln('Visites', pv.length) + ln('Restaurants différents visités', uniq.size) +
+    ln('Conversations avec le gérant', talks, pct(talks, pv.length) + ' ' + 'des visites') + ln('Intéressés', oc('interested'), pct(oc('interested'), pv.length) + ' ' + 'des visites') +
+    ln('RDV pris', oc('appt'), pct(oc('appt'), pv.length) + ' ' + 'des visites') + ln('Pas intéressés', oc('no')) +
+    ln('Suivis terminés', doneN) + ln('Suivis en retard (maintenant)', lateN) +
+    ln('Devenus clients', clientsN, pct(clientsN, uniq.size) + ' ' + 'des restaurants visités') +
+    `<div class="hist" style="margin-top:6px">Définitions : conversation = résultat « Parlé au gérant », « Parlé au patron », « Intéressé », « RDV pris » ou « Pas intéressé ». Les pourcentages divisent par le nombre de visites ; « devenus clients » divise par les restaurants différents visités dans la période (statut actuel). Un restaurant visité deux fois compte pour deux visites mais une seule fois comme restaurant.</div>` +
+    (pv.length < 30 ? '<div class="hist">Moins de 30 visites : conclusions provisoires. Un lien statistique ne prouve pas une cause.</div>' : '') +
+    (oB.length ? `<h3 style="margin-top:12px">Résultats</h3>` + bars(oB, oB[0][1]) : '') + (bB.length ? `<h3 style="margin-top:12px">Objections (période)</h3>` + bars(bB, bB[0][1]) : '') +
+    (nP !== 1 && wd.length ? `<h3 style="margin-top:12px">Par jour de la semaine</h3>` + wd.map(([d, n, t]) => `<div class="brow" style="grid-template-columns:1fr auto"><span>${d}</span><span>${n} visites · ${t} conversations</span></div>`).join('') : '') +
+    (noFu.length ? `<h3 style="margin-top:12px">Prospects sans suivi</h3><div class="hist">${noFu.slice(0, 8).map(r => esc(r.name)).join(', ')}${noFu.length > 8 ? ' +' + (noFu.length - 8) : ''}</div>` : '') + '</div>' +
+    (pv.length ? `<div class="blk"><h3>${tx('Restaurants visités dans la période', 'Bezochte restaurants in deze periode')} (${uniq.size})</h3>${visitListHtml(pv.slice(0, 400), true)}${pv.length > 400 ? `<div class="hist">${tx('Seules les 400 dernières visites sont affichées.', 'Alleen de laatste 400 bezoeken worden getoond.')}</div>` : ''}</div>` : '');
+  el.innerHTML = `<div class="kpis"><div class="kpi"><b>${rows.length}</b>Restaurants</div><div class="kpi"><b>${visited}</b>Visités</div><div class="kpi"><b>${wk[5][1]}</b>Visites (cette semaine)</div></div>` + periodBlock +
+    sec('Entonnoir', bars(st, Math.max(1, ...st.map(x => x[1])))) +
+    sec('Visites par semaine', bars(wk, Math.max(1, ...wk.map(x => x[1])))) +
+    (Object.keys(who).length ? sec('Par personne (30 jours)', bars(Object.entries(who), Math.max(...Object.values(who)))) : '') +
+    (dl.length ? sec('Quartiers', dl.map(([d, x]) => `<div class="brow" style="grid-template-columns:1fr auto"><span>${esc(d)}</span><span>${x.v} visités · ${x.p} positifs</span></div>`).join('')) : '') +
+    (cnt('objection').length ? sec('Objections', bars(cnt('objection').map(([k, n]) => [OBJ[k] || k, n]), cnt('objection')[0][1])) : '') +
+    (cnt('product').length ? sec('Intérêt produits', bars(cnt('product'), cnt('product')[0][1])) : '') +
+    (vs.length ? '' : '<div class="empty">Pas encore de visites enregistrées. Les chiffres apparaissent après vos premières visites.</div>');
+}
+
+// ====== Langue / Taal (FR / NL) ======
+const D = {
+'Importer':'Importeren','+ Ajouter':'+ Toevoegen','Sortir':'Uitloggen','Restaurants':'Restaurants','Ma tournée':'Mijn ronde',
+'Chercher un restaurant':'Restaurant zoeken','Chercher':'Zoeken','Statut':'Status','Quartier':'Wijk',
+'Ma position':'Mijn locatie','Vider la tournée':'Ronde leegmaken',
+'Point de départ : le repère bleu sur la carte. Déplacez-le pour le changer.':'Startpunt: de blauwe pin op de kaart. Sleep hem om te wijzigen.',
+'Revenir au point de départ':'Terug naar het startpunt','Calculer la meilleure route':'Beste route berekenen','Calcul…':'Berekenen…',
+'Ouvrir dans Google Maps':'Openen in Google Maps',
+'Cochez les restaurants à visiter aujourd’hui, dans la liste ou sur la carte.':'Vink de restaurants aan die je vandaag bezoekt, in de lijst of op de kaart.',
+'Touchez la carte pour placer le restaurant':'Tik op de kaart om het restaurant te plaatsen',
+'Connexion':'Inloggen','E-mail':'E-mail','Mot de passe':'Wachtwoord','Se connecter':'Inloggen','E-mail ou mot de passe incorrect.':'E-mail of wachtwoord onjuist.',
+'Nouveau restaurant':'Nieuw restaurant','Modifier le restaurant':'Restaurant bewerken','Nom':'Naam','Téléphone':'Telefoon','Adresse':'Adres',
+'Lien Google Maps (coordonnées automatiques)':'Google Maps-link (coördinaten automatisch)','Latitude':'Breedtegraad','Longitude':'Lengtegraad',
+'Trouver via l’adresse':'Zoeken via adres','Placer sur la carte':'Op de kaart plaatsen','Supprimer':'Verwijderen','Annuler':'Annuleren','Enregistrer':'Opslaan',
+'Visite':'Bezoek','Compte rendu':'Verslag','Prochaine étape':'Volgende stap','Prochain contact':'Volgend contact','Statut après visite':'Status na bezoek',
+'Suivi WhatsApp':'WhatsApp-opvolging','Suivis':'Opvolging','Fichier agenda prêt : ouvre-le pour ajouter le rappel.':'Agendabestand klaar: open het om de herinnering toe te voegen.','Google Agenda ouvert : enregistre l’événement.':'Google Agenda geopend: sla de afspraak daar op.','Messages WhatsApp':'WhatsApp-berichten','Proposer un RDV (sans date)':'Afspraak voorstellen (zonder datum)','Confirmer un RDV (date sans heure)':'Afspraak bevestigen (datum zonder tijd)','Confirmer un RDV (date et heure)':'Afspraak bevestigen (datum en tijd)','Lien du site ou de la démo ({site})':'Link naar website of demo ({site})','Textes d’origine':'Originele teksten','Messages enregistrés.':'Berichten opgeslagen.','Ces textes sont partagés avec toute l’équipe. Variables : {salut} (Salam + prénom), {date}, {heure}, {site}. Les messages de confirmation doivent garder {date} (et {heure} pour celui avec l’heure).':'Deze teksten worden met het hele team gedeeld. Variabelen: {salut} (Salam + voornaam), {date}, {heure} (tijd), {site}. De bevestigingsberichten moeten {date} behouden (en {heure} in het bericht met tijd).','Analyse de la période':'Analyse van de periode','7 jours':'7 dagen','30 jours':'30 dagen','Tout':'Alles','Restaurants différents visités':'Verschillende restaurants bezocht','Conversations avec le gérant':'Gesprekken met de manager','Intéressés':'Geïnteresseerd','Pas intéressés':'Niet geïnteresseerd','Suivis terminés':'Afgeronde acties','Suivis en retard (maintenant)':'Acties te laat (nu)','Devenus clients':'Klant geworden','Résultats':'Resultaten','Objections (période)':'Bezwaren (periode)','Par jour de la semaine':'Per dag van de week','Prospects sans suivi':'Prospects zonder opvolging','Moins de 30 visites : conclusions provisoires. Un lien statistique ne prouve pas une cause.':'Minder dan 30 bezoeken: conclusies zijn voorlopig. Een statistisch verband bewijst geen oorzaak.','Lun':'Ma','Mar':'Di','Mer':'Wo','Jeu':'Do','Ven':'Vr','Sam':'Za','Dim':'Zo','Bilan de la journée':'Dagrapport','Date':'Datum','Chiffres calculés automatiquement':'Automatisch berekende cijfers','Notes (à remplir)':'Notities (zelf invullen)','Qu’est-ce qui s’est bien passé ?':'Wat ging goed?','Qu’est-ce qui s’est mal passé ?':'Wat ging slecht?','Quelles objections ai-je entendues ?':'Welke bezwaren hoorde ik?','Quelles phrases d’accroche ont bien marché ?':'Welke openingszinnen werkten goed?','Qu’ai-je appris ?':'Wat heb ik geleerd?','Que changer demain ?':'Wat moet ik morgen anders doen?','Enregistrer le bilan':'Dagrapport opslaan','Bilans précédents':'Eerdere dagrapporten','Bilan enregistré.':'Dagrapport opgeslagen.','En retard':'Te laat','À venir':'Binnenkort','Action terminée.':'Actie afgerond.','Actions de suivi':'Opvolgacties','Ajouter une action':'Actie toevoegen','Aucune action ouverte.':'Geen openstaande acties.','Type d’action':'Type actie','Repasser':'Opnieuw langsgaan','Appeler':'Bellen','WhatsApp à envoyer':'WhatsApp sturen','Faire une démo':'Demo geven','Confirmer le RDV':'Afspraak bevestigen','Envoyer des infos':'Info sturen','Note (facultatif)':'Notitie (optioneel)','Heure du RDV (facultatif)':'Tijd van de afspraak (optioneel)','RDV : confirmer ou proposer':'Afspraak bevestigen of voorstellen','Infos et exemples':'Info en voorbeelden sturen','Relancer l’intérêt':'Interesse opvolgen','Numéro fixe ou non reconnu : pas de modèles WhatsApp. Le bouton Suivi WhatsApp reste disponible.':'Vast of onbekend nummer: geen WhatsApp-berichten. De knop WhatsApp-opvolging blijft beschikbaar.','Enregistrer la visite':'Bezoek opslaan','Visites précédentes':'Eerdere bezoeken',
+'Importer une liste':'Lijst importeren','ou collez le contenu':'of plak de inhoud','Départ':'Start','Tous statuts':'Alle statussen','Tous quartiers':'Alle wijken',
+'À visiter':'Te bezoeken','Rendez-vous':'Afspraak','Démo faite':'Demo gedaan','Pas intéressé':'Niet geïnteresseerd',
+'Ajouter à la tournée':'Aan ronde toevoegen','Retirer de la tournée':'Uit ronde halen','Modifier':'Bewerken',
+'Aucun résultat pour ces filtres.':'Geen resultaten voor deze filters.',
+'Aucun restaurant pour l’instant. Ajoutez-en un ou importez une liste CSV.':'Nog geen restaurants. Voeg er een toe of importeer een CSV-lijst.',
+'Fichier CSV avec les colonnes : name, address, district, phone, lat, lng, status. Les lignes sans coordonnées sont localisées via leur adresse (environ 1 par seconde).':'CSV-bestand met de kolommen: name, address, district, phone, lat, lng, status. Regels zonder coördinaten worden via het adres gezocht (ongeveer 1 per seconde). Restaurants die al in de lijst staan worden overgeslagen.',
+'Estimation à vol d’oiseau (service de routage indisponible).':'Schatting hemelsbreed (routeservice niet beschikbaar).',
+'Enregistré.':'Opgeslagen.','Supprimé.':'Verwijderd.','Visite enregistrée.':'Bezoek opgeslagen.','Recherche…':'Zoeken…','Coordonnées trouvées.':'Coördinaten gevonden.',
+'Choisissez au moins un restaurant.':'Kies minstens één restaurant.','Ce restaurant n’a pas encore de position.':'Dit restaurant heeft nog geen locatie.',
+'Localisation non disponible.':'Locatie niet beschikbaar.','Aucune ligne trouvée.':'Geen regels gevonden.','Colonne « name » introuvable.':'Kolom «name» niet gevonden.',
+'Adresse introuvable. Essayez le lien Google Maps ou la carte.':'Adres niet gevonden. Probeer de Google Maps-link of de kaart.',
+'Recherche impossible pour le moment.':'Zoeken lukt nu niet.','Saisissez une adresse ou un quartier.':'Vul een adres of wijk in.',
+'Autorisez la localisation dans le navigateur.':'Sta locatie toe in de browser.',
+'Position trouvée. Vérifiez-la avec « Placer sur la carte » si besoin.':'Locatie gevonden. Controleer hem zo nodig met «Op de kaart plaatsen».',
+'Mode local : les données restent dans ce navigateur.':'Lokale modus: de gegevens blijven in deze browser.',
+'Lien court : ouvrez-le, puis collez le lien complet de la barre d’adresse.':'Korte link: open hem en plak daarna de volledige link uit de adresbalk.'
+};
+const FRAG = [
+[/ sans position/g,' zonder locatie'],[/déjà dans la liste/g,'stonden al in de lijst'],[/(\d+) importés/g,'$1 geïmporteerd'],
+[/^À relancer : /,'Opvolgen: '],[/arrêts/g,'stops'],[/arrêt/g,'stop'],[/^Erreur : /,'Fout: '],[/^Chargement impossible : /,'Laden mislukt: '],
+[/^Localisation (\d+)\/(\d+)…/,'Locatie zoeken $1/$2…'],[/^Modifier (.+)$/,'Bewerk $1'],[/^Ajouter (.+) à la tournée$/,'$1 aan ronde toevoegen'],
+[/^À visiter(?= ·|$)/,'Te bezoeken'],[/^Rendez-vous(?= ·|$)/,'Afspraak'],[/^Démo faite(?= ·|$)/,'Demo gedaan'],[/^Client(?= ·|$)/,'Klant'],[/^Pas intéressé(?= ·|$)/,'Niet geïnteresseerd']
+];
+Object.assign(D, {'Aperçu':'Overzicht','Relances à faire':'Opvolgingen','Meilleures pistes pas encore visitées':'Beste kansen, nog niet bezocht','Aucune relance en attente.':'Geen opvolgingen open.','Rien à afficher.':'Niets te tonen.','Mettre à jour les restaurants déjà dans la liste (remplit seulement les champs vides)':'Restaurants die al in de lijst staan bijwerken (vult alleen lege velden in)'});
+Object.assign(D, {'Choisis le message à envoyer :':'Kies het bericht om te sturen:','Pas de numéro pour ce restaurant.':'Geen nummer voor dit restaurant.','Numéro fixe ou non reconnu : pas de modèles WhatsApp.':'Vast of onbekend nummer: geen WhatsApp-berichten.','Fermer':'Sluiten'});
+Object.assign(D, {'Restaurants, cafés et pâtisseries de la zone':'Restaurants, cafés en patisserieën in de regio'});
+Object.assign(D, {'Carte':'Kaart','Chiffres':'Cijfers','Visités':'Bezocht','Visites (cette semaine)':'Bezoeken (deze week)','Entonnoir':'Trechter','Visites par semaine':'Bezoeken per week','Par personne (30 jours)':'Per persoon (30 dagen)','Quartiers':'Wijken','Objections':'Bezwaren','Intérêt produits':'Interesse per product','Pas encore de visites enregistrées. Les chiffres apparaissent après vos premières visites.':'Nog geen bezoeken vastgelegd. De cijfers verschijnen na jullie eerste bezoeken.','Aujourd’hui':'Vandaag','Combien de temps avez-vous ?':'Hoeveel tijd heb je?','Mettre dans ma tournée':'In mijn ronde zetten','Reprenez où vous en étiez.':'Pak de draad op waar je gebleven was.','Pas de site : proposez Amplify Site (dès 250 DH).':'Geen website: stel Amplify Site voor (vanaf 250 DH).','Beaucoup d’avis, donc du passage : parlez marges et caisse (POS dès 199 DH/mois).':'Veel reviews, dus veel klanten: praat over marges en kassa (POS vanaf 199 DH/maand).','Premier contact : demandez comment ils suivent leurs marges aujourd’hui.':'Eerste contact: vraag hoe ze nu hun marges bijhouden.','Ajoutez des restaurants avec une position (liste, import ou recherche en ligne) pour recevoir un conseil.':'Voeg restaurants met een locatie toe (lijst, import of online zoeken) om advies te krijgen.','Réglages du score':'Score-instellingen','Réinitialiser':'Standaard herstellen','Plus le nombre est grand, plus ce critère compte. Les réglages restent sur cet appareil.':'Hoe groter het getal, hoe zwaarder het criterium telt. De instellingen blijven op dit apparaat.','Réglages réinitialisés.':'Instellingen hersteld.','Pas de site web':'Geen website','A déjà un site web':'Heeft al een website','Avis Google (maximum)':'Google-reviews (maximum)','Bonne note Google':'Goede Google-score','Note Google basse':'Lage Google-score','Café dans un quartier difficile':'Café in een lastige buurt','Rendez-vous ou démo en cours':'Afspraak of demo bezig','Déjà intéressé':'Al geïnteresseerd','En période d’essai':'In proefperiode','Relance à faire':'Opvolging nodig','Base':'Basis','Score':'Score','Fermer':'Sluiten','Résultat':'Uitkomst','Pas là':'Niet aanwezig','Parlé au gérant':'Met manager gesproken','Intéressé':'Geïnteresseerd','RDV pris':'Afspraak gemaakt','Parlé avec':'Gesproken met','Intérêt':'Interesse','Objection':'Bezwaar','Prix':'Prijs','Déjà équipé':'Al uitgerust','Pas le temps':'Geen tijd','Pas le décideur':'Niet de beslisser','Autre':'Anders','Demain':'Morgen','+3 jours':'+3 dagen','+1 semaine':'+1 week','Visité':'Bezocht','Essai en cours':'Proefperiode','À relancer':'Opvolgen','Pas encore visité':'Nog niet bezocht','Prénom, rôle':'Voornaam, functie','Type':'Type','Site web':'Website','Inconnu':'Onbekend','Pas de site':'Geen website','A un site':'Heeft website','Note Google':'Google-score','Nombre d’avis':'Aantal reviews','Environnement':'Omgeving','Quartier agréable':'Fijne buurt','Moyen':'Matig','Quartier difficile':'Lastige buurt','Pâtisserie':'Patisserie','Client':'Klant','Chercher en ligne':'Online zoeken','Recherche en ligne':'Online zoeken','Nom du restaurant':'Naam restaurant','Tous les restaurants de la zone':'Alle restaurants in de regio','Fermer':'Sluiten','Ajouter':'Toevoegen','Déjà dans la liste':'Staat al in de lijst','Tout ajouter':'Alles toevoegen','Ajouté.':'Toegevoegd.','Aucun résultat en ligne.':'Niets gevonden.','Chargement des restaurants…':'Restaurants laden…','Service indisponible, réessayez.':'Service niet beschikbaar, probeer het later opnieuw.'});
+FRAG.push([/(\d+) visités · (\d+) positifs/,'$1 bezocht · $2 positief'],[/(\d+) à relancer/,'$1 opvolgen'],[/(\d+) pas encore visités/,'$1 nog niet bezocht'],[/(\d+) visites cette semaine/,'$1 bezoeken deze week'],[/^Relance prévue le /,'Opvolging gepland op '],[/ \(en retard\)/,' (te laat)'],[/ · pas de site/,' · geen website'],[/ · (\d+) avis/,' · $1 reviews'],[/ · jamais visité/,' · nog nooit bezocht'],[/(\d+) avis Google/,'$1 Google-reviews'],[/^À compléter : /,'Nog aan te vullen: '],[/Site web inconnu/,'Website onbekend'],[/Avis Google manquants/,'Google-reviews ontbreken'],[/Environnement non renseigné/,'Omgeving niet ingevuld'],[/ · visité /,' · bezocht '],[/^Visité(?= ·|$)/,'Bezocht'],[/^Intéressé(?= ·|$)/,'Geïnteresseerd'],[/^Essai en cours(?= ·|$)/,'Proefperiode'],[/— Pas là/,'— Niet aanwezig'],[/— Parlé au gérant/,'— Met manager gesproken'],[/— Intéressé/,'— Geïnteresseerd'],[/— RDV pris/,'— Afspraak gemaakt'],[/— Pas intéressé/,'— Niet geïnteresseerd'],[/\(sans note\)/,'(geen notitie)'],[/(· |— )par /,'$1door '],[/(\d+) résultats/,'$1 resultaten'],[/(\d+) nouveaux/,'$1 nieuw'],[/^(\d+) ajoutés\./,'$1 toegevoegd.'],[/^(\d+) restaurants \?$/,'$1 restaurants toevoegen?']);
+let lang = localStorage.getItem('at_lang') || 'nl';
+function trNl(s) {
+  const k = s.trim(); if (!k) return s;
+  if (D[k]) return s.replace(k, D[k]);
+  let o = s; for (const [a, b] of FRAG) o = o.replace(a, b); return o;
+}
+const recT = new WeakMap(), ATTR = ['placeholder', 'aria-label', 'title'];
+function doText(n) {
+  const p = n.parentNode; if (!p || /^(SCRIPT|STYLE|TEXTAREA)$/.test(p.nodeName)) return;
+  const v = n.data; let r = recT.get(n);
+  if (!(r && (v === r.fr || v === r.nl))) { r = { fr: v, nl: trNl(v) }; recT.set(n, r); }
+  const t = lang === 'nl' ? r.nl : r.fr; if (v !== t) n.data = t;
+}
+function doEl(el) {
+  const m = el._tr || (el._tr = {});
+  for (const a of ATTR) {
+    if (!el.hasAttribute(a)) continue;
+    const v = el.getAttribute(a); let r = m[a];
+    if (!(r && (v === r.fr || v === r.nl))) r = m[a] = { fr: v, nl: trNl(v) };
+    const t = lang === 'nl' ? r.nl : r.fr; if (v !== t) el.setAttribute(a, t);
+  }
+}
+function walk(root) {
+  if (root.nodeType === 3) return doText(root);
+  if (root.nodeType !== 1) return;
+  doEl(root); root.querySelectorAll('*').forEach(doEl);
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); let n; while ((n = w.nextNode())) doText(n);
+}
+function setLang(l) {
+  lang = l; localStorage.setItem('at_lang', l); document.documentElement.lang = l;
+  document.querySelectorAll('.lang button').forEach(b => { const on = b.dataset.l === l; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+  walk(document.body);
+  try { if (rows.length) { renderList(); renderToday(); renderRoute(); if (!$('#paneStats').hidden) renderStats(); } } catch {}
+}
+document.querySelectorAll('.lang button').forEach(b => b.onclick = () => setLang(b.dataset.l));
+new MutationObserver(ms => ms.forEach(m => {
+  if (m.type === 'childList') m.addedNodes.forEach(walk);
+  else if (m.type === 'characterData') doText(m.target);
+  else doEl(m.target);
+})).observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTR });
+FRAG.push([/Seuls les restaurants proches du départ, jamais visités ou à relancer, sont proposés\./,'Alleen restaurants dicht bij je start die je nog niet bezocht hebt of moet opvolgen worden voorgesteld.'],[/Changez le départ ou choisissez une région\./,'Verander je startpunt of kies een regio.']);
+Object.assign(D, {'Adresse introuvable. Essayez un quartier ou « Déplacer sur la carte ».':'Adres niet gevonden. Probeer een wijk of « Verplaats op de kaart ».'});
+Object.assign(D, {'Point de départ':'Startpunt','Adresse ou quartier':'Adres of wijk','Chercher':'Zoeken','Région':'Regio','Peu importe, le plus proche du départ':'Maakt niet uit, dichtst bij mijn start','Nombre d’arrêts':'Aantal stops','Déplacement':'Verplaatsing','À pied':'Te voet','En voiture':'Met de auto','Seulement nouveaux et fort potentiel':'Alleen nieuwe en hoge potentie','Inclure les relances':'Opvolgingen meenemen','Déplacer sur la carte':'Verplaats op de kaart','Ouvrir dans Google Maps':'Openen in Google Maps','Départ : repère sur la carte (Agdal par défaut)':'Start: pin op de kaart (standaard Agdal)'});
+FRAG.push([/^(\d+) suivis en retard$/,'$1 acties te laat'],[/(\d+) visites · (\d+) conversations/,'$1 bezoeken · $2 gesprekken'],[/(\d+ %|—) des visites/,'$1 van de bezoeken'],[/(\d+ %|—) des restaurants visités/,'$1 van de bezochte restaurants'],[/^Définitions : .*$/s,'Definities: een gesprek is het resultaat “Met manager gesproken”, “Gesproken met baas”, “Intéressé”, “RDV pris” of “Pas intéressé”. Percentages delen door het aantal bezoeken; “klant geworden” deelt door het aantal verschillende restaurants dat in de periode is bezocht (huidige status). Een restaurant dat twee keer is bezocht telt als twee bezoeken, maar één keer als restaurant.'],[/^(\d+) visites$/,'$1 bezoeken'],[/^(\d+) conversations$/,'$1 gesprekken'],[/^(\d+) intéressés$/,'$1 geïnteresseerd'],[/^(\d+) RDV pris$/,'$1 afspraken gemaakt'],[/^(\d+) suivis terminés$/,'$1 acties afgerond'],[/^(\d+) suivis ouverts$/,'$1 openstaande acties'],[/position approximative/g,'positie bij benadering'],[/(\d+) positions trouvées, (\d+) approximatives\./,'$1 posities gevonden, $2 bij benadering.'],[/^Départ : (?=.)/,'Start: '],[/^Chercher les positions manquantes \((\d+)\)/,'Ontbrekende posities opzoeken ($1)'],[/(\d+) arrêts · /,'$1 stops · '],[/(\d+) positions trouvées, (\d+) introuvables\./,'$1 posities gevonden, $2 niet gevonden.'],[/Plus de restaurants ne correspondent pas aux filtres/,'Er zijn geen restaurants meer die aan de filters voldoen'],[/ \(certains n’ont pas encore de position\)/,' (sommige hebben nog geen positie)'],[/Essayez une autre région ou désactivez « nouveaux et fort potentiel »\./,'Probeer een andere regio of zet “alleen nieuwe en hoge potentie” uit.'],[/Aucun restaurant ne correspond\. Essayez une autre région, désactivez « nouveaux et fort potentiel »/,'Geen enkel restaurant past. Probeer een andere regio, zet “alleen nieuwe en hoge potentie” uit'],[/ ou cherchez les positions manquantes\./,' of zoek de ontbrekende posities op.'],[/Déplacez le repère D sur la carte, puis revenez sur Aujourd’hui\./,'Sleep de pin D op de kaart en ga dan terug naar Vandaag.']);
+Object.assign(D, {'Ce qui a été dit, ce qui l’intéresse, objections…':'Wat er gezegd is, waar ze interesse in hebben, bezwaren…','Ex. envoyer la démo, repasser jeudi':'Bijv. demo sturen, donderdag terugkomen','Parlé au patron':'Gesproken met baas','Suivi':'Opvolging','Pas de suivi':'Geen opvolging','Envoyer sur WhatsApp':'Stuur via WhatsApp','Itinéraire':'Navigeer','Je suis sur place : noter la visite tout de suite':'Ik sta er nu: bezoek meteen vastleggen'});
+Object.assign(D, {'Position':'Locatie','Détails':'Details','Numéro WhatsApp':'WhatsApp-nummer','Enregistrer et ouvrir WhatsApp':'Opslaan en WhatsApp openen','Ajouter un numéro WhatsApp':'WhatsApp-nummer toevoegen','Pas de numéro mobile valide : pas de modèles WhatsApp.':'Geen geldig mobiel nummer: geen WhatsApp-berichten.','Ce numéro est fixe ou non reconnu. Entre un numéro mobile : 06…, 07… ou +212…':'Dit nummer is een vast nummer of wordt niet herkend. Vul een mobiel nummer in: 06…, 07… of +212…','Pas encore de numéro pour ce restaurant. Entre un numéro mobile : 06…, 07… ou +212…':'Nog geen nummer voor dit restaurant. Vul een mobiel nummer in: 06…, 07… of +212…','Numéro enregistré.':'Nummer opgeslagen.','Numéro invalide : mobile marocain en 06…, 07… ou +212…':'Ongeldig nummer: Marokkaans mobiel nummer met 06…, 07… of +212…'});
+Object.assign(D, {'Ces textes sont partagés avec toute l’équipe.':'Deze teksten worden met het hele team gedeeld.'});
+setLang(lang);
+showTab('today');
+
+boot();
+</script>
+<script>
+// ===== Mobile / app behaviour (update 26) =====
+(function () {
+  // PWA: offline shell
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+  // Touch: do not pop the keyboard when a form sheet opens
+  var coarse = matchMedia('(pointer:coarse)').matches;
+  if (coarse && window.HTMLDialogElement) {
+    var open = HTMLDialogElement.prototype.showModal;
+    HTMLDialogElement.prototype.showModal = function () {
+      open.call(this);
+      if (this.id === 'dlgLogin' || this.id === 'dlgSearch') return;
+      var a = document.activeElement;
+      if (a && a !== this && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) && !a.hasAttribute('autofocus')) a.blur();
+    };
+  }
+  // Keyboard open: hide the bottom tab bar so it does not eat the screen
+  var TXT = 'input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=button]),textarea';
+  document.addEventListener('focusin', function (e) { if (e.target.matches && e.target.matches(TXT) && !e.target.closest('dialog')) document.body.classList.add('kb'); });
+  document.addEventListener('focusout', function () {
+    setTimeout(function () { var a = document.activeElement; if (!a || !a.matches || !a.matches(TXT)) document.body.classList.remove('kb'); }, 80);
+  });
+  // Coming back to the app after a while: refresh shared data
+  var hiddenAt = 0;
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) { hiddenAt = Date.now(); return; }
+    if (!hiddenAt || Date.now() - hiddenAt < 60000) return;
+    if (document.querySelector('dialog[open]')) return;
+    var a = document.activeElement;
+    if (a && /^(INPUT|TEXTAREA)$/.test(a.tagName)) return;
+    try { Promise.resolve(window.reload && window.reload()).catch(function () {}); } catch (e) {}
+  });
+  // Rotation / address-bar changes: keep the map correctly sized
+  addEventListener('orientationchange', function () { setTimeout(function () { try { map.invalidateSize(); } catch (e) {} }, 300); });
+})();
+</script>
+</body>
+</html>
